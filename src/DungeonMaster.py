@@ -28,6 +28,7 @@ import Agent
 from Agent import BaseAgent
 from Agent import BaseMonster
 from Agent import IllegalMonsterMove
+from Agent import STD_ENERGY_COST
 from BaseTile import BaseTile
 from CharacterGenerator import CharacterGenerator
 from CombatResolver import ShootingResolver
@@ -141,79 +142,13 @@ class DungeonSqrInfo:
     def is_remembered(self):
         return self.__remembered
 
-# A set of queues for tracking which agent's turn it is
-class TurnQueue:
-    def __init__(self):
-        self.__segs = {}
-
-        for j in range(1,7):
-            self.__segs[j] = PriorityQueue()
-
-    def add(self,agent):
-        segments = self.__segments_for_speed(agent.get_speed())
-    
-        for s in segments:
-            self.__segs[s].pluck(agent)
-            self.__segs[s].push(agent,randrange(0,100))
-
-    def get_segment(self,segment):
-        return self.__segs[segment]
-
-    def is_empty(self):
-        for j in range(1,7):
-            if not self.__segs[j].is_empty():
-                return False
-
-        return True
-
-    def dump(self):
-        for j in range(1,7):
-            self.__segs[j].dump()
-
-    def remove(self,agent):
-        for j in range(1,7):
-            self.__segs[j].pluck(agent)
-
-    def __segments_for_speed(self,speed):
-        if speed <= 1:
-            return [5]
-        elif speed == 2:
-            return [3]
-        elif speed == 3:
-            return [3,6]
-        elif speed == 4:
-            return [3,5]
-        elif speed == 5:
-            return [3,5]
-        elif speed == 6:
-            return [3,5,6]
-        elif speed == 7:
-            return [2,3,6]
-        elif speed == 8:
-            return [2,3,6]
-        elif speed == 9:
-            return [2,3,5,6]
-        elif speed == 10:
-            return [2,3,5,6]
-        elif speed == 11:
-            return [2,3,4,5,6]
-        elif speed >= 12:
-            return [1,2,3,4,5,6]
-
 class DungeonMaster:
     def __init__(self, version):
         self.version = version
-        self.__tq = TurnQueue()
-        self.__next_tq = TurnQueue()
-        self.player_turn_over = False
         self.turn = 0
         self.virtual_turn = 0 # Time is kept seperately in cyberspace
         self.sight_matrix = {}
         last_sight_matrix = {}
-                
-    def add_agent_to_turn_queue(self,agent):
-        self.__tq.add(agent)
-        self.__next_tq.add(agent)
 
     def get_meatspace_dmg_msg(self, delta, curr_hp):
         _p = float(delta) / float(curr_hp)
@@ -287,7 +222,6 @@ class DungeonMaster:
             
     def __clear_current_level_info(self):
         self.sight_matrix = {}
-        map(self.__remove_monster_from_tq, self.curr_lvl.monsters)
         
     def generate_cyberspace_level(self):
         _curr = self.curr_lvl
@@ -469,12 +403,6 @@ class DungeonMaster:
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
-            
-        # Add the DM's __do_player_action method to the player object.
-        # It's aliases as perform_action so that it has the same name as the 
-        # monsters' method (which means I don't have to check to see what class
-        # the agents are when I pull them off the turn queue during game play
-        self.player.perform_action = self.__do_player_action
         
         self.__start_play()
         
@@ -664,7 +592,7 @@ class DungeonMaster:
         if isinstance(sqr,Terrain.DownStairs):
             if  sqr.activated:
                 self.__determine_next_level('down')
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('The lift is deactivated.')
         else:
@@ -678,7 +606,7 @@ class DungeonMaster:
         if isinstance(sqr, Terrain.UpStairs):
             if sqr.activated:
                 self.__determine_next_level('up')
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('The lift is deactivated.')
         else:
@@ -703,7 +631,7 @@ class DungeonMaster:
 
                 if isinstance(_occ, BaseAgent):
                     self.curr_lvl.melee.attack(self.player, _occ)           
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
             elif self.curr_lvl.map[next_r][next_c].get_type() == Terrain.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
@@ -726,7 +654,7 @@ class DungeonMaster:
                 self.dui.display_message('You stagger into the open space.')
             elif isinstance(tile, Terrain.SpecialDoor):
                 self.dui.display_message("It doesn't budge.")
-                self.turn_over()  
+                self.player.energy -= STD_ENERGY_COST  
             else:
                 randio = randrange(0,20) + self.player.calc_dmg_bonus()
 
@@ -735,10 +663,10 @@ class DungeonMaster:
                     self.update_sqr(self.curr_lvl, door_r,door_c)
                     self.refresh_player_view()
                     self.dui.display_message('You smash open the door')
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
                 else:
                     self.dui.display_message('WHAM!!')
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
         else:
             self.__uncontrolled_move(self.player,door_r,door_c,dt)
 
@@ -751,7 +679,7 @@ class DungeonMaster:
                 self.dui.display_message('There is something in the way!')
             elif _tile.broken:
                 self.dui.display_message('The door is broken.')
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             elif not _tile.is_open():
                 self.dui.display_message('The door is already closed!')
             else:
@@ -759,7 +687,7 @@ class DungeonMaster:
                 self.update_sqr(self.curr_lvl, row, col)
                 self.refresh_player_view()
                 self.dui.display_message('You close the door')
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
         else:
             self.dui.display_message('There is nothing to close!')
             
@@ -794,7 +722,7 @@ class DungeonMaster:
                 box.open = True
                 self.dui.display_message('You open the box.')
                 self.__empty_box_contents(box, row, col)
-            self.turn_over()
+            self.player.energy -= STD_ENERGY_COST
 
     # If there is just one adjacent door, pick it, otherwise return None
     def get_adjacent_door(self, row, col, open):
@@ -826,7 +754,7 @@ class DungeonMaster:
                 try:
                     self.curr_lvl.attempt_to_hack_trap(self.player, _tile, _r, _c)
                     self.update_sqr(self.curr_lvl, _r, _c)
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
                 except TrapSetOff:
                     self.__player_steps_on_trap(_tile)
             else:
@@ -844,11 +772,11 @@ class DungeonMaster:
             ch = self.dui.query_yes_no('The door is locked.  Attempt to unlock')
             if ch == 'y':
                 self.__attempt_to_unlock_door(tile)
-            self.turn_over() # player uses a turn because he has to try the door to see if it is locked
+            self.player.energy -= STD_ENERGY_COST # player uses a turn because he has to try the door to see if it is locked
         else:
             tile.open()
             self.dui.display_message('You open the door')
-            self.turn_over()
+            self.player.energy -= STD_ENERGY_COST
             
         self.update_sqr(self.curr_lvl, r, c)
         self.refresh_player_view()
@@ -999,7 +927,7 @@ class DungeonMaster:
                 self.dui.display_message('Youch!  You burn your hand on the lit flare!')
                 self.__item_hits_ground(self.curr_lvl, self.player.row,self.player.col,item)
                 self.player.damaged(self, self.curr_lvl, randrange(1,5), '', 'burn')
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
                 return
                 
             try:
@@ -1024,7 +952,7 @@ class DungeonMaster:
                 except PickUpAborted:
                     break
         
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
 
     def player_wear_armour(self,i):
         item = self.player.inventory.get_item(i)
@@ -1045,7 +973,7 @@ class DungeonMaster:
                     self.dui.display_message("It looks like you're wasting some foes!  Would you like help?")
                     
                 self.dui.update_status_bar()
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             except AlreadyWearingSomething:
                 msg = 'You are already wearing '
                 area = item.get_area()
@@ -1060,7 +988,7 @@ class DungeonMaster:
         if weapon.get_current_ammo() == 0:
             self.dui.clear_msg_line()
             self.dui.display_message('Click, click.')
-            self.turn_over() #  Sorta mean to penalize the player for shooting an empty gun.  And yet...
+            self.player.energy -= STD_ENERGY_COST #  Sorta mean to penalize the player for shooting an empty gun.  And yet...
         else:
             _dir = self.dui.get_direction()
             
@@ -1068,7 +996,7 @@ class DungeonMaster:
                 self.dui.display_message('BLAM!')
                 weapon.fire()
                 self.__fire_weapon(self.player, self.player.row, self.player.col, _dir, weapon)
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('Never mind.')
     
@@ -1288,7 +1216,7 @@ class DungeonMaster:
                 break
         
         self.dui.display_message('You load your shotgun.')
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
 
     def player_remove_armour(self,i):
         item = self.player.inventory.get_item(i)
@@ -1307,7 +1235,7 @@ class DungeonMaster:
 
                 self.player.calc_ac()
                 self.dui.update_status_bar()
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             except NotWearingItem:
                 self.dui.display_message('You aren\'t wearing that!')
 
@@ -1333,7 +1261,7 @@ class DungeonMaster:
             self.dui.display_message('You drop your ' + item.get_full_name() + '.')
             self.item_leaves_inventory(self.player, item)   
             self.__item_hits_ground(self.curr_lvl, self.player.row, self.player.col, item)
-            self.turn_over()
+            self.player.energy -= STD_ENERGY_COST
 
     def access_software(self, sw, exe_mess):
         try:
@@ -1364,7 +1292,7 @@ class DungeonMaster:
         except UnableToAccess:
             pass
             
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
         
     def player_uses_item_with_power_switch(self, item):
         if not item.on:
@@ -1390,7 +1318,7 @@ class DungeonMaster:
             if item.get_category() == 'Explosive':
                 bomb = self.player.inventory.remove_item(i,1)
                 self.player_set_bomb(bomb)
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             elif isinstance(item, Items.WithOffSwitch):
                 self.player_uses_item_with_power_switch(item)
             elif item.get_category() == 'Tool': 
@@ -1407,11 +1335,11 @@ class DungeonMaster:
                     self.dui.display_message('Huh?  Use it for what?')
             elif item.get_name() == 'the wristwatch':
                 self.__show_time()
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             elif item.get_category() == 'Pharmaceutical':
                 hit = self.player.inventory.remove_item(i,1)
                 self.player_takes_drugs(hit)
-                self.turn_over()
+                self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('Huh?  Use it for what?')
     
@@ -1484,18 +1412,18 @@ class DungeonMaster:
 
                 if item.get_name(1) == 'grenade' and self.dui.query_yes_no('Pull pin') == 'y':
                     self.__player_throws_grenade(item)
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
                     return
                 if item.get_name(1) == 'flare' and self.dui.query_yes_no('Light flare') == 'y':
                     self.__player_uses_flare(item)
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
                     return
                     
                 direction = self.dui.get_direction()
                 if direction != '':
                     self.item_leaves_inventory(self.player, item)
                     self.__throw_projectile(item,self.player.row,self.player.col,direction)
-                    self.turn_over()
+                    self.player.energy -= STD_ENERGY_COST
                 else:
                     self.player.inventory.add_item(item, was_readied)
                     self.dui.display_message('Never mind.')
@@ -1704,11 +1632,7 @@ class DungeonMaster:
     def cmd_pass(self):
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
-        self.turn_over()
-
-    def __remove_monster_from_tq(self,monster):
-        self.__tq.remove(monster)
-        self.__next_tq.remove(monster)
+        self.player.energy -= STD_ENERGY_COST
                 
     def monster_killed(self, level, r, c, by_player):
         victim = level.dungeon_loc[r][c].occupant
@@ -1733,7 +1657,6 @@ class DungeonMaster:
     
     def __remove_monster_from_level(self, level, monster, row, col):
         level.remove_monster(monster, row, col)
-        self.__remove_monster_from_tq(monster)
 
     def __move_player(self,curr_r,curr_c,next_r,next_c,dt):
         self.curr_lvl.dungeon_loc[curr_r][curr_c].visited = True
@@ -1741,7 +1664,7 @@ class DungeonMaster:
         self.curr_lvl.handle_stealth_check(self.player)
         self.update_player()
         self.__check_ground(next_r,next_c)
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
         
     def __agent_moves_to_sqr(self,r,c,agent):
         self.curr_lvl.dungeon_loc[agent.row][agent.col].occupant = ''
@@ -1951,7 +1874,7 @@ class DungeonMaster:
                 self.player.inventory.add_item(battery)
             else:
                 self.__add_battery_to_item(battery, _item)
-            self.turn_over()
+            self.player.energy -= STD_ENERGY_COST
         except NonePicked:
             self.dui.clear_msg_line()
             self.player.inventory.add_item(battery)
@@ -1970,7 +1893,7 @@ class DungeonMaster:
         self.__item_hits_ground(self.curr_lvl, target[0], target[1], _lit_flare)
         self.curr_lvl.add_light_source(_lit_flare)
         self.refresh_player_view()
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
         
     def __show_time(self):
         _t = FINAL_TURN - self.turn
@@ -1978,9 +1901,6 @@ class DungeonMaster:
         _msg += ' turns left until the DoD nukes the complex from orbit.'
         self.dui.display_message(_msg)
         
-    def turn_over(self):
-        self.player_turn_over = True
-
     def get_player_loc(self):
         return (self.player.row,self.player.col)
 
@@ -2003,10 +1923,9 @@ class DungeonMaster:
                     self.alert_player(_sr,_sc, "You find " + _sqr.get_name(2))
                     _sqr.revealed = True
                     self.update_sqr(self.curr_lvl,_sr,_sc)
-        self.turn_over()
+        self.player.energy -= STD_ENERGY_COST
         
     def __start_play(self):
-        self.__tq.add(self.player)
         self.refresh_player()
         self.dui.update_status_bar()
         if self.turn == 0:
@@ -2017,34 +1936,37 @@ class DungeonMaster:
 
     def __play_game(self):
         try:
-            while not self.__tq.is_empty():
+            while True:
                 self.__do_turn()
         except GameOver:
             return
 
+    # loop over all actors until everyone's energy is below threshold
     def __do_turn(self):
-        self.__next_tq = TurnQueue()
         if self.curr_lvl.security_lockdown and self.turn % 10 == 0:
             self.dui.display_message('An alarm is sounding.')
-            
-        for seg in range(1,7):
-            segment = self.__tq.get_segment(seg)
-            while not segment.is_empty():
-                self.active_agent = segment.pop()
-                self.__next_tq.add(self.active_agent)
                 
-                try:
-                    if self.active_agent.has_condition('stunned'):
-                        self.active_agent.stunned(self.dui)
-                    else:
-                        self.active_agent.perform_action()
-                except TurnInterrupted:
-                    pass
+        # perform player action
+        self.__do_player_action()
         
-        self.curr_lvl.resolve_events()  
-        self.__tq = self.__next_tq
-        
+        #loop over monsters
+        for _m in self.curr_lvl.monsters:
+            print _m.get_name(), _m.ENERGY_THRESHOLD
+            self.active_agent = _m
+            #try:
+            #    if self.active_agent.has_condition('stunned'):
+            #        self.active_agent.stunned(self.dui)
+            #    else:
+            #        self.active_agent.perform_action()
+            #except TurnInterrupted:
+            #    pass
+            self.active_agent = ''
+            
+        self.curr_lvl.resolve_events()          
         self.curr_lvl.end_of_turn()
+    
+        # restore energy to players and monsters
+        self.player.energy += self.player.base_energy # this will change to be a method that also calcs speed modifiers
         
     def meatspace_end_of_turn_cleanup(self):
         self.player.check_for_withdrawal_effects()
@@ -2060,13 +1982,20 @@ class DungeonMaster:
             self.dui.display_message(_item.get_power_down_message())
             agent.remove_effects(_item)
             
-    # need to make this more intelligent.  At the moment, commands like inventory and checking character sheet
-    # count as using turns.  Maybe a boolean flag in turn_over() and this method loops until flag is set to true?
     def __do_player_action(self):
-        self.player_turn_over = False
-        while not self.player_turn_over:
-            self.dui.get_player_command()
-
+        self.active_agent = self.player
+        
+        try:
+            if self.player.has_condition('stunned'):
+                self.player.stunned(self.dui)
+            else:
+                while self.player.energy >= self.player.ENERGY_THRESHOLD:
+                    self.dui.get_player_command()
+        except TurnInterrupted:
+            pass
+        
+        self.active_agent = ''
+        
     def debug_add_item(self, words):
         _request = ""
         for _word in words:

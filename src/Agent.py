@@ -30,6 +30,8 @@ from Util import calc_distance
 from Util import do_dN
 from Util import do_d10_roll
 
+STD_ENERGY_COST = 12
+
 # This class is an exception raised when a monster makes an illegal move
 class IllegalMonsterMove:
     pass
@@ -131,6 +133,8 @@ class AStarPathFactory:
         return path
 
 class BaseAgent(BaseTile):
+    ENERGY_THRESHOLD = 12
+    
     def __init__(self, vision_radius, ac, speed, unarmed_dmg_dice, unarmed_dmg_rolls, ch, fg, bg, 
                 lit, name, row, col, gender):
         BaseTile.__init__(self,ch,fg,bg,lit,name)
@@ -148,6 +152,8 @@ class BaseAgent(BaseTile):
         self.conditions = []
         self.melee_type = 'melee'
         self.calc_ac()
+        self.energy = self.ENERGY_THRESHOLD
+        self.base_energy = self.ENERGY_THRESHOLD
         
     def add_hp(self,delta):
         self.curr_hp += delta

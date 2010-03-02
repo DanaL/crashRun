@@ -378,7 +378,6 @@ class GameLevel:
         monster.col = c
         self.dungeon_loc[r][c].occupant = monster
         self.monsters.append(monster)
-        self.dm.add_agent_to_turn_queue(monster)
             
     def get_player_start_loc(self):
         return self.player_start_loc
