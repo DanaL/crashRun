@@ -514,7 +514,7 @@ class ItemFactory:
         self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-2,0)])
         self.__item_db['army helmet'] = ('armour','helmet','darkgreen','green',1,1,0,[])
         self.__item_db['stylish leather jacket'] = ('armour','suit','brown','lightbrown',1,4,0,[])
-        self.__item_db['high-tech sandals'] = ('armour','boots','brown','lightbrown',1,0,0,[('sneaky',1,0)])
+        self.__item_db['high-tech sandals'] = ('armour','boots','brown','lightbrown',1,0,0,[('sneaky',2,0)])
         self.__item_db['rubber boots'] = ('armour','boots','darkgrey','darkgrey',1,0,0,[('grounded',4,0)])
         self.__item_db['long leather coat'] = ('armour','suit','brown','lightbrown',1,5,0,[('chutzpah',1,0)])
         self.__item_db['old fatigues'] = ('armour','suit','darkgreen','green',1,2,0,[])
