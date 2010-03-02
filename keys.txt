@@ -1,0 +1,43 @@
+VERSION: 0.4.0
+'.': PASS
+'A': SPECIAL_ABILITY
+'@': CHAR_INFO
+'P': PRACTICE_SKILLS
+'Q': QUIT
+'S': SAVE_AND_EXIT
+'V': VIEW_SCORES
+'*': SHOW_RECENT_MESSAGES
+'?': SHOW_HELP
+'#': DEBUG_COMMAND
+
+# Inventory commands
+'d': DROP
+'f': SHOOT
+'i': INVENTORY
+'t': THROW_ITEM
+'r': RELOAD
+'R': REMOVE_ARMOUR
+'U': USE_ITEM
+'w': WIELD_WEAPON
+'W': WEAR_ARMOUR
+
+# Dungeon interaction commands
+'a': ACTION
+',': PICK_UP
+'x': EXAMINE
+'X': FORCE_QUIT_CYBERSPACE
+'s': SEARCH
+'B': BASH
+'H': HACKING
+
+# Movement commands
+'h': MOVE_WEST				
+'j': MOVE_SOUTH				
+'k': MOVE_NORTH			
+'l': MOVE_EAST				
+'y': MOVE_NORTHWEST	
+'u': MOVE_NORTHEAST	
+'b': MOVE_SOUTHWEST		
+'n': MOVE_SOUTHEAST		
+'>': MOVE_DOWN
+'<': MOVE_UP

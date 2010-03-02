@@ -1,0 +1,96 @@
+0
+...One key to understanding is to realize exactly why it is that the 
+kind of bug report non-source-aware users normally turn in tends not 
+to be very useful...
+######################################################################
+0
+...Non-source-aware users tend to report only  surface symptoms; they 
+take their environment for granted, so they (a) omit critical 
+background data...
+######################################################################
+0
+...We have tried to retain the brevity of the first edition. C is not
+a big language, and it is not well served by a big book...
+######################################################################
+1
+...Recent security updates include seismic readers designed to 
+initiate lock-down in the presence of an explosion...
+######################################################################
+1
+Security path 45a87b:
+Admin-level access required in order to override lockdown...
+######################################################################
+2
+...Software team has been unable to tune the Docbot expert system to
+eliminate propensity for over-prescribing amputations.
+<br>
+Military tech division increasingly questioning whether this is a bug
+or a feature...
+######################################################################
+2
+...New security expert system now in beta.  Security Section requires
+redundant system in place before we go beta.  They aren't the ones
+setting the budget 0.o...
+######################################################################
+2
+/* I think the spec. for the surveillance drone is borked.  If
+   a security alarm is already sounding, and there's another security
+   incident, the system won't re-initiate lockdown.
+<br>
+   Whatever.  I'm writing to spec.  Not my problem.
+*/
+######################################################################
+3
+...Recent security audits have identified concerns over the robustness 
+of medical systems HCI systems.  Several root exploits have been 
+flagged...
+######################################################################
+3
+...Introducing the iCannon: an mp3 player, a phone, an internet mobile 
+communicator, a relentless engine of destruction...these are NOT four 
+separate devices...
+######################################################################
+3
+...Bio-tech systems is finding a useful supply of raw materials on 
+the upper floors and the surface -- even the occasional stray human.
+More collector bots to be dispatched to the surface to collect more
+subjects for research...
+######################################################################
+3
+...possible flaw uncovered in ninja S.E.P. field.  May be detectable
+in the infrared spectrum.  Further testing required; will continue to
+developed; no plans to halt production of prototype models...
+######################################################################
+3
+...unionized staff sticking militantly to coffee breaks.  At 10:00 am
+on the button, the lab is a ghost town.  I can't wait until the new
+robot cleaners are online...
+######################################################################
+4
+...human subjects harvested from surface and upper levels display
+frequent instances of chemical dependencies.  Such dependencies cause
+complications in experiments; science division tasked with developing
+a technique to flush systems...
+######################################################################
+4
+...Invoice #17894...
+- 174 rolls two-ply toilet tissue
+- 200 lbs burbank russet potatoes
+- 100 experimental taser upgrades for security bot model 200e
+- 4000 four-pack nine volt cell batteries
+- 500 single pack instant ramen noodles...
+######################################################################
+4
+...And then he had a visitor, a visitor unannounced, one who walked in
+through the elaborate maze of Smith's security as though it didn't
+exist. A small man, Japanese, enormously polite, who bore all the
+marks of a vatgrown ninja assassin...
+######################################################################
+5
+...Arstechnica has criticized Apple's new iCannon as pandering to
+style over substance, noting that its blasting power is weaker than
+initial expectations.  The blog communities have been abuzz over its
+short battery life, and lack of user-changeable battery.  Arstechnica
+did, however, give high praise to the targeting interface and its easy
+synchronization via iTunes...
+######################################################################

@@ -1,0 +1,37 @@
+CURRENTLY WORKING ON
+- Hacking doesn't appear to be using "get_hacking_bonus()"
+- searching beside an already found bomb displays the reveal message again
+- check GameLevel end_of_turn() and turn counting in DungeonMaster -- don't want to count turns more than once!
+- extra space in message when playing stands on stack of items (ammo, etc)
+- when exiting cyberspace, if the player might lose hps but takes 0, the "Attack does no damage" message is displayed
+
+BUGS
+- need a way to stop players from scumming for files in cyberspace
+- if backpack is full, and player picks up an item that can stack with something in the player's backpack
+	the game won't let you add it
+- could use a "you are no longer stunned" messaged
+- when monsters just stand there, it's 'cause they're scared and the pick-fleeing move stuff is probably fucking up
+- LONG STANDING DISPLAY BUG
+
+FEATURES/IDEAS/NOTES
+- moving onto doors auto-opens them (maybe this can be an option?)
+- five iron, bludgeoning weapon
+- after a sufficient level of hacking, automatically know where stair nodes are?
+	- or a data file that reveals location? 
+- monsters need to know to avoid meatspace bombs
+- 'D' to disarm traps and bombs
+- reanimated mathematician (confuses/dazes the player with math and science babble, resistance based on chutzpah)
+	- slim chance of improving player's math skills
+- Ghosts-in-the-shell
+- if dazed, pausing should (sometimes) make you stagger
+- instant coffee
+	- minor stimulant
+	- can be given to unionized maintenance worker to pacify it
+- when cameras enabled and SCP is alive, if player crosses security camera, chance of initiating lockdown
+- DocBots, trolls and garbage collectors all say things to the player -- could probably refactor their
+	talkie-talkie parts into an "interface".  Decorators?
+- (p)ause and wait command
+- Doors and Equipment have completely separate implementations and notions of damage, which is dumb
+
+Name	Ch	VR	AC	HPs	Dmg	AB	SPD	XP Value	Level
+	

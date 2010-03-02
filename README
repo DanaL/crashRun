@@ -1,0 +1,197 @@
+crashRun 0.4.0 Release Notes and Read Me
+
+-----------------------------------------------------------
+What is crashRun?
+-----------------------------------------------------------
+
+crashRun is a cyberpunk/sci-fi roguelike game where you 
+play a "crash-runner", a combination of hacker and 
+saboteur. In the world of crashRun, it's quite common for
+corporations to hire crash-runners to attack their 
+competitors; trashing their facilities or stealing
+sensitive data. 
+
+Unfamiliar with roguelike games? The wiki article may be
+useful: http://en.wikipedia.org/wiki/Roguelike
+
+You are a newbie crash-runner, still trying to make your
+reputation in the business. It's rough being a newbie,
+though, with jobs few and far between. With your rent past
+due and your stash of speed dwindling, you decide to answer
+that job posting that has been floating around the
+usual message boards for a couple of weeks now. For some
+reason, the experienced runners haven't touched it.
+
+It turned out the gig was a government one. A few years 
+ago, they shutdown a military complex run by the Pensky 
+Corporation that was investigating AI and other military
+technologies. But they didn't shut everything down; one of
+the AI systems took control of the complex after the 
+scientists cleared out, and now it's starting to make it's
+presence known on the 'net. The Feds want you to go in and
+disable the AI's mainframe. So, you grabbed your 
+sunglasses, your favourite shotgun and the last of your 
+amphetamines and hopped in their helicopter.
+
+There was one catch they didn't tell you about until you
+were on the ground: if you haven't completed your mission
+in 48 hours, the Department of Defense is going to go with
+Plan B: nuking the complex from orbit, to stop the AI... 
+
+-----------------------------------------------------------
+Some Notes About Version 0.4.0
+-----------------------------------------------------------
+
+- this software must be considered an early, incomplete 
+version of the game. Bugs and crashes likely abound and 
+there is a paucity of items and monsters in the game. 
+
+- this version introduces an expanded version of cyberpsace.
+Cyberspace is presented as a maze for you to explore, with its
+own perils.  You can find subnet nodes that'll provide you with
+new skills, as well as access to elevator and camera security.
+You can exit cyberspace at the exit nodes, and in a pinch you
+can always sever your connection with the 'X' command.  But be
+aware that severing your connection can cause neural trauma.
+A percentage of the damage you suffer in the wired will be 
+reflected in the real world.
+
+- monsters are generated alert, active and out to get you,
+so when you enter a new level, the game tends to swarm you
+a bit. I would like stealth to be more of a viable option
+in crashRun, so future versions will likely feature 
+inactive, but more dangerous monsters.
+
+- the game isn't complete! The levels of the Penksy 
+Complex which have been implemented so far amount to (I'd
+guess) about 40% of the game's eventual size. But you can
+go many levels down and battle the first mini-boss in the
+game.
+
+-----------------------------------------------------------
+Setting Up crashRun
+-----------------------------------------------------------
+
+If you have Python (2.4 or higher) and PyGame 1.8 installed,
+you should be good to go. I've tested crashRun on both 
+MacOS X and Windows and I hope it'll run on Linux, too.
+
+If you need Python, you can download it from: 
+http://python.org/download/
+
+** Vista users note: when I tried the python installer on a 
+Vista machine, the installer didn't modify the PATH to
+include Python (it appeared to on XP).  You can set this
+variable by right-clicking My Computer in the Start menu, 
+selecting Properties, Advanced, and then pressing the 
+Environment Variables button.  You'll need to append
+";C:\Python25\" to the end of the PATH variable.
+
+And PyGame is available here: 
+http://pygame.org/download.shtml
+
+** OS X Leopard users note: you will likely get a warning
+reading like this:
+
+"Python[4101:613] Warning once: This application, or a 
+library it uses, is using NSQuickDrawView, which has been 
+deprecated. Apps should cease use of QuickDraw and move to 
+Quartz."
+
+This is a PyGame warning, not a crashRun warning; it 
+doesn't affect gameplay and hopefully the PyGame gang will
+fix it sometime soon.
+
+I intend, once crashRun is closer to a 1.0 release, to look
+for alternatives that wouldn't require users to have Python
+and PyGame preinstalled (and there are a number: Py2Exe,
+Py2App, or providing interfaces not built in PyGame) but
+for the immediate future I'm more interested in working on
+gameplay improvements.
+
+Once you are setup with Python and PyGame, all you should
+need to do is execute crashRun.py.
+
+This can be done from the commandline:
+
+python crashRun.py
+
+And depending on how your system is configured, you may be
+able to simply double-click on crashRun.py
+
+-----------------------------------------------------------
+Playing
+-----------------------------------------------------------
+
+When you start crashRun, you will be prompted for the name 
+of your character. If it's the name of one of your saved
+games, it will be loaded up, otherwise you'll begin a new
+character.
+
+Character creation options are limited in this early 
+version. The game will roll your stats, you'll spend a
+few starting skill points (not all of the skills have in
+game effects yet! Try to guess which ones!), and then
+you're good to go.
+
+Typing '?' will bring up the help file, which lists the 
+various commands. You'll probably want to load your
+shotgun using the 'r' reload command.
+
+'x' will let you look at the squares on the screen, which
+might be useful.
+
+Movement can be done with either the numeric keybad 
+(numlock should be off) or vi-style movement keys (the
+developer's preference).
+
+When you encounter monsters, you can attack them in melee
+in the usual roguelike way, by bumping into them, or you
+can fire your shotfun ('f' to fire).
+
+'i' will show your inventory and 'I' will display your 
+character's information.
+
+If you happen across a computer terminal, you can jack in
+using 'J'.
+
+-----------------------------------------------------------
+License
+-----------------------------------------------------------
+
+crashRun is released to you under the terms of the Free
+Software Foundation's General Public License, version 3.
+
+For full details, please see license.txt or visit the FSF's
+website: http://www.fsf.org/
+
+PyGame is released under the LGPL and Python is distributed
+under the Python License (which has been deemed compatible
+with the GPL by the Free Software Foundation).
+
+Finally, I've bundled a font with crashRun, to avoid
+having to worry about which fonts users had installed on
+their systems. This is Bistream Vera Sans Mono and comes
+from the Gnome project (see http://www.gnome.org/fonts/).
+
+If you do end up working on the source code for crashRun,
+I'd love to hear about it!
+
+-----------------------------------------------------------
+Contacting Me
+-----------------------------------------------------------
+
+The latest version of crashRun is available on its website:
+http://crashrun.org
+
+In addition, I've occasionally kept a development blog up 
+to date:
+http://crashrun.livejournal.com/
+
+If you have any questions, or need to report a bug, you can
+also reach me at: dana@pixelenvy.ca
+
+Thanks, and enjoy crashRun!
+
+Dana Larose
+

@@ -1,0 +1,94 @@
+crashRun 0.4.0 help file
+
+Basic commands:
+
+Movement is done via the numeric keypad (numlock must be off) 
+or vi/rogue-style using these keys:
+
+             yu
+             hjkl
+             bn 
+
+Corresponding to the cardinal points:
+
+           NW (y)  N (j) NE (u)
+              \     |    /
+         W (h)   -  @  -   E (l)
+              /     |    \
+           SW (n)  S (k) SE (m)
+
+Other commands:
+
+A - use Ability - If you a special ability, this is how you would use it.
+B - Bash - Bash into something.  Sometimes opens doors.
+c - Close - Close a door.
+d - Drop - Drop item from inventory.  
+E - Execute - Start a program running.
+f - Fire - Shoot a firearm.
+H - Hack - Hack an object in cyberspace (use to disarm logic bombs).
+i - Inventory - Display your stuff.
+I - Info - Information about your character.
+J - Jack-in - Access a computer terminal (?s are terminals).
+K - Kill process - Terminate a program running on your wetboard.
+o - Open - Open a door or box
+P - Practice - improve your skills if you have points to spend
+Q - Quit - Quit game.  Give up your mission.  Coward.
+r - Reload - Reload firearm.
+S - Save - Save game and exit.
+t - Throw - Throw an object.
+R - Remove - Remove something you are wearing.
+U - Use - Use an item in your inventory.
+V - View Hall of Fame - Display high score list
+w - Wield - Select what you'll smack enemies with.
+W - Wear - Put on clothes, armour or accessories.
+x - Examine - Look at the squares on the map.
+X - Exit - forcibly sever your link to cyberspace.  (Can be hazardous)
+> - Go Down - Take a lift down to the next floor down.
+< - Go Up - Take a lift to the next floor up.
+, - Pick up - Pick up objects on the floor.
+* - Message memory - Display last 100 messages.
+. - Wait - Stand still for a moment and catch your breath.
+? - Help - Access online help.
+' - Subnet Node access - Access a subnet node in cyberspace.
+" - Camera security - Access to camera security node in cyberspace.
+
+Commands may be repeated by typing in a number before the command.
+Ie., 10dn means "Drop 10 of item 'n' in your inventory".
+
+When targeting a square, move the cursor around with the standard
+movement commands.  Select target with a space.  If you loose your
+cursor, hit Enter to bring it back to you.
+
+Support for rebinding keys will likely be added at some point in the future.
+
+Symbols:
+
+What do all the characters mean?
+
+- @ is you, or another human
+- any letter is a bad guy
+
+Terrain:
+# - Wall (or tree, you can move onto a square with a tree)
+. - Ground, Floor, or Puddle
++ - Closed door
+- - Open door (also Firearms)
+? - Computer terminal
+" - Security camera
+~ - Water
+> - Elevator down
+< - Elevator up
+^ - A trap
+
+Items:
+| - Blade of some kind
+/ - Club or other bashing weapon
+! - Pharmaceutical
+: - Software or file
+[ - Armour or clothes
+) - Tool
+* - Ammunition
+( - A box
+
+
+ 
