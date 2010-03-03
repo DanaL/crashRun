@@ -108,7 +108,6 @@ class Player(BaseAgent):
         self.stats = stats
 
         self.light_radius = 3
-        self.speed = 0
         self.__hp_roll = 8
         self.__MAX_LEVEL = 25
     
@@ -117,8 +116,7 @@ class Player(BaseAgent):
         self.temp_bonus_hp = 0
         
         self.background = background
-        self.__speed = int(stats.get_coordination() / 9) + 1
-        BaseAgent.__init__(self,12,0,0,1,2,'@','white','black','white',name,row,col,gender)
+        BaseAgent.__init__(self,12,0,1,2,'@','white','black','white',name,row,col,gender)
     
         self.skills = self.get_initial_skills()
         self.__calc_initial_hp()
@@ -307,9 +305,6 @@ class Player(BaseAgent):
             _dmg = _weapon.dmg_roll() 
             
         return _dmg + self.calc_dmg_bonus()
-        
-    def get_speed(self):
-        return self.__speed
 
     def get_shooting_attack_die(self, weapon):
         _die_rolls = self.level + self.get_attack_bonuses()

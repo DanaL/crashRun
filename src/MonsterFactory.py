@@ -23,7 +23,7 @@ from random import randrange
 from Software import get_software_by_name
 
 def _basicNinja(dm, row, col):
-    _n = Ninja(vision_radius=8, ac=6, hp_low=20, hp_high=40, dmg_dice=4, dmg_rolls=6, ab=0, spd=2,
+    _n = Ninja(vision_radius=8, ac=6, hp_low=20, hp_high=40, dmg_dice=4, dmg_rolls=6, ab=0,
         dm=dm, ch='@', fg='darkgrey', bg='black', lit='darkgrey', name='ninja', row=row, col=col,
         xp_value=40, gender='male', level=9)
     _n.conditions.append((('cloaked',0 , 0), _n))
@@ -45,7 +45,7 @@ def _beastMan(dm, row, col):
         _fg = 'yellow'
         
     return AltPredator(vision_radius=8, ac=4, hp_low=25, hp_high=30, dmg_dice=4, dmg_rolls=5, ab=1,
-        spd=2, dm=dm, ch='h', fg=_fg, bg='black', lit=_fg, name='beastman', row=row, col=col,
+        dm=dm, ch='h', fg=_fg, bg='black', lit=_fg, name='beastman', row=row, col=col,
         xp_value=20, gender='male', level=7)
     
 def _belligerentProcess(dm, row, col):
@@ -56,13 +56,13 @@ def _ceilingCat(dm, row, col):
        
 def _cowboy(dm, row, col):
     return CyberspaceMonster(vision_radius=8, ac=8, hp_low=55, hp_high=66, dmg_dice=5, dmg_rolls=4, 
-        ab=1, spd=3, dm=dm, ch='@', fg='red', bg='black', lit='red', name='console cowboy', 
+        ab=1, dm=dm, ch='@', fg='red', bg='black', lit='red', name='console cowboy', 
         row=row, col=col, xp_value=2, gender='male', level=9)
     
 def _damagedSecurityBot(dm,row,col):
     _if = Items.ItemFactory()
     _bot = BasicBot(vision_radius=6, ac=4, hp_low=10, hp_high=20, dmg_dice=4, dmg_high=4, ab=2, 
-        spd=2,dm=dm,ch='i',fg='grey',bg='black', lit='grey',name='damaged security bot',row=row,
+        dm=dm,ch='i',fg='grey',bg='black', lit='grey',name='damaged security bot',row=row,
         col=col,xp_value=6,gender='male',level=4)
     
     if random() < 0.2:
@@ -76,7 +76,7 @@ def _docBot(dm, row, col):
 def _dusthead(dm, row, col):
     _if = Items.ItemFactory()
     _dusthead = AltPredator(vision_radius=6, ac=3, hp_low=5, hp_high=16, dmg_dice=4,dmg_rolls=3, 
-               ab=0, spd=2, dm=dm, ch='@', fg='brown', bg='black', lit='brown', name='dust head',
+               ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='brown', name='dust head',
                row=row, col=col, xp_value=3, gender='male', level=4)
     if random() < 0.15:
         _dusthead.inventory.add_item(_if.gen_item('rusty switchblade'))
@@ -94,12 +94,12 @@ def _dusthead(dm, row, col):
 
 def _enhancedMole(dm,row,col):
     return AltPredator(vision_radius=8, ac=4, hp_low=25, hp_high=35, dmg_dice=4, dmg_rolls=4, ab=1,
-            spd=2, dm=dm, ch='m', fg='brown', bg='black', lit='lightbrown', name='enhanced mole',
+            dm=dm, ch='m', fg='brown', bg='black', lit='lightbrown', name='enhanced mole',
             row=row, col=col, xp_value=8, gender='male', level=5)
         
 def _extraLargeCockroach(dm,row,col):
     return AltPredator(vision_radius=9, ac=3, hp_low=6, hp_high=15, dmg_dice=6, dmg_rolls=2, ab=1,
-            spd=2, dm=dm, ch='c', fg='brown', bg='black', lit='red', name='extra large cockroach',
+            dm=dm, ch='c', fg='brown', bg='black', lit='red', name='extra large cockroach',
             row=row, col=col, xp_value=4, gender='male', level=3)
 
 def _giantBat(dm,row,col):
@@ -117,7 +117,7 @@ def _incinerator(dm,row,col):
 def _junkie(dm,row,col):
     _if = Items.ItemFactory()
     junkie = AltPredator(vision_radius=6, ac=3, hp_low=6, hp_high=12, dmg_dice=4, dmg_rolls=2, 
-            ab=0, spd=2, dm=dm, ch='@', fg='brown', bg='black', lit='red', name='junkie', row=row,
+            ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='red', name='junkie', row=row,
             col=col, xp_value=3, gender='male', level=1)
             
     if random() < 0.25:
@@ -136,19 +136,19 @@ def _junkie(dm,row,col):
     return junkie
 
 def _lolcat(dm, row, col):
-    return CyberspaceMonster(8, 8, 50, 60, 6, 3, 0, 2, dm, 'f', 'yellow', 'black', 'yellow',
+    return CyberspaceMonster(8, 8, 50, 60, 6, 3, 0, dm, 'f', 'yellow', 'black', 'yellow',
             'lolcat', row, col, 2, 'male', 8)
 
 def _mq1predator(dm, row, col):
     _mq1 = PredatorDrone(vision_radius=8, ac=6, hp_low=25, hp_high=35, dmg_dice=4, dmg_rolls=6,
-            ab=2, spd=2, dm=dm, ch='i', fg='darkgrey', bg='black', lit='darkgrey', 
+            ab=2, dm=dm, ch='i', fg='darkgrey', bg='black', lit='darkgrey', 
             name='MQ1 Predator UAV', row=row, col=col, xp_value=30, gender='male', level=8)
             
     return _mq1
     
 def _mutant(dm, row, col):
     _m = AltPredator(vision_radius=6, ac=4, hp_low=15, hp_high=25, dmg_dice=3, dmg_rolls=4, ab=0,
-            spd=2, dm=dm,ch='@', fg='darkgreen', bg='black', lit='green', name='mutant', row=row,
+            dm=dm,ch='@', fg='darkgreen', bg='black', lit='green', name='mutant', row=row,
             col=col, xp_value=15, gender='male', level=5)
             
     if random() < 0.25:
@@ -158,12 +158,12 @@ def _mutant(dm, row, col):
     
 def _mutantMutt(dm,row,col):
     return AltPredator(vision_radius=8, ac=4, hp_low=20, hp_high=30, dmg_dice=4, dmg_rolls=5, ab=0,
-            spd=2, dm=dm, ch='d', fg='brown', bg='black', lit='brown', name='mutant mutt', row=row,
+            dm=dm, ch='d', fg='brown', bg='black', lit='brown', name='mutant mutt', row=row,
             col=col, xp_value=10, gender='male', level=5)
             
 def _mutantRat(dm,row,col):
     return AltPredator(vision_radius=7, ac=4, hp_low=12, hp_high=16, dmg_dice=4, dmg_rolls=3, ab=1,
-            spd=2, dm=dm, ch='r', fg='brown', bg='black', lit='lightbrown', name='mutant rat', 
+            dm=dm, ch='r', fg='brown', bg='black', lit='lightbrown', name='mutant rat', 
             row=row, col=col, xp_value=5, gender='male', level=2)
 
 def _naiveGarbageCollector(dm, row, col):
@@ -171,35 +171,35 @@ def _naiveGarbageCollector(dm, row, col):
     
 def _penksyAntiViralMarkI(dm, row, col):
     _p = CyberspaceMonster(vision_radius=8, ac=5, hp_low=30, hp_high=40, dmg_dice=3, dmg_rolls=4,
-            ab=0, spd=2, dm=dm, ch='k', fg='brown', bg='black', lit='red', 
+            ab=0, dm=dm, ch='k', fg='brown', bg='black', lit='red', 
             name='pensky antiviral mark I', row=row, col=col, xp_value=1, gender='male', level=6)
                             
     return _p
     
 def _pigoon(dm, row, col):
     return AltPredator(vision_radius=8, ac=4, hp_low=20, hp_high=40, dmg_dice=5, dmg_rolls=4, ab=1,
-            spd=2, dm=dm, ch='p', fg='brown', bg='black', lit='lightbrown', name='pigoon', row=row,
+            dm=dm, ch='p', fg='brown', bg='black', lit='lightbrown', name='pigoon', row=row,
             col=col, xp_value=25, gender='male', level=6)
             
 def _rabidDog(dm,row,col):
     return AltPredator(vision_radius=8, ac=4, hp_low=6, hp_high=12, dmg_dice=10, dmg_rolls=1, ab=0,
-            spd=2, dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='rabid dog', row=row,
+            dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='rabid dog', row=row,
             col=col, xp_value=3, gender='male', level=1)
 
 def _reanimatedMaintenanceWorker(dm, row, col):
-    _r = RelentlessPredator(vision_radius=8, ac=4, hp_low=15, hp_high=30, dmg_dice=6, dmg_rolls=3,
+    _r = RelentlessPredator(vision_radius=8, ac=4, hp_low=20, hp_high=40, dmg_dice=6, dmg_rolls=3,
             ab=0, spd=2, dm=dm, ch='z', fg='darkgreen', bg='black', lit='green',
             name='reanimated maintenance worker', row=row, col=col, xp_value=20, gender='male',
             level=6)
-            
+    _r.base_energy = 9
     _r.conditions.append( (('light protection',0,0), _r) )
     
     return _r
     
 def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
-    _z = RelentlessPredator(vision_radius=8, ac=4, hp_low=20, hp_high=40, dmg_dice=4, dmg_rolls=5,
+    _z = RelentlessPredator(vision_radius=8, ac=4, hp_low=25, hp_high=45, dmg_dice=4, dmg_rolls=5,
             ab=0, spd=1, dm=dm, ch='z', fg='darkgreen', bg='black',  lit='darkgreen',
-            name='reanimated unionzed maintenance worker', row=row, col=col, xp_value=30, 
+            name='reanimated unionzed maintenance worker', row=row, col=col, xp_value=25, 
             gender='male', level=8)
             
     _z.conditions.append( (('light protection',0,0), _z) )
@@ -216,13 +216,13 @@ def _roomba(dm, row, col):
     return Roomba(dm=dm, row=row, col=col)
 
 def _scriptKiddie(dm, row, col):
-    _sk = CyberspaceMonster(8, 2, 25, 30, 4, 3, 1, 2, dm, '@', 'darkblue', 'black', 'blue',
+    _sk = CyberspaceMonster(8, 2, 25, 30, 4, 3, 1, dm, '@', 'darkblue', 'black', 'blue',
             'script kiddie', row, col, 1, 'male', 5)
     return _sk
     
 def _securityBot(dm,row,col):
     _bot = BasicBot(vision_radius=10, ac=6, hp_low=20, hp_high=30, dmg_dice=7, dmg_rolls=3, ab=2,
-            spd=2, dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
+            dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
             row=row, col=col, xp_value=20, gender='male', level=6)
     _bot.melee_type = 'shock'
     
@@ -233,10 +233,13 @@ def _securityBot(dm,row,col):
     return _bot
   
 def _silkWarrior(dm, row, col):
-    return CyberspaceMonster(vision_radius=6, ac=8, hp_low=60, hp_high=70, dmg_dice=4, dmg_rolls=5, 
-        ab=2, spd=3, dm=dm, ch='x', fg='blue', bg='black', lit='blue', name='silk warrior', 
+    _sw = CyberspaceMonster(vision_radius=6, ac=8, hp_low=60, hp_high=70, dmg_dice=4, dmg_rolls=5, 
+        ab=2, dm=dm, ch='x', fg='blue', bg='black', lit='blue', name='silk warrior', 
         row=row, col=col, xp_value=2, gender='male', level=10)
-         
+    _sw.base_energy = 18
+    
+    return _sw
+    
 def _surveillanceDrone(dm,row,col):
     return SurveillanceDrone(dm=dm, row=row, col=col)
                             
@@ -245,13 +248,13 @@ def _troll(dm, row, col):
     
 def _turkeyVulture(dm,row,col):
     return AltPredator(vision_radius=8, ac=2, hp_low=2, hp_high=8, dmg_dice=4, dmg_rolls=2, ab=0,
-        spd=2, dm=dm, ch='b', fg='brown', bg='black', lit='lightbrown', name='turkey vulture',
+        dm=dm, ch='b', fg='brown', bg='black', lit='lightbrown', name='turkey vulture',
         row=row, col=col, xp_value=2, gender='male', level=1)
     
 def _twoBitHacker(dm, row, col):
     _name = 'two-bit %s hacker' % (choice(['American','Chinese','Canadian','Estonian','German','Nigerian','Russian']))
     _h = CyberspaceMonster(vision_radius=6, ac=5, hp_low=20, hp_high=30, dmg_dice=3, dmg_rolls=4, 
-        ab=0, spd=3, dm=dm, ch='@', fg='darkgreen', bg='black', lit='darkgreen', name= _name, 
+        ab=0, dm=dm, ch='@', fg='darkgreen', bg='black', lit='darkgreen', name= _name, 
         row=row, col=col, xp_value=1,gender='male',level=5)
     
     if random() < 0.25:
@@ -261,7 +264,7 @@ def _twoBitHacker(dm, row, col):
     
 def _wolvog(dm,row,col):
     return AltPredator(vision_radius=8, ac=6, hp_low=30, hp_high=50, dmg_dice=4, dmg_rolls=5, ab=0,
-        spd=2, dm=dm, ch='d', fg='darkgrey', bg='black', lit='darkgrey', name='wolvog', row=row,
+        dm=dm, ch='d', fg='darkgrey', bg='black', lit='darkgrey', name='wolvog', row=row,
         col=col, xp_value=40, gender='male', level=8)
             
 def get_monster_by_name(dm, name, row, col):

@@ -135,7 +135,7 @@ class AStarPathFactory:
 class BaseAgent(BaseTile):
     ENERGY_THRESHOLD = 12
     
-    def __init__(self, vision_radius, ac, speed, unarmed_dmg_dice, unarmed_dmg_rolls, ch, fg, bg, 
+    def __init__(self, vision_radius, ac, unarmed_dmg_dice, unarmed_dmg_rolls, ch, fg, bg, 
                 lit, name, row, col, gender):
         BaseTile.__init__(self,ch,fg,bg,lit,name)
         self.vision_radius = vision_radius
@@ -148,7 +148,6 @@ class BaseAgent(BaseTile):
         self.col = col
         self.inventory = Inventory()
         self.__base_ac = ac
-        self.__speed = speed
         self.conditions = []
         self.melee_type = 'melee'
         self.calc_ac()
@@ -268,10 +267,7 @@ class BaseAgent(BaseTile):
 
     def get_melee_type(self):
         return self.melee_type
-        
-    def get_speed(self):
-        return self.__speed
-       
+      
     def has_condition(self, condition):
         for _condition in self.conditions:
             if _condition[0][0] == condition:
@@ -417,9 +413,9 @@ class AStarMover:
 
 # needs a reference to DungeonMaster object 
 class BaseMonster(BaseAgent, AStarMover):
-    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, spd, dm, ch, 
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch, 
                 fg, bg, lit, name, row, col, xp_value, gender, level):
-        BaseAgent.__init__(self, vision_radius, ac, spd, dmg_dice, dmg_rolls, ch, fg, bg, lit,
+        BaseAgent.__init__(self, vision_radius, ac, dmg_dice, dmg_rolls, ch, fg, bg, lit,
                 name, row, col, gender)
         AStarMover.__init__(self, dm)
 
@@ -514,10 +510,10 @@ class BaseMonster(BaseAgent, AStarMover):
 # This class can be used for monsters such as wolves which will move towards the player
 # and attack. 
 class AltPredator(BaseMonster):
-    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, spd, dm, ch,
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab,
-            spd, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.__state = ''
 
     def perform_action(self):
@@ -600,15 +596,15 @@ class AltPredator(BaseMonster):
             self.move_to(_move_to)
                 
 class CyberspaceMonster(AltPredator):
-    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, spd, dm, ch,
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         AltPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
-            spd, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.attitude = 'hostile'
         
 class Troll(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(Troll, self).__init__(6, 6, 40, 50, 5, 3, 0, 2, dm, 'T', 'darkgreen', 'black', 
+        super(Troll, self).__init__(6, 6, 40, 50, 5, 3, 0, dm, 'T', 'darkgreen', 'black', 
             'green', 'troll', row, col, 2, 'male', 7)
     
     def insult(self):
@@ -632,7 +628,7 @@ class Troll(CyberspaceMonster):
 
 class NaiveGarbageCollector(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CyberspaceMonster, self).__init__(6, 9, 60, 75, 7, 3, 2, 2, dm, 'g', 'white', 
+        super(CyberspaceMonster, self).__init__(6, 9, 60, 75, 7, 3, 2, dm, 'g', 'white', 
             'black', 'white', 'naive garbage collector', row, col, 2, 'male', 10)
     
     def perform_action(self):
@@ -643,7 +639,7 @@ class NaiveGarbageCollector(CyberspaceMonster):
         
 class CeilingCat(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CeilingCat, self).__init__(8, 8, 50, 60, 4, 5, 2, 2, dm, 'f', 'red', 'black', 'red',
+        super(CeilingCat, self).__init__(8, 8, 50, 60, 4, 5, 2, dm, 'f', 'red', 'black', 'red',
             'ceiling cat', row, col, 2, 'male', 8)
         self.revealed = False
         
@@ -690,9 +686,10 @@ class SecurityControlProgram(CyberspaceMonster):
             _dr, _dd = 3, 6
         
         CyberspaceMonster.__init__(self, vision_radius=6, ac=_ac, hp_low=_hpl, hp_high=_hph, 
-            dmg_dice=_dd, dmg_rolls=_dr, ab=2,spd=3, dm=dm,ch='k',fg='yellow',bg='black',
+            dmg_dice=_dd, dmg_rolls=_dr, ab=2,dm=dm,ch='k',fg='yellow',bg='black',
             lit='yellow',name=_name,row=row, col=col, xp_value=1,gender='male',level=level)
 
+        self.base_energy = 16
         _hp = self.curr_hp
         _name += str(_hp/10) + '.'
         _name += str(_hp%10)
@@ -705,9 +702,10 @@ class SecurityControlProgram(CyberspaceMonster):
         
 class GridBug(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 2, 3, 10, 15, 3, 2, 2, 3, dm, 'x', 'plum', 'black', 
+        CyberspaceMonster.__init__(self, 2, 3, 10, 15, 3, 2, 2, dm, 'x', 'plum', 'black', 
             'orchid', 'grid bug', row, col, 1, 'male', 2)
-    
+        self.base_energy = 18
+        
     def perform_action(self):
         _lvl = self.dm.curr_lvl
         _p = self.dm.get_player_loc()
@@ -726,9 +724,9 @@ class GridBug(CyberspaceMonster):
         
 class BelligerentProcess(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 6, 6, 10, 15, 4,2, 1, 3, dm, 'k' , 'grey', 'black',
+        CyberspaceMonster.__init__(self, 6, 6, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
             'white', 'belligerent process', row, col, 1, 'male', 3)
-    
+        
     def fork(self):
         _fork = copy(self)
         _sqr = self.get_adj_empty_sqr()
@@ -765,10 +763,10 @@ class BelligerentProcess(CyberspaceMonster):
 # This is a monster who tracks the player down to attack him and will not flee,
 # regardless of his level of damage.  Good for zombies and particularly dumb robots.
 class RelentlessPredator(BaseMonster):
-    def __init__(self, vision_radius, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, spd, dm, ch,
+    def __init__(self, vision_radius, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
-            spd, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.attitude = 'hostile'
         
     def perform_action(self):
@@ -783,11 +781,12 @@ class RelentlessPredator(BaseMonster):
         
 # Ninjas have their own special way of moving
 class Ninja(RelentlessPredator):
-    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls , ab, spd, dm, ch,
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls , ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         RelentlessPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls,
-            ab, spd, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
-
+            ab, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+        self.base_energy = 24
+        
     # If a legal move exists, hop to a difference square that is beside the player
     def __hop(self, player_loc):
         _picks = []
@@ -825,10 +824,10 @@ class BasicBot(RelentlessPredator):
     
 # UAV that can fire missles at the player
 class PredatorDrone(BasicBot):
-    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, spd, dm, ch,
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         RelentlessPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls,
-            ab, spd, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+            ab, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.missile_count = 6
         
     def perform_action(self):
@@ -872,7 +871,7 @@ class CleanerBot(BasicBot):
 class DocBot(CleanerBot):
     def __init__(self, dm, row, col):
         CleanerBot.__init__(self, vision_radius=6, ac=4, hp_low=20, hp_high=30, dmg_dice=6, 
-            dmg_rolls=5, ab=2, spd=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
+            dmg_rolls=5, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
     
     def proffer_diagnosis(self):
@@ -903,7 +902,7 @@ class DocBot(CleanerBot):
 class RepairBot(CleanerBot):
     def __init__(self,dm,row,col):
         CleanerBot.__init__(self, vision_radius=6, ac=1, hp_low=15, hp_high=25, dmg_dice=4, 
-            dmg_rolls=3, ab=2, spd=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
+            dmg_rolls=3, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
     
@@ -954,7 +953,7 @@ class RepairBot(CleanerBot):
 class Roomba(CleanerBot):
     def __init__(self, dm, row, col):
         CleanerBot.__init__(self, vision_radius=5, ac=4, hp_low=15, hp_high=25, dmg_dice=3, 
-            dmg_rolls=1, ab=2, spd=2, dm=dm, ch='o', fg='darkgrey', bg='black', lit='grey',
+            dmg_rolls=1, ab=2, dm=dm, ch='o', fg='darkgrey', bg='black', lit='grey',
             name='roomba', row=row, col=col, xp_value=20, gender='male', level=5)
         self.attitude = 'indifferent'
         self.conditions.append((('light protection',0,0), self))
@@ -991,7 +990,7 @@ class Roomba(CleanerBot):
 class Incinerator(CleanerBot):
     def __init__(self, dm, row, col):
         BaseMonster.__init__(self, vision_radius=5, ac=6, hp_low=10, hp_high=20, dmg_dice=2, 
-            dmg_rolls=5, ab=2, spd=2, dm=dm, ch='i', fg='red', bg='black', lit='red', 
+            dmg_rolls=5, ab=2, dm=dm, ch='i', fg='red', bg='black', lit='red', 
             name='incinerator', row=row, col=col, xp_value=25, gender='male', level=5)
         self.attitude = 'indifferent'
         self.conditions.append((('light protection',0,0), self))
@@ -1026,7 +1025,7 @@ class Incinerator(CleanerBot):
 class SurveillanceDrone(CleanerBot):
     def __init__(self, dm, row, col):
         BaseMonster.__init__(self, vision_radius=5, ac=4, hp_low=2, hp_high=10, dmg_dice=2, 
-            dmg_rolls=1, ab=2, spd=2, dm=dm, ch='i', fg='blue', bg='black', lit='blue', 
+            dmg_rolls=1, ab=2, dm=dm, ch='i', fg='blue', bg='black', lit='blue', 
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
         
     def perform_action(self):
@@ -1044,7 +1043,7 @@ class Unique(object):
 class TemporarySquirrel(AltPredator, Unique):
     def __init__(self, dm, row, col):
         AltPredator.__init__(self, vision_radius=3, ac=1, hp_low=1, hp_high=1, dmg_dice=2, 
-            dmg_rolls=1, ab=0, spd=2, dm=dm, ch='r', fg='yellow' , bg='black', lit='yellow', 
+            dmg_rolls=1, ab=0, dm=dm, ch='r', fg='yellow' , bg='black', lit='yellow', 
             name='Temporary Squirrel', row=row, col=col, xp_value=1, gender='male', level=1)
         
     def get_name(self, foo=True):
@@ -1057,7 +1056,7 @@ class TemporarySquirrel(AltPredator, Unique):
 class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
     def __init__(self, dm, row, col):
         AltPredator.__init__(self, vision_radius=8, ac=5, hp_low=30, hp_high=40, dmg_dice=5, 
-            dmg_rolls=5, ab=0, spd=2, dm=dm, ch='@', fg='yellow', bg='black', lit='yellow', 
+            dmg_rolls=5, ab=0, dm=dm, ch='@', fg='yellow', bg='black', lit='yellow', 
             name='Experimental Hobo Infiltration Droid 41K', row=row, col=col, xp_value=50, 
             gender='male', level=8)
         _if = ItemFactory()
@@ -1077,7 +1076,7 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
 class MoreauBot6000(CleanerBot, Unique):
     def __init__(self, dm, row, col):
         CleanerBot.__init__(self, vision_radius=8, ac=6, hp_low=30, hp_high=40, dmg_dice=6, 
-                  dmg_rolls=5, ab=2, spd=2, dm=dm, ch='I', fg='yellow-orange', bg='black', 
+                  dmg_rolls=5, ab=2, dm=dm, ch='I', fg='yellow-orange', bg='black', 
                   lit='yellow-orange', name='MoreauBot 6000', row=row, col=col, xp_value=40,
                   gender='male', level=8)
     
@@ -1121,7 +1120,7 @@ class MoreauBot6000(CleanerBot, Unique):
 class Roomba3000(Roomba, Unique):
     def __init__(self, dm, row, col):
         RelentlessPredator.__init__(self, vision_radius=8, ac=8, hp_low=40, hp_high=50, dmg_dice=6, 
-            dmg_high=5, ab=3, spd=2, dm=dm, ch='o', fg='grey', bg='black', lit='white', 
+            dmg_high=5, ab=3, dm=dm, ch='o', fg='grey', bg='black', lit='white', 
             name='Roomba 3000', row=row, col=col, xp_value=60, gender='male', level=12)
         self.can_steal_readied = True
         self.conditions.append((('light protection',0,0), self))
