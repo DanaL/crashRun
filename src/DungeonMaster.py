@@ -2031,10 +2031,11 @@ class DungeonMaster:
         
             _pick = choice(_picks)
             if _request == 'Temporary Squirrel':
-                _monster = MonsterFactory.get_monster_by_name(self, _request, _pick[0], _pick[1])
-            else:
                 from Agent import TemporarySquirrel
                 _monster = TemporarySquirrel(self, _pick[0], _pick[1])
+            else:
+                _monster = MonsterFactory.get_monster_by_name(self, _request, _pick[0], _pick[1])
+                
             self.curr_lvl.add_monster_to_dungeon(_monster, _pick[0], _pick[1])
             self.refresh_player_view()
         except KeyError:
