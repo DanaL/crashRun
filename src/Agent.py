@@ -707,6 +707,7 @@ class GridBug(CyberspaceMonster):
         self.base_energy = 18
         
     def perform_action(self):
+        self.energy -= STD_ENERGY_COST
         _lvl = self.dm.curr_lvl
         _p = self.dm.get_player_loc()
         for _sqr in [(self.row+1,self.col),(self.row-1,self.col),(self.row,self.col+1),(self.row,self.col-1)]:
@@ -720,8 +721,6 @@ class GridBug(CyberspaceMonster):
         except IllegalMonsterMove:
             pass
 
-        self.energy -= STD_ENERGY_COST
-        
 class BelligerentProcess(CyberspaceMonster):
     def __init__(self, dm, row, col):
         CyberspaceMonster.__init__(self, 6, 6, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
