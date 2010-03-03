@@ -19,7 +19,7 @@ Corresponding to the cardinal points:
 
 Other commands:
 
-A - use Ability - If you a special ability, this is how you would use it.
+A - use Ability - If you had a special ability, this is how you would use it.
 B - Bash - Bash into something.  Sometimes opens doors.
 c - Close - Close a door.
 d - Drop - Drop item from inventory.  
