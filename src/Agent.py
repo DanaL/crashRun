@@ -291,10 +291,9 @@ class BaseAgent(BaseTile):
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
             
     def stunned(self, dui):
-        _row = self.row
-        _col = self.col
         _m = self.get_name() + ' is stunned.'
-        dui.alert_player(_ar, _ac, _m)
+        dui.alert_player(self.row, self.col, _m)
+        self.energy -= STD_ENERGY_COST
         
     def __check_for_overlapping_high_effects(self, effect, source):
         _hit = ''
@@ -433,7 +432,7 @@ class BaseMonster(BaseAgent, AStarMover):
     
     def attack(self,loc):
         self.dm.curr_lvl.melee.attack(self, self.dm.curr_lvl.get_occupant(loc[0], loc[1]))
-    
+        
     def damaged(self, dm, level, damage, attacker, attack_type='melee'):
         self.attitude = 'hostile'
         super(BaseMonster, self).damaged(dm, level, damage, attacker, attack_type)
@@ -523,6 +522,7 @@ class AltPredator(BaseMonster):
 
     def perform_action(self):
         if self.attitude == 'inactive':
+            self.energy = 0
             return
             
         player_loc = self.dm.get_player_loc()
@@ -537,6 +537,8 @@ class AltPredator(BaseMonster):
         except MoraleCheckFailed:
             self.__run_away(player_loc, self.distance_from_player(player_loc))
     
+        self.energy -= STD_ENERGY_COST
+        
     def __check_morale(self):
         fear_factor = float(self.curr_hp) / float(self.max_hp)
         if fear_factor > 0.1 and self.curr_hp > 2:
@@ -720,6 +722,8 @@ class GridBug(CyberspaceMonster):
         except IllegalMonsterMove:
             pass
 
+        self.energy -= STD_ENERGY_COST
+        
 class BelligerentProcess(CyberspaceMonster):
     def __init__(self, dm, row, col):
         CyberspaceMonster.__init__(self, 6, 6, 10, 15, 4,2, 1, 3, dm, 'k' , 'grey', 'black',
@@ -756,6 +760,8 @@ class BelligerentProcess(CyberspaceMonster):
         else:
             self.move_to(player_loc)
 
+        self.energy -= STD_ENERGY_COST
+        
 # This is a monster who tracks the player down to attack him and will not flee,
 # regardless of his level of damage.  Good for zombies and particularly dumb robots.
 class RelentlessPredator(BaseMonster):
@@ -772,6 +778,8 @@ class RelentlessPredator(BaseMonster):
             self.attack(player_loc)
         else:
             self.move_to(player_loc)
+        
+        self.energy -= STD_ENERGY_COST
         
 # Ninjas have their own special way of moving
 class Ninja(RelentlessPredator):
@@ -804,12 +812,14 @@ class Ninja(RelentlessPredator):
         player_loc = self.dm.get_player_loc()
         
         if self.is_player_adjacent():
-            if random() < 0.75:
+            if random() < 0.25:
                 self.__hop(player_loc)
             self.attack(player_loc)
         else:
             self.move_to(player_loc)
-                        
+        
+        self.energy -= STD_ENERGY_COST
+                  
 class BasicBot(RelentlessPredator):
     pass
     
@@ -834,7 +844,9 @@ class PredatorDrone(BasicBot):
                 self.attack(_pl)
                 return 
         self.move_to(_pl)
-            
+        
+        self.energy -= STD_ENERGY_COST
+        
 # These are bots that move more or less randomly and may not bother the player unless
 # attacked.
 class CleanerBot(BasicBot):
@@ -884,6 +896,8 @@ class DocBot(CleanerBot):
                 self.attack(_pl)
             else:
                 self.move()
+
+        self.energy -= STD_ENERGY_COST
         
 # Robot who repairs other robots
 class RepairBot(CleanerBot):
@@ -934,7 +948,9 @@ class RepairBot(CleanerBot):
             self.repair_bot(_triage.pop())
         else:
             self.look_for_patient()
-            
+        
+        self.energy -= STD_ENERGY_COST
+        
 class Roomba(CleanerBot):
     def __init__(self, dm, row, col):
         CleanerBot.__init__(self, vision_radius=5, ac=4, hp_low=15, hp_high=25, dmg_dice=3, 
@@ -969,7 +985,9 @@ class Roomba(CleanerBot):
         if self.is_player_adjacent():
             self.attack(player_loc)
             self.try_to_vacuum(player_loc)
-                
+        
+        self.energy -= STD_ENERGY_COST
+        
 class Incinerator(CleanerBot):
     def __init__(self, dm, row, col):
         BaseMonster.__init__(self, vision_radius=5, ac=6, hp_low=10, hp_high=20, dmg_dice=2, 
@@ -998,7 +1016,9 @@ class Incinerator(CleanerBot):
             self.__go_about_business()
         else:
             self.__seek_and_destroy()
-            
+        
+        self.energy -= STD_ENERGY_COST
+        
     def attack(self,loc):
         self.dm.alert_player(self.row, self.col, 'Refuse detected!')
         BaseMonster.attack(self, loc)
@@ -1012,7 +1032,8 @@ class SurveillanceDrone(CleanerBot):
     def perform_action(self):
         self.move()
         self.check_for_player(6, self.dm.curr_lvl.begin_security_lockdown)
-    
+        self.energy -= STD_ENERGY_COST
+        
 # I don't really expect to have many common features, but it's nice
 # to have an ability to group the uniques.
 class Unique(object):
@@ -1022,10 +1043,10 @@ class Unique(object):
 # Unique monsters
 class TemporarySquirrel(AltPredator, Unique):
     def __init__(self, dm, row, col):
-       AltPredator.__init__(self, vision_radius=3, ac=1, hp_low=1, hp_high=1, dmg_dice=2, 
+        AltPredator.__init__(self, vision_radius=3, ac=1, hp_low=1, hp_high=1, dmg_dice=2, 
             dmg_rolls=1, ab=0, spd=2, dm=dm, ch='r', fg='yellow' , bg='black', lit='yellow', 
             name='Temporary Squirrel', row=row, col=col, xp_value=1, gender='male', level=1)
-
+        
     def get_name(self, foo=True):
         return AltPredator.get_name(self, True)
     
@@ -1095,7 +1116,8 @@ class MoreauBot6000(CleanerBot, Unique):
                 self.attack(_pl)
             else:
                 self.move()
-
+        self.energy -= STD_ENERGY_COST
+        
 class Roomba3000(Roomba, Unique):
     def __init__(self, dm, row, col):
         RelentlessPredator.__init__(self, vision_radius=8, ac=8, hp_low=40, hp_high=50, dmg_dice=6, 
@@ -1118,3 +1140,5 @@ class Roomba3000(Roomba, Unique):
                 self.move_to((_pl[0],_pl[1]))
         else:
             self.look_for_trash_to_vacuum()
+            
+        self.energy -= STD_ENERGY_COST

@@ -344,10 +344,9 @@ class Player(BaseAgent):
         return do_d10_roll(_dice, _mod)
         
     def stunned(self, dui):
-        _row = self.row
-        _col = self.col
-        dui.alert_player(_ar, _ac, 'You are stunned.')
-             
+        dui.alert_player(self.row, self.col, 'You are stunned.')
+        self.energy -= STD_ENERGY_COST
+        
     def __advance_level(self):
         self.level += 1
         self.__base_hp.append(randrange(1,self.__hp_roll+1))

@@ -1951,23 +1951,27 @@ class DungeonMaster:
         
         #loop over monsters
         for _m in self.curr_lvl.monsters:
-            print _m.get_name(), _m.ENERGY_THRESHOLD
             self.active_agent = _m
-            #try:
-            #    if self.active_agent.has_condition('stunned'):
-            #        self.active_agent.stunned(self.dui)
-            #    else:
-            #        self.active_agent.perform_action()
-            #except TurnInterrupted:
-            #    pass
+            
+            try:
+                if self.active_agent.has_condition('stunned'):
+                    self.active_agent.stunned(self.dui)
+                else:
+                    while _m.energy >= _m.ENERGY_THRESHOLD:
+                        self.active_agent.perform_action()
+            except TurnInterrupted:
+                pass
             self.active_agent = ''
             
         self.curr_lvl.resolve_events()          
         self.curr_lvl.end_of_turn()
     
         # restore energy to players and monsters
-        self.player.energy += self.player.base_energy # this will change to be a method that also calcs speed modifiers
-        
+        # this will change to be a method that also calcs speed modifiers
+        self.player.energy += self.player.base_energy 
+        for _m in self.curr_lvl.monsters:
+            _m.energy += _m.base_energy
+            
     def meatspace_end_of_turn_cleanup(self):
         self.player.check_for_withdrawal_effects()
         self.player.check_for_expired_conditions()
