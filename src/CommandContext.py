@@ -17,6 +17,7 @@
 
 import string
 
+from Agent import STD_ENERGY_COST
 import Items
 from SubnetNode import SubnetNode
 import Terrain
@@ -180,7 +181,7 @@ class MeatspaceCC(CommandContext):
             self.door_action(_sqr, _sr, _sc, _lvl)
         elif isinstance(_sqr, Terminal) and _sr == _p.row and _sc == _p.col:
             _sqr.jack_in(self.dm)
-            self.dm.turn_over()
+            self.dm.player.energy -= STD_ENERGY_COST
         elif isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
             self.dm.player_opens_box(_sqr, _sr, _sc)
         else:
@@ -196,7 +197,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message('There is something in the way!')
         elif sqr.broken:
             self.dui.display_message('The door is broken.')
-            self.dm.turn_over()
+            self.dm.player.energy -= STD_ENERGY_COST
         elif not sqr.is_open():
             self.dui.display_message('The door is already closed!')
         else:
@@ -204,7 +205,7 @@ class MeatspaceCC(CommandContext):
             self.dm.update_sqr(lvl, row, col)
             self.dm.refresh_player_view()
             self.dui.display_message('You close the door')
-            self.dm.turn_over()
+            self.dm.player.energy -= STD_ENERGY_COST
                 
     def drop_item(self):
         try:
@@ -367,7 +368,7 @@ class MeatspaceCC(CommandContext):
                 else:
                     self.dui.display_message('%s - %s (weapon in hand)' % (ch, item.get_full_name()))
 
-                self.dm.turn_over()
+                self.dm.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('You do not have that item.')          
         except NonePicked:
@@ -395,7 +396,7 @@ class CyberspaceCC(CommandContext):
                 self.dm.player_exits_cyberspace()
             else:
                 self.dui.clear_msg_line()
-            self.dm.turn_over()
+            self.dm.player.energy -= STD_ENERGY_COST
         else:
             self.dui.display_message("Hmm?")
             
