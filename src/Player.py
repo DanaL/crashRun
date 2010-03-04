@@ -235,11 +235,13 @@ class Player(BaseAgent):
                     break
 
             if not found:
-                eff1 = ( ('co-ordination',-2, 0), 'withdrawal')
-                eff2 = ( ('chutzpah',-2, 0), 'withdrawal')
-                self.apply_effect(eff1, False)
-                self.apply_effect(eff2, False)
-
+                _eff1 = ( ('co-ordination',-2, 0), 'withdrawal')
+                _eff2 = ( ('chutzpah',-2, 0), 'withdrawal')
+                _eff3 = ( ('speed',-3, 0), 'withdrawal')
+                self.apply_effect(_eff1, False)
+                self.apply_effect(_eff2, False)
+                self.apply_effect(_eff3, False)
+                
             if randrange(3) == 0:
                 self.dm.alert_player(self.row, self.col, 'Your head is killing you.')
 
@@ -335,7 +337,7 @@ class Player(BaseAgent):
     def stealth_roll(self):
         _dice = self.skills.get_skill('Stealth').get_rank()
         _mod = sum(_con[0][1] for _con in self.conditions if _con[0][0] == 'sneaky')
-        
+ 
         return do_d10_roll(_dice, _mod)
         
     def stunned(self, dui):

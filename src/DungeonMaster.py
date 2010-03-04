@@ -1366,6 +1366,7 @@ class DungeonMaster:
                 _drug_effect = ((_effect[0], _effect[1], 0), hit)
             else:
                 _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.turn), 'high')
+            
             self.player.apply_effect(_drug_effect, _instant)
         self.dui.display_message(hit.message)
         
@@ -1968,9 +1969,9 @@ class DungeonMaster:
     
         # restore energy to players and monsters
         # this will change to be a method that also calcs speed modifiers
-        self.player.energy += self.player.base_energy 
+        self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
         for _m in self.curr_lvl.monsters:
-            _m.energy += _m.base_energy
+            _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
             
     def meatspace_end_of_turn_cleanup(self):
         self.player.check_for_withdrawal_effects()
