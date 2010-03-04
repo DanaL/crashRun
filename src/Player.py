@@ -107,7 +107,7 @@ class Player(BaseAgent):
         self.time_since_last_hit = 1000
         self.stats = stats
 
-        self.light_radius = 3
+        self.light_radius = 5
         self.__hp_roll = 8
         self.__MAX_LEVEL = 25
     
