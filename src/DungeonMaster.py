@@ -2004,7 +2004,7 @@ class DungeonMaster:
         _request = ""
         for _word in words:
             _request += _word + ' '
-        _request = _request.strip().lower()
+        _request = _request.strip()
         
         try:
             _if = ItemFactory()

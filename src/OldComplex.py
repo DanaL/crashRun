@@ -64,7 +64,8 @@ class OldComplexLevel(GameLevel):
         _chart.rare_items[5] = ('grenade', 2)
         _chart.rare_items[6] = ('battery', 2)
         _chart.rare_items[7] = ('rubber boots', 0)
-        _chart.rare_items[8] = ('flash bomb',2)
+        _chart.rare_items[8] = ('flash bomb', 2)
+        _chart.rare_items[8] = ('Addidas sneakers', 0)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
 

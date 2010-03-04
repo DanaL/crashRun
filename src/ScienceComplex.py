@@ -103,12 +103,14 @@ class ScienceComplexLevel(GameLevel):
         _chart.uncommon_items[8] = ('flashlight', 0)
         _chart.uncommon_items[9] = ('rubber boots', 0)
         _chart.uncommon_items[10] = ('throwing knife', 2)
+        _chart.uncommon_items[11] = ('Addidas sneakers', 0)
         
         _chart.rare_items[0] = ('kevlar vest', 0)
         _chart.rare_items[1] = ('riot gear', 0)
         _chart.rare_items[2] = ('infra-red goggles', 0)
         _chart.rare_items[3] = ('targeting wizard', 0)
-        _chart.rare_items[4] = ('flash bomb',2)
+        _chart.rare_items[4] = ('flash bomb', 2)
+        _chart.rare_items[5] = ('Nike sneakers', 2)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
         
