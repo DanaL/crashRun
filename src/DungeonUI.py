@@ -128,7 +128,7 @@ class DungeonUI(object):
         
         [msg.append(item) for item in footer]
 
-        self.write_screen(msg)
+        self.write_screen(msg, False)
 
         ch = ''
         while ch not in keys:
@@ -173,7 +173,7 @@ class DungeonUI(object):
                         picked = ' - '
                     msg.append(' ' + item[0] + picked + item[1]) 
             
-            self.write_screen(h+msg+f)
+            self.write_screen(h+msg+f, False)
             ch = self.wait_for_key_input()
 
             if ch in keys:
@@ -587,7 +587,7 @@ class DungeonUI(object):
             self.map_r = r - self.display_rows / 2 + 1
 
     def show_recent_messages(self):
-        self.write_screen(self.__message_memory.messages(), True)
+        self.write_screen(self.__message_memory.messages(), True, True)
         self.redraw_screen()
 
     def get_target(self):
@@ -702,7 +702,7 @@ class DungeonUI(object):
     # This method is used to display a full screen of text.
     # 'lines' should be a list of successive lines to display
     # TO BE ADDED: support for lines too large for one row, scrolling up/down on multiple pages of text
-    def write_screen(self,lines,pause_at_end=0):
+    def write_screen(self,lines, pause_at_end, allow_esc = False):
         j = 0
         while j < len(lines):
             self.clear_screen(1)
@@ -725,7 +725,9 @@ class DungeonUI(object):
                 text = self.font.render(_msg,True,colour_table['white'],colour_table['black'])
                 self.screen.blit(text,(0,curr_row + self.font.get_linesize() * 2))
                 pygame.display.flip()
-                self.wait_for_key_input()
+                _ch = self.wait_for_key_input(True)
+                if allow_esc and _ch[0] == NUM_ESC:
+                    return
             else:
                 if pause_at_end:
                     text = self.font.render('Press any key to continue',True,colour_table['white'],colour_table['black'])
@@ -755,13 +757,13 @@ class DungeonUI(object):
         msg.append(' ')
         msg.append(_player.background)
         msg.append(' ')
-        self.write_screen(msg,1)
+        self.write_screen(msg, True)
         
         msg = ['You are trained in the following skills:']
         for category in _player.skills.get_categories():
             msg.append(category + ':')
             [msg.append('   ' + skill.get_name() + ' - ' + skill.get_rank_name()) for skill in _player.skills.get_category(category)]
-        self.write_screen(msg,1)
+        self.write_screen(msg, True)
         
         self.cc.display_software()
         

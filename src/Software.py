@@ -125,7 +125,7 @@ class DataFile(Software):
             self.txt = _rf.fetch_rumour(self.level)
             
         dm.dui.display_message('You are able to decrypt part of the file:', True)
-        dm.dui.write_screen(self.txt)
+        dm.dui.write_screen(self.txt, False)
         dm.dui.wait_for_key_input()
         dm.dui.redraw_screen()
         

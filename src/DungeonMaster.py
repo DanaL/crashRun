@@ -386,7 +386,7 @@ class DungeonMaster:
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
         msg = ['Welcome to crashRun!','  Copyright 2008 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
-        self.dui.write_screen(msg)
+        self.dui.write_screen(msg, False)
         self.dui.wait_for_key_input()
         self.dui.clear_screen(True)
         
@@ -522,9 +522,8 @@ class DungeonMaster:
             _msg.append(' ')
             _msg.append('You scored #%d on the top score list with %d points.' % (score[0],score[1][0]))
             
-        self.dui.write_screen(_msg)
-        self.dui.wait_for_key_input()
-        self.dui.clear_screen(1)
+        self.dui.write_screen(_msg, True)
+        self.dui.clear_screen(True)
         
     def save_and_exit(self):
         self.dui.display_message('Saving...')
@@ -901,7 +900,7 @@ class DungeonMaster:
 
     def __end_of_game(self, score=[]):
         self.display_high_scores(5,score)
-        self.dui.write_screen(['Good-bye, ' + self.player.get_name() + '.'],1)
+        self.dui.write_screen(['Good-bye, ' + self.player.get_name() + '.'], True)
         raise GameOver
 
     def monster_summons_monster(self, creator, monster_name, row, col):

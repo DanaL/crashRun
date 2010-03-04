@@ -35,7 +35,7 @@ class CharacterGenerator:
         self.__show_initial_stats()
 
         msg = [self.__player.background,' ',' Press any key to continue']
-        self.__dungeon_listener.write_screen(msg,1)
+        self.__dungeon_listener.write_screen(msg, True)
     
         self.__select_skills()
         self.__display_player_skills()
@@ -85,7 +85,7 @@ class CharacterGenerator:
             msg.append(category + ':')
             [msg.append('   ' + skill.get_name() + ' - ' + skill.get_rank_name()) for skill in self.__player.skills.get_category(category)]
     
-        self.__dungeon_listener.write_screen(msg,1)
+        self.__dungeon_listener.write_screen(msg, True)
 
     def __gen_new_character(self,sex,name):
         background = 'You were a two-bit high school dropout.'
@@ -150,5 +150,5 @@ class CharacterGenerator:
         msg.append('   Intuition:  ' + `self.__player.stats.get_intuition()`)
         msg.append('   Chutzpah:  ' + `self.__player.stats.get_chutzpah()`)
 
-        self.__dungeon_listener.write_screen(msg,1)
+        self.__dungeon_listener.write_screen(msg, True)
 

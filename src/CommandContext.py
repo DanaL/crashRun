@@ -318,7 +318,7 @@ class MeatspaceCC(CommandContext):
             return
         
         msg = ['Your current inventory:'] + msg
-        self.dui.write_screen(msg,1)
+        self.dui.write_screen(msg, True)
         self.dui.redraw_screen()
         
     def throw_item(self):
