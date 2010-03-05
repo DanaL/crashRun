@@ -269,6 +269,11 @@ class ShotgunShell(BaseItem):
         BaseItem.__init__(self, 'Shotgun Shell', 'Ammunition', '*', 'grey',
             'white', 1, 0.1, 1, 1, 1, 1)
 
+class MachineGunClip(BaseItem):
+    def __init__(self):
+        BaseItem.__init__(self, 'Machine Gun Clip', 'Ammunition', '*', 'grey',
+            'white', 1, 0.5, 1, 1, 1, 1)
+            
 class Pharmaceutical(BaseItem):
     def __init__(self, name, colour, lit_colour, effects, message):
         BaseItem.__init__(self, name, 'Pharmaceutical', '!', colour, 
@@ -343,33 +348,27 @@ class Firearm(BaseItem):
         self.__type = t
         self.__to_hit_bonus = thb
         self.__to_dmg_bonus = tdb
-        self.__max_ammo = max_ammo
-        self.__current_ammo = 0
+        self.max_ammo = max_ammo
+        self.current_ammo = 0
         self.__shooting_damage = dd
         self.__shooting_roll = dr
         BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, v, 
             4, 1, i)
 
     def add_ammo(self,amount):
-        self.__current_ammo += amount
-
-    def get_capacity(self):
-        return self.__max_ammo
-        
-    def get_current_ammo(self):
-        return self.__current_ammo
+        self.current_ammo += amount
 
     def get_full_name(self):
         name = self.get_name(1)
-        name += ' (' + str(self.__current_ammo) + ')'
+        name += ' (' + str(self.current_ammo) + ')'
 
         return name
 
     def fire(self):
-        if self.__current_ammo == 0:
+        if self.current_ammo == 0:
             raise EmptyFirearm()
         else:
-            self.__current_ammo -= 1
+            self.current_ammo -= 1
 
     def shooting_dmg_roll(self):
         _rolls = [randrange(2, self.__shooting_damage+1) + self.__to_dmg_bonus for j in range(self.__shooting_roll)]
@@ -391,11 +390,28 @@ class Shotgun(Firearm):
         else:
             self.add_ammo(1)
 
+    def get_firing_message(self):
+        return 'BLAM!'
+        
 class DoubleBarrelledShotgun(Shotgun):
     def __init__(self, loaded, i =0):
         Firearm.__init__(self, 'Double-Barrelled Shotgun', '-', 'grey', 
             'white', 8, 4, 5, 0, 0, 0, 0, 0, 2, i)
-                    
+
+class MachineGun(Firearm):
+    def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
+        super(MachineGun, self).__init__(name, '-', 'darkgrey', 'grey',
+            dmg_dice, dmg_roll, 3, 0, 0, thb, tdb, 0, max_ammo, i)   
+
+    def reload(self, ammo):
+        if not isinstance(ammo, MachineGunClip):
+            raise IncompatibleAmmo()
+        else:
+            self.current_ammo = self.max_ammo
+ 
+    def get_firing_message(self):
+        return 'Rat-tat-tat!'
+                           
 class Armour(BaseItem):
     def __init__(self, name, area, fg, lt, w, v, acm, acb, i=0):
         self.__ac_modifier = acm
@@ -478,12 +494,13 @@ class ItemFactory:
 
         # add firearms
         self.__item_db['shotgun'] = ('firearm', 'Shotgun')
-        self.__item_db['double-barrelled shotgun'] = ('firearm', 
-            'Double-Barrelled Shotgun')
-
+        self.__item_db['double-barrelled shotgun'] = ('firearm', 'Double-Barrelled Shotgun')
+        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 3, 2, 0, 12)
+        
         # add ammunition
         self.__item_db['shotgun shell'] = ('ammunition', 'Shotgun Shell')
-
+        self.__item_db['machine gun clip'] = ('ammunition', 'Machine Gun Clip')
+        
         # add pharmaceuticals
         self.__item_db['amphetamine'] = ('pharmaceutical', 'Amphetamine Hit',
             'yellow-orange', 'yellow', [('hit', 0, 500), ('chutzpah', 1, 100), ('speed', 4, 16)],
@@ -554,9 +571,13 @@ class ItemFactory:
                 return Shotgun(0, i)
             elif it[1] == 'Double-Barrelled Shotgun':
                 return DoubleBarrelledShotgun(0, i)
+        elif it[0] == 'machine gun':
+            return MachineGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
         elif it[0] == 'ammunition':
             if it[1] == 'Shotgun Shell':
                 return ShotgunShell()
+            elif it[1] == 'Machine Gun Clip':
+                return MachineGunClip()
         elif it[0] == 'explosive':
             return Explosive(item_name, it[2], it[3], it[4], True)
         elif it[0] == 'pharmaceutical':

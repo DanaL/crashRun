@@ -59,6 +59,7 @@ class MinesLevel(GameLevel):
         _chart.rare_items[4] = ('infra-red goggles', 0)
         _chart.rare_items[5] = ('targeting wizard', 0)
         _chart.rare_items[6] = ('flash bomb',2)
+        _chart.rare_items[7] = ('machine gun clip', 0)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
     

@@ -984,7 +984,7 @@ class DungeonMaster:
                 self.dui.display_message(msg)
             
     def player_fire_weapon(self,weapon):
-        if weapon.get_current_ammo() == 0:
+        if weapon.current_ammo == 0:
             self.dui.clear_msg_line()
             self.dui.display_message('Click, click.')
             self.player.energy -= STD_ENERGY_COST #  Sorta mean to penalize the player for shooting an empty gun.  And yet...
@@ -992,7 +992,7 @@ class DungeonMaster:
             _dir = self.dui.get_direction()
             
             if _dir != '':
-                self.dui.display_message('BLAM!')
+                self.dui.display_message(weapon.get_firing_message())
                 weapon.fire()
                 self.__fire_weapon(self.player, self.player.row, self.player.col, _dir, weapon)
                 self.player.energy -= STD_ENERGY_COST
@@ -1180,18 +1180,41 @@ class DungeonMaster:
                 self.dui.display_message("That isn't a firearm.")
             else:
                 ch = self.dui.pick_inventory_item('Reload with what?')
-                if isinstance(item,Items.Shotgun) or isinstance(item,Items.DoubleBarrelledShotgun):
-                    self.load_shotgun(item,ch)
-                    self.player.reload_memory = (item,ch)
+                if isinstance(item, Items.Shotgun) or isinstance(item, Items.DoubleBarrelledShotgun):
+                    self.load_shotgun(item, ch)
+                    self.player.reload_memory = (item, ch)
+                elif isinstance(item, Items.MachineGun):
+                    self.load_machine_gun(item, ch)
+                    self.player.reload_memory = (item, ch)
+                    
+                self.player.energy -= STD_ENERGY_COST
         except NonePicked:
                 self.dui.clear_msg_line()
 
+    def load_machine_gun(self, gun, pick):
+        _clipStack = self.player.inventory.get_item(pick)
+        
+        self.dui.clear_msg_line()
+        
+        if _clipStack == ' ' or not isinstance(_clipStack, ItemStack):
+            self.dui.display_message('Huh?')
+            return
+        
+        _clip = _clipStack.remove_item()
+        try:
+            gun.reload(_clip)
+            if len(_clipStack) == 0:
+                self.player.inventory.clear_slot(pick)
+            self.dui.display_message('Locked and loaded!')
+        except Items.IncompatibleAmmo:
+            self.dui.display_message('You require an ISO Standardized Assault Rfile clip.')
+            
     def load_shotgun(self,gun,pick):
         ammoStack = self.player.inventory.get_item(pick)
         
         self.dui.clear_msg_line()
             
-        if gun.get_current_ammo() == gun.get_capacity():
+        if gun.current_ammo == gun.max_ammo:
             self.dui.display_message('Your shotgun is already loaded.')
             return
             
@@ -1202,21 +1225,19 @@ class DungeonMaster:
             self.dui.display_message('That won\'t fit in your shotgun.')
             return
         
-        while gun.get_current_ammo() < gun.get_capacity():
+        while gun.current_ammo < gun.max_ammo:
             ammo = ammoStack.remove_item()
             try:
                 gun.reload(ammo)
                 if len(ammoStack) == 0:
                     self.player.inventory.clear_slot(pick)
                     break
+                self.dui.display_message('You load your shotgun.')
             except Items.IncompatibleAmmo:
                 self.dui.display_message('That won\'t fit in your shotgun.')
                 ammoStack.add_item(ammo)
                 break
         
-        self.dui.display_message('You load your shotgun.')
-        self.player.energy -= STD_ENERGY_COST
-
     def player_remove_armour(self,i):
         item = self.player.inventory.get_item(i)
 
@@ -1704,6 +1725,7 @@ class DungeonMaster:
         if self.curr_lvl.size_of_item_stack(r,c) == 1:
             item_name = _loc.item_stack[0].get_name(True)
             msg = 'You see ' + get_correct_article(item_name)
+            msg = msg.strip()
             msg += ' ' + item_name + ' here.'
             self.dui.display_message(msg)
         elif self.curr_lvl.size_of_item_stack(r,c) > 1:
