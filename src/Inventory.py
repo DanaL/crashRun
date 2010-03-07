@@ -21,6 +21,7 @@ from Items import BatteryPowered
 from Items import ItemStack
 from Items import WithOffSwitch
 from Util import get_correct_article
+from Util import NonePicked
 
 class AlreadyWearingSomething:
     pass
@@ -173,6 +174,9 @@ class Inventory:
         return self.is_readied(_item) and _item.passive and _item.charge > 0
 
     def is_slot_a_stack(self, slot):
+        if not slot in self.__inv:
+            raise NonePicked
+            
         return isinstance(self.__inv[slot][0], ItemStack)
         
     def drain_batteries(self):
@@ -393,7 +397,7 @@ class Wetboard(object):
         
     def pick(self, pick):
         _sw = ord(pick) - ord('a')
-        if _sw > len(self.files):
+        if _sw < 0 or _sw >= len(self.files):
             raise BUSError
         
         return _sw

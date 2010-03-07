@@ -397,7 +397,7 @@ class DungeonUI(object):
     
     # I will eventually use pick_from_list to drive 
     # pick_inventory_item
-    def pick_inventory_item(self,msg):
+    def pick_inventory_item(self, msg):
         i = self.cc.get_inventory_list()
 
         if len(i) == 0:
@@ -406,11 +406,13 @@ class DungeonUI(object):
 
         self.__write_message(msg + ' ', False)
 
-        ch = self.wait_for_key_input()      
-        if ch == CHR_ESC:
-            raise NonePicked
+        _ch = ''
+        while _ch == '':
+            _ch = self.wait_for_key_input()      
+            if _ch == CHR_ESC:
+                raise NonePicked
         
-        return ch
+        return _ch
 
     def __selectCategory(self,category):
         header =['Select the skills from the ' + category + ' category you wish to improve:']
