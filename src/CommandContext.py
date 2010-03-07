@@ -263,7 +263,7 @@ class MeatspaceCC(CommandContext):
             else:
                 self.dm.player_fire_weapon(_weapon)
         except NonePicked:
-            self.clear_msg_line()
+            self.dui.clear_msg_line()
         except EmptyInventory:
             pass
             
