@@ -102,7 +102,7 @@ class MessageResolver(object):
             _mess = 'You ' + self.parse(tori, verb) + ' ' +   \
                                     self.resolve_name(uke) + '!'
         elif tori.get_name() in ('the lolcat', 'the ceiling cat'):
-            _mess = self.resolve_name(tori) + ' can haz hit you.'
+            _mess = self.resolve_name(tori) + ' has bited you.'
         else:
             _mess = self.resolve_name(tori) + ' hits you!'
         

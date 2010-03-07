@@ -253,9 +253,6 @@ class Trap(TerrainTile):
 
     def get_ch(self):
         return '^' if self.revealed else '.'
-
-    def set_revealed(self):
-        self.revealed = True
         
     def trigger(self, dm, victim):
         pass

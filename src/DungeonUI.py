@@ -659,7 +659,7 @@ class DungeonUI(object):
         _ur = pygame.Rect( (_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),(_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
         pygame.display.update(_ur)
             
-    def update_view(self,sqr):
+    def update_view(self, sqr):
         actual_r = sqr.r - self.map_r
         actual_c = sqr.c - self.map_c
 
@@ -669,7 +669,7 @@ class DungeonUI(object):
         if actual_r >= 0 and actual_r < self.display_rows and actual_c >= 0 and actual_c < self.display_cols:
             colours = sqr.get_fg_bg()
             self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,True)
-
+            
     # need to improve cache to handle tile homonyms
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
@@ -683,7 +683,7 @@ class DungeonUI(object):
         else:
             ch = self.font.render(tile,True,self.__fetch_colour(fg),self.__fetch_colour(bg))
             self.__tile_cache[(tile,fg,bg)] = ch    
-                
+           
         self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
         if update:
             pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))

@@ -1399,7 +1399,7 @@ class DungeonMaster:
                 self.dui.clear_msg_line()
                 trap = Terrain.Trap('bomb')
                 trap.explosive = bomb
-                trap.set_revealed() # player knows where his own bomb is
+                trap.revealed = True # player knows where his own bomb is
                 trap.previousTile = self.curr_lvl.map[self.player.row][self.player.col]
                 self.curr_lvl.map[self.player.row][self.player.col] = trap
                 self.curr_lvl.eventQueue.push( ('explosion',self.player.row,self.player.col,trap), self.turn+turns)
@@ -1465,7 +1465,7 @@ class DungeonMaster:
         if occupant.is_cloaked() and not self.player.can_see_cloaked():
             return False
         
-        if hasattr(occupant,'revealed') and not occupant.revealed:
+        if hasattr(occupant, 'revealed') and not occupant.revealed:
             return False
             
         return True
@@ -1560,10 +1560,10 @@ class DungeonMaster:
             if monster.has_condition('dazed'):
                 self.alert_player(next_row, next_col, monster.get_name() + ' staggers wildly.')
 
-    def update_sqr(self, level, r ,c ):
+    def update_sqr(self, level, r , c):
         if self.can_player_see_location(r, c, level):
-            self.dui.update_view(self.get_sqr_info(r,c))
-    
+            self.dui.update_view(self.get_sqr_info(r, c))
+            
     def player_went_up_level(self,new_level):
         _p = self.player
         _m = 'Welcome to level %d!' % (new_level)
@@ -1581,13 +1581,13 @@ class DungeonMaster:
             return 
             
         if hasattr(loc.tile,'revealed') and not loc.tile.revealed:
-            loc.tile.set_revealed()
+            loc.tile.revealed = True
             self.alert_player(loc.r, loc.c, "You see " + ' ' + loc.tile.get_name(2) + ".")
             self.update_sqr(self.curr_lvl, loc.r, loc.c)
             
         _occ = self.curr_lvl.dungeon_loc[loc.r][loc.c].occupant
         if hasattr(_occ,'revealed') and not _occ.revealed:
-            _occ.set_revealed()
+            _occ.revealed = True
             self.alert_player(_occ.row, _occ.col, "You see " + _occ.get_name(2) + ".")
             self.update_sqr(self.curr_lvl, _occ.row, _occ.col)
             
@@ -1622,7 +1622,8 @@ class DungeonMaster:
             _loc = self.get_sqr_info(_s[0],_s[1])
             if _perception_roll > 14:
                 self.passive_search(_loc)
-            
+                _loc = self.get_sqr_info(_s[0],_s[1])
+                
             _sqrs_to_draw.append(_loc)
             
         # now we need to 'extinguish' squares that are not longer lit
@@ -1732,7 +1733,7 @@ class DungeonMaster:
             self.dui.display_message('There are several items here.')
 
     def __player_steps_on_trap(self, trap):
-        trap.set_revealed()
+        trap.revealed = True
         trap.trigger(self, self.player)
                 
     # Eventually, weight of the item will be a factor

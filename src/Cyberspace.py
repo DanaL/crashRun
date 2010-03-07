@@ -262,7 +262,7 @@ class CyberspaceLevel(GameLevel):
             _name = 'silk warrior'
         elif _monster == 10:
             _name = 'naive garbage collector'
-            
+
         return MonsterFactory.get_monster_by_name(self.dm, _name, 0, 0)
         
     def __set_entry_spot(self):

@@ -639,7 +639,7 @@ class NaiveGarbageCollector(CyberspaceMonster):
         
 class CeilingCat(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CeilingCat, self).__init__(8, 8, 50, 60, 4, 5, 2, dm, 'f', 'red', 'black', 'red',
+        super(CeilingCat, self).__init__(8, 8, 30, 40, 5, 3, 2, dm, 'f', 'red', 'black', 'red',
             'ceiling cat', row, col, 2, 'male', 8)
         self.revealed = False
         
@@ -648,22 +648,19 @@ class CeilingCat(CyberspaceMonster):
 
     def not_revealed_action(self):
         _pl = self.dm.get_player_loc()
-        if self.distance_from_player(_pl) < 2:
-            self.set_revealed()
+        if self.distance_from_player(_pl) <= 1:
+            self.revealed = True
             self.dm.update_sqr(self.dm.curr_lvl, self.row, self.col)
+            
             _msg = "A ceiling cat pops out of the roof!"
             self.dm.alert_player(self.row, self.col, _msg)
             
     def perform_action(self):
         if not self.revealed:
             self.not_revealed_action()
-            self.energy = 0
-            
-        if self.revealed:
+            self.energy = 0            
+        elif self.revealed:
             super(CeilingCat, self).perform_action()
-        
-    def set_revealed(self):
-        self.revealed = True
         
 class SecurityControlProgram(CyberspaceMonster):
     def __init__(self, dm, row, col, level):
