@@ -464,7 +464,7 @@ class DungeonUI(object):
                 _col += _dt[1]
             
                 _sqr = self.cc.get_tile_info(_row, _col)
-                if _sqr.is_remembered():
+                if _sqr.remembered:
                     self.write_cursor(_row, _col, _sqr.get_ch())
                     self.display_message('You see ' + _sqr.name)
                 else:
@@ -561,7 +561,7 @@ class DungeonUI(object):
 
             for _row in section:
                 for _col in _row:
-                    if _col.is_remembered():
+                    if _col.remembered:
                         actual_r = _col.r - self.map_r
                         actual_c = _col.c - self.map_c
                         

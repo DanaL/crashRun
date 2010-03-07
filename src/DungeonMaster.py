@@ -124,7 +124,7 @@ class DungeonSqrInfo:
         self.r = r 
         self.c = c  
         self.visible = visible
-        self.__remembered = remembered
+        self.remembered = remembered
         self.lit = lit
         self.tile = terrain_tile
 
@@ -138,9 +138,6 @@ class DungeonSqrInfo:
 
     def get_ch(self):
         return self.tile.get_ch()
-
-    def is_remembered(self):
-        return self.__remembered
 
 class DungeonMaster:
     def __init__(self, version):
