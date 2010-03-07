@@ -657,6 +657,7 @@ class CeilingCat(CyberspaceMonster):
     def perform_action(self):
         if not self.revealed:
             self.not_revealed_action()
+            self.energy = 0
             
         if self.revealed:
             super(CeilingCat, self).perform_action()
@@ -837,14 +838,16 @@ class PredatorDrone(BasicBot):
             if d > 1 and d < 5 and self.missile_count > 0:
                 self.dm.monster_fires_missile(self, _pl[0], _pl[1], 10, 3, 1)
                 self.missile_count -= 1
+                self.energy -= STD_ENERGY_COST
                 return
             elif d <= 1:
                 self.attack(_pl)
+                self.energy -= STD_ENERGY_COST
                 return 
         self.move_to(_pl)
         
         self.energy -= STD_ENERGY_COST
-        print self.energy, self.row, self.col
+        
 # These are bots that move more or less randomly and may not bother the player unless
 # attacked.
 class CleanerBot(BasicBot):

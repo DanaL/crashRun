@@ -1974,7 +1974,7 @@ class DungeonMaster:
         #loop over monsters
         for _m in self.curr_lvl.monsters:
             self.active_agent = _m
-            
+
             try:
                 if self.active_agent.has_condition('stunned'):
                     self.active_agent.stunned(self.dui)
