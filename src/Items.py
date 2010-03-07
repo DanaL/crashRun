@@ -495,7 +495,8 @@ class ItemFactory:
         # add firearms
         self.__item_db['shotgun'] = ('firearm', 'Shotgun')
         self.__item_db['double-barrelled shotgun'] = ('firearm', 'Double-Barrelled Shotgun')
-        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 3, 2, 0, 12)
+        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 4, 2, 0, 12)
+        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 6, 5, 0, 0, 10)
         
         # add ammunition
         self.__item_db['shotgun shell'] = ('ammunition', 'Shotgun Shell')
@@ -572,7 +573,9 @@ class ItemFactory:
             elif it[1] == 'Double-Barrelled Shotgun':
                 return DoubleBarrelledShotgun(0, i)
         elif it[0] == 'machine gun':
-            return MachineGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
+            _mg = MachineGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
+            _mg.current_ammo = randrange(_mg.max_ammo + 1)
+            return _mg
         elif it[0] == 'ammunition':
             if it[1] == 'Shotgun Shell':
                 return ShotgunShell()

@@ -18,6 +18,7 @@
 from random import randrange
 
 from Agent import BaseAgent
+from Agent import STD_ENERGY_COST
 from BaseTile import BaseTile
 from Inventory import Inventory
 from Inventory import Wetboard
@@ -341,7 +342,7 @@ class Player(BaseAgent):
         return do_d10_roll(_dice, _mod)
         
     def stunned(self, dui):
-        dui.alert_player(self.row, self.col, 'You are stunned.')
+        self.dm.alert_player(self.row, self.col, 'You are stunned.')
         self.energy -= STD_ENERGY_COST
         
     def __advance_level(self):

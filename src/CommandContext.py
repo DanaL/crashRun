@@ -108,9 +108,6 @@ class CommandContext(object):
 
     def get_tile_info(self, row, col):
         return self.dm.get_tile_info(row, col)
-
-    def move(self, k):
-        self.dm.cmd_move_player(k)
         
     def pick_software(self, agent, menu, msg):
         _menu = [_m for _m in menu if _m[1] != 'Empty slot']
@@ -146,7 +143,10 @@ class MeatspaceCC(CommandContext):
         _dir = self.dui.get_direction()
         if _dir != '':
             self.dm.player_bash(_dir)
-            
+
+    def move(self, k):
+        self.dm.cmd_move_player(k)
+             
     def do_action(self):
         _p = self.dm.player
         _lvl = self.dm.curr_lvl
@@ -379,7 +379,13 @@ class MeatspaceCC(CommandContext):
 class CyberspaceCC(CommandContext):        
     def bash(self):
         self.not_in_cyberspace()
-    
+ 
+    def move(self, k):
+        if k == '<' or k == '>':
+            self.dui.display_message("That's really more of a meatspace thing.")
+        else:
+            self.dm.cmd_move_player(k)
+          
     def do_action(self):
         _lvl = self.dm.curr_lvl
         _p = self.dm.player

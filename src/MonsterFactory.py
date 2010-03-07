@@ -61,7 +61,7 @@ def _cowboy(dm, row, col):
     
 def _damagedSecurityBot(dm,row,col):
     _if = Items.ItemFactory()
-    _bot = BasicBot(vision_radius=6, ac=4, hp_low=10, hp_high=20, dmg_dice=4, dmg_high=4, ab=2, 
+    _bot = BasicBot(vision_radius=6, ac=4, hp_low=10, hp_high=20, dmg_dice=4, dmg_rolls=4, ab=2, 
         dm=dm,ch='i',fg='grey',bg='black', lit='grey',name='damaged security bot',row=row,
         col=col,xp_value=6,gender='male',level=4)
     
@@ -104,7 +104,7 @@ def _extraLargeCockroach(dm,row,col):
 
 def _giantBat(dm,row,col):
     return AltPredator(vision_radius=8, ac=4, hp_low=20, hp_high=35, dmg_dice=4, dmg_rolls=5, ab=0,
-            spd=2, dm=dm, ch='b', fg='brown', bg='black', lit='brown', name='giant bat', row=row,
+            dm=dm, ch='b', fg='brown', bg='black', lit='brown', name='giant bat', row=row,
             col=col, xp_value=12, gender='male', level=4)
 
 def _gridBug(dm, row, col):
@@ -188,7 +188,7 @@ def _rabidDog(dm,row,col):
 
 def _reanimatedMaintenanceWorker(dm, row, col):
     _r = RelentlessPredator(vision_radius=8, ac=4, hp_low=20, hp_high=40, dmg_dice=6, dmg_rolls=3,
-            ab=0, spd=2, dm=dm, ch='z', fg='darkgreen', bg='black', lit='green',
+            ab=0, dm=dm, ch='z', fg='darkgreen', bg='black', lit='green',
             name='reanimated maintenance worker', row=row, col=col, xp_value=20, gender='male',
             level=6)
     _r.base_energy = 9
@@ -198,7 +198,7 @@ def _reanimatedMaintenanceWorker(dm, row, col):
     
 def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
     _z = RelentlessPredator(vision_radius=8, ac=4, hp_low=25, hp_high=45, dmg_dice=4, dmg_rolls=5,
-            ab=0, spd=1, dm=dm, ch='z', fg='darkgreen', bg='black',  lit='darkgreen',
+            ab=0, dm=dm, ch='z', fg='darkgreen', bg='black',  lit='darkgreen',
             name='reanimated unionzed maintenance worker', row=row, col=col, xp_value=25, 
             gender='male', level=8)
             

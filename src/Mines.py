@@ -60,7 +60,8 @@ class MinesLevel(GameLevel):
         _chart.rare_items[5] = ('targeting wizard', 0)
         _chart.rare_items[6] = ('flash bomb',2)
         _chart.rare_items[7] = ('machine gun clip', 0)
-        
+        _chart.rare_items[8] = ('m16 assault rifle', 0)
+         
         [self.add_item(_chart) for k in range(randrange(5,10))]
     
     def __get_monster(self):

@@ -844,7 +844,7 @@ class PredatorDrone(BasicBot):
         self.move_to(_pl)
         
         self.energy -= STD_ENERGY_COST
-        
+        print self.energy, self.row, self.col
 # These are bots that move more or less randomly and may not bother the player unless
 # attacked.
 class CleanerBot(BasicBot):
