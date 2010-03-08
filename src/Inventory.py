@@ -331,7 +331,9 @@ class Inventory:
             if self.__inv[letter] != '':
                 _category = self.__inv[letter][1]
                 _name = self.__inv[letter][0].get_full_name()
-                _name = get_correct_article(_name) + ' ' + _name
+                _art = get_correct_article(_name)
+                if _art != '':
+                    _name = _art + ' ' + _name
                 if self.__inv[letter] == self.__readied_weapon:
                     _name += ' (weapon in hand)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
