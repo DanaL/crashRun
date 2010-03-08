@@ -1193,17 +1193,20 @@ class DungeonMaster:
                 self.dui.clear_msg_line()
 
     def load_automatic_gun(self, gun, pick, fail_msg):
-        _clipStack = self.player.inventory.get_item(pick)
-        
+        _picked = self.player.inventory.get_item(pick)
         self.dui.clear_msg_line()
         
-        if _clipStack == ' ' or not isinstance(_clipStack, ItemStack):
+        if _picked == '':
             self.dui.display_message('Huh?')
             return
-        
-        _clip = _clipStack.remove_item()
-        if len(_clipStack) == 0:
+            
+        if isinstance(_picked, ItemStack):
+            _clip = _picked.remove_item()
+            if len(_picked) == 0:
                 self.player.inventory.clear_slot(pick)
+        else:
+            _clip = _picked
+            self.player.inventory.clear_slot(pick)
                 
         try:
             gun.reload(_clip)
@@ -1225,7 +1228,6 @@ class DungeonMaster:
           
     def load_shotgun(self, gun, pick):
         _picked = self.player.inventory.get_item(pick)
-        
         self.dui.clear_msg_line()
             
         if gun.current_ammo == gun.max_ammo:
@@ -1237,8 +1239,8 @@ class DungeonMaster:
             return
              
         if not isinstance(_picked, ItemStack):
-            self.add_ammo_to_shotgun(gun, _picked)
-            self.player.inventory.clear_slot(pick)
+            if self.add_ammo_to_shotgun(gun, _picked):
+                self.player.inventory.clear_slot(pick)
         else:
             while len(_picked) > 0 and gun.current_ammo < gun.max_ammo:
                 ammo = _picked.remove_item()
@@ -1246,7 +1248,6 @@ class DungeonMaster:
                     self.player.inventory.clear_slot(pick)
                 if not self.add_ammo_to_shotgun(gun, ammo):
                     self.player.inventory.add_item(ammo)
-                    #    _picked.add_item(ammo)
                     break
                     
     def player_remove_armour(self,i):
