@@ -176,7 +176,10 @@ class Inventory:
     def is_slot_a_stack(self, slot):
         if not slot in self.__inv:
             raise NonePicked
-            
+        
+        if self.__inv[slot] == '':
+            return False
+                 
         return isinstance(self.__inv[slot][0], ItemStack)
         
     def drain_batteries(self):
