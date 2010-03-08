@@ -1202,43 +1202,53 @@ class DungeonMaster:
             return
         
         _clip = _clipStack.remove_item()
+        if len(_clipStack) == 0:
+                self.player.inventory.clear_slot(pick)
+                
         try:
             gun.reload(_clip)
-            if len(_clipStack) == 0:
-                self.player.inventory.clear_slot(pick)
             self.dui.display_message('Locked and loaded!')
         except Items.IncompatibleAmmo:
             self.dui.display_message(fail_msg)
-                        
-    def load_shotgun(self,gun,pick):
-        ammoStack = self.player.inventory.get_item(pick)
+            self.player.inventory.add_item(_clip)
+    
+    def add_ammo_to_shotgun(self, gun, ammo):
+        try:
+            gun.reload(ammo)
+            self.dui.display_message('You load your shotgun.')
+            _successful = True
+        except Items.IncompatibleAmmo:
+            self.dui.display_message('That won\'t fit in your shotgun.')
+            _successful = False
+        
+        return _successful
+          
+    def load_shotgun(self, gun, pick):
+        _picked = self.player.inventory.get_item(pick)
         
         self.dui.clear_msg_line()
             
         if gun.current_ammo == gun.max_ammo:
             self.dui.display_message('Your shotgun is already loaded.')
             return
-            
-        if ammoStack == '':
+        
+        if _picked == '':
             self.dui.display_message('Huh?')
             return
-        elif not isinstance(ammoStack, ItemStack):
-            self.dui.display_message('That won\'t fit in your shotgun.')
-            return
-        
-        while gun.current_ammo < gun.max_ammo:
-            ammo = ammoStack.remove_item()
-            try:
-                gun.reload(ammo)
-                if len(ammoStack) == 0:
+             
+        if not isinstance(_picked, ItemStack):
+            self.add_ammo_to_shotgun(gun, _picked)
+            self.player.inventory.clear_slot(pick)
+        else:
+            while len(_picked) > 0 and gun.current_ammo < gun.max_ammo:
+                ammo = _picked.remove_item()
+                if len(_picked) == 0:
                     self.player.inventory.clear_slot(pick)
+                if not self.add_ammo_to_shotgun(gun, ammo):
+                    self.player.inventory.add_item(ammo)
+                    #    _picked.add_item(ammo)
                     break
-                self.dui.display_message('You load your shotgun.')
-            except Items.IncompatibleAmmo:
-                self.dui.display_message('That won\'t fit in your shotgun.')
-                ammoStack.add_item(ammo)
-                break
-        
+                    
     def player_remove_armour(self,i):
         item = self.player.inventory.get_item(i)
 
