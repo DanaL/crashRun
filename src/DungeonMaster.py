@@ -460,7 +460,7 @@ class DungeonMaster:
             _item = _inv.steal_item(randrange(1, 10), can_steal_readied)
     
             if _item != '':
-                self.item_leaves_inventory(_victim, _item)
+                _victim.remove_effects(_item)
 
         return _item
     
@@ -1294,7 +1294,7 @@ class DungeonMaster:
             self.dui.display_message('You do not have that item.')
         else:
             self.dui.display_message('You drop your ' + item.get_full_name() + '.')
-            self.item_leaves_inventory(self.player, item)   
+            self.player.remove_effects(item)
             self.__item_hits_ground(self.curr_lvl, self.player.row, self.player.col, item)
             self.player.energy -= STD_ENERGY_COST
 
@@ -1434,9 +1434,6 @@ class DungeonMaster:
         _target = self.__pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
         _item = Items.Explosion('grenade', 10, 4, 2)
         self.__item_hits_ground(self.curr_lvl, _target[0], _target[1], _item)
-    
-    def item_leaves_inventory(self, agent, item):
-        agent.remove_effects(item)
 
     def player_throw_item(self,i):
         was_readied = False
@@ -1461,7 +1458,7 @@ class DungeonMaster:
                     
                 direction = self.dui.get_direction()
                 if direction != '':
-                    self.item_leaves_inventory(self.player, item)
+                    self.player.remove_effects(item)
                     self.__throw_projectile(item,self.player.row,self.player.col,direction)
                     self.player.energy -= STD_ENERGY_COST
                 else:
