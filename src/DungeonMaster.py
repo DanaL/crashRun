@@ -129,7 +129,7 @@ class DungeonSqrInfo:
         self.tile = terrain_tile
 
     def get_fg_bg(self):
-        if not self.__remembered:
+        if not self.remembered:
             return ('black','black')
         elif self.lit:
             return (self.tile.lit_colour, self.tile.bg_colour)
@@ -1181,14 +1181,18 @@ class DungeonMaster:
                     self.load_shotgun(item, ch)
                     self.player.reload_memory = (item, ch)
                 elif isinstance(item, Items.MachineGun):
-                    self.load_machine_gun(item, ch)
+                    _fm = "You require an ISO Standardized Assault Rifle clip."
+                    self.load_automatic_gun(item, ch, _fm)
                     self.player.reload_memory = (item, ch)
-                    
+                elif isinstance(item, Items.HandGun):
+                    _fm = "That won't fit!"
+                    self.load_automatic_gun(item, ch, _fm)
+                    self.player.reload_memory = (item, ch)
                 self.player.energy -= STD_ENERGY_COST
         except NonePicked:
                 self.dui.clear_msg_line()
 
-    def load_machine_gun(self, gun, pick):
+    def load_automatic_gun(self, gun, pick, fail_msg):
         _clipStack = self.player.inventory.get_item(pick)
         
         self.dui.clear_msg_line()
@@ -1204,8 +1208,8 @@ class DungeonMaster:
                 self.player.inventory.clear_slot(pick)
             self.dui.display_message('Locked and loaded!')
         except Items.IncompatibleAmmo:
-            self.dui.display_message('You require an ISO Standardized Assault Rfile clip.')
-            
+            self.dui.display_message(fail_msg)
+                        
     def load_shotgun(self,gun,pick):
         ammoStack = self.player.inventory.get_item(pick)
         

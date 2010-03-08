@@ -106,6 +106,8 @@ class ScienceComplexLevel(GameLevel):
         _chart.uncommon_items[11] = ('Addidas sneakers', 0)
         _chart.uncommon_items[12] = ('machine gun clip', 0)
         _chart.uncommon_items[13] = ('machine gun clip', 0)
+        _chart.uncommon_items[14] = ('9mm clip', 0)
+        _chart.uncommon_items[15] = ('m1911a1', 0)
         
         _chart.rare_items[0] = ('kevlar vest', 0)
         _chart.rare_items[1] = ('riot gear', 0)
@@ -115,6 +117,7 @@ class ScienceComplexLevel(GameLevel):
         _chart.rare_items[5] = ('Nike sneakers', 0)
         _chart.rare_items[6] = ('p90 assault rifle', 0)
         _chart.rare_items[7] = ('m16 assault rifle', 0)
+        _chart.rare_items[8] = ('uzi', 0)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
         

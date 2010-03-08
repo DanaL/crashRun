@@ -273,7 +273,12 @@ class MachineGunClip(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'Machine Gun Clip', 'Ammunition', '*', 'grey',
             'white', 1, 0.5, 1, 1, 1, 1)
-            
+
+class NineMMClip(BaseItem):
+    def __init__(self):
+        BaseItem.__init__(self, '9mm Clip', 'Ammunition', '*', 'grey',
+            'white', 1, 0.5, 1, 1, 1, 1)
+                        
 class Pharmaceutical(BaseItem):
     def __init__(self, name, colour, lit_colour, effects, message):
         BaseItem.__init__(self, name, 'Pharmaceutical', '!', colour, 
@@ -391,7 +396,7 @@ class Shotgun(Firearm):
             self.add_ammo(1)
 
     def get_firing_message(self):
-        return 'BLAM!'
+        return 'BOOM!'
         
 class DoubleBarrelledShotgun(Shotgun):
     def __init__(self, loaded, i =0):
@@ -411,7 +416,21 @@ class MachineGun(Firearm):
  
     def get_firing_message(self):
         return 'Rat-tat-tat!'
-                           
+
+class HandGun(Firearm):
+    def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
+        super(HandGun, self).__init__(name, '-', 'darkgrey', 'grey',
+            dmg_dice, dmg_roll, 3, 0, 0, thb, tdb, 0, max_ammo, i)   
+ 
+    def reload(self, ammo):
+        if not isinstance(ammo, NineMMClip):
+            raise IncompatibleAmmo()
+        else:
+            self.current_ammo = self.max_ammo
+ 
+    def get_firing_message(self):
+        return 'Blam!'
+                      
 class Armour(BaseItem):
     def __init__(self, name, area, fg, lt, w, v, acm, acb, i=0):
         self.__ac_modifier = acm
@@ -496,11 +515,14 @@ class ItemFactory:
         self.__item_db['shotgun'] = ('firearm', 'Shotgun')
         self.__item_db['double-barrelled shotgun'] = ('firearm', 'Double-Barrelled Shotgun')
         self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 4, 2, 0, 12)
-        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 6, 5, 0, 0, 10)
+        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 7, 5, 0, 0, 10)
+        self.__item_db['uzi'] = ('handgun', 'Uzi', 6, 4, 0, 0, 10)
+        self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 6, 4, 0, 0, 10)
         
         # add ammunition
         self.__item_db['shotgun shell'] = ('ammunition', 'Shotgun Shell')
         self.__item_db['machine gun clip'] = ('ammunition', 'Machine Gun Clip')
+        self.__item_db['9mm clip'] = ('ammunition', '9mm Clip')
         
         # add pharmaceuticals
         self.__item_db['amphetamine'] = ('pharmaceutical', 'Amphetamine Hit',
@@ -576,11 +598,17 @@ class ItemFactory:
             _mg = MachineGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
             _mg.current_ammo = randrange(_mg.max_ammo + 1)
             return _mg
+        elif it[0] == 'handgun':
+            _hg = HandGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
+            _hg.current_ammo = randrange(_hg.max_ammo + 1)
+            return _hg
         elif it[0] == 'ammunition':
             if it[1] == 'Shotgun Shell':
                 return ShotgunShell()
             elif it[1] == 'Machine Gun Clip':
                 return MachineGunClip()
+            elif it[1] == '9mm Clip':
+                return NineMMClip()
         elif it[0] == 'explosive':
             return Explosive(item_name, it[2], it[3], it[4], True)
         elif it[0] == 'pharmaceutical':
