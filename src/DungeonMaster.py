@@ -1177,21 +1177,24 @@ class DungeonMaster:
                 self.dui.display_message("That isn't a firearm.")
             else:
                 ch = self.dui.pick_inventory_item('Reload with what?')
-                if isinstance(item, Items.Shotgun) or isinstance(item, Items.DoubleBarrelledShotgun):
-                    self.load_shotgun(item, ch)
-                    self.player.reload_memory = (item, ch)
-                elif isinstance(item, Items.MachineGun):
-                    _fm = "You require an ISO Standardized Assault Rifle clip."
-                    self.load_automatic_gun(item, ch, _fm)
-                    self.player.reload_memory = (item, ch)
-                elif isinstance(item, Items.HandGun):
-                    _fm = "That won't fit!"
-                    self.load_automatic_gun(item, ch, _fm)
-                    self.player.reload_memory = (item, ch)
-                self.player.energy -= STD_ENERGY_COST
+                self.add_ammo_to_gun(item, ch)
         except NonePicked:
                 self.dui.clear_msg_line()
 
+    def add_ammo_to_gun(self, gun, ammo_pick):
+        if isinstance(gun, Items.Shotgun) or isinstance(gun, Items.DoubleBarrelledShotgun):
+            self.load_shotgun(gun, ammo_pick)
+            self.player.reload_memory = (gun, ammo_pick)
+        elif isinstance(gun, Items.MachineGun):
+            _fm = "You require an ISO Standardized Assault Rifle clip."
+            self.load_automatic_gun(gun, ammo_pick, _fm)
+            self.player.reload_memory = (gun, ammo_pick)
+        elif isinstance(gun, Items.HandGun):
+            _fm = "That won't fit!"
+            self.load_automatic_gun(gun, ammo_pick, _fm)
+            self.player.reload_memory = (gun, ammo_pick)
+        self.player.energy -= STD_ENERGY_COST
+        
     def load_automatic_gun(self, gun, pick, fail_msg):
         _picked = self.player.inventory.get_item(pick)
         self.dui.clear_msg_line()
@@ -1341,7 +1344,7 @@ class DungeonMaster:
             self.alert_player_to_event(self.player.row, self.player.col,self.curr_lvl,_msg,False)
             self.player.remove_effects(item)
 
-    def player_use_item(self,i):
+    def player_use_item(self, i):
         item = self.player.inventory.get_item(i)
 
         if item == '':
@@ -1372,6 +1375,10 @@ class DungeonMaster:
                 hit = self.player.inventory.remove_item(i,1)
                 self.player_takes_drugs(hit)
                 self.player.energy -= STD_ENERGY_COST
+            elif item.get_category() == 'Ammunition':
+                _ch = self.dui.pick_inventory_item('Reload which gun?')
+                _gun = self.player.inventory.get_item(_ch)                
+                self.add_ammo_to_gun(_gun, i)
             else:
                 self.dui.display_message('Huh?  Use it for what?')
     
