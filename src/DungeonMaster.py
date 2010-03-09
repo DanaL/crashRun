@@ -1138,6 +1138,9 @@ class DungeonMaster:
                     self.update_sqr(self.curr_lvl, prev_r, prev_c)
                     _monster = self.curr_lvl.dungeon_loc[item_row][item_col].occupant
                     
+                    if _monster.chance_to_catch(item):
+                        return
+                        
                     if _tr.attack(self.player, _monster, item):
                         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = ''
                         self.update_sqr(self.curr_lvl, item_row, item_col)
@@ -2014,7 +2017,8 @@ class DungeonMaster:
     def meatspace_end_of_turn_cleanup(self):
         self.player.check_for_withdrawal_effects()
         self.player.check_for_expired_conditions()
-        [_m.check_for_expired_conditions for _m in self.curr_lvl.monsters]
+        for _m in self.curr_lvl.monsters:
+            _m.check_for_expired_conditions()
             
         _drained = self.player.inventory.drain_batteries()
         if len(_drained) > 0:

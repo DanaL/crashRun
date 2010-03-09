@@ -68,7 +68,7 @@ class MinesLevel(GameLevel):
         [self.add_item(_chart) for k in range(randrange(5,10))]
     
     def __get_monster(self):
-        rnd = randrange(0,30)
+        rnd = randrange(0,32)
         if rnd in range(0,5):
             return MonsterFactory.get_monster_by_name(self.dm,'extra large cockroach',0,0)
         elif rnd in range(5,9):
@@ -87,6 +87,8 @@ class MinesLevel(GameLevel):
             return MonsterFactory.get_monster_by_name(self.dm,'mutant',0,0)
         elif rnd in range(26,28):
             return MonsterFactory.get_monster_by_name(self.dm,'reanimated unionized maintenance worker',0,0)
+        elif rnd in range(28,30):
+            return MonsterFactory.get_monster_by_name(self.dm,'reanimated scientist',0,0)
         else:
             return MonsterFactory.get_monster_by_name(self.dm,'incinerator',0,0)
     

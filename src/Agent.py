@@ -231,6 +231,9 @@ class BaseAgent(BaseTile):
     def calc_missile_to_hit_bouns(self):
         return 0
 
+    def chance_to_catch(self, item):
+        return False
+        
     def damaged(self, dm, level, damage, attacker, attack_type='melee'):    
         if attack_type not in ['shock','burn','brain damage']:
             damage -= self.get_curr_ac()
@@ -278,11 +281,11 @@ class BaseAgent(BaseTile):
         dm.monster_killed(level, self.row, self.col, killer == dm.player)
         
     def make_random_move(self):
-        delta_r = randrange(-1,2)
-        delta_c = randrange(-1,2)
+        delta_r = randrange(-1, 2)
+        delta_c = randrange(-1, 2)
         
         try:
-            self.dm.move_monster(self,delta_c,delta_r)
+            self.dm.move_monster(self, delta_c, delta_r)
         except:
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
             
@@ -313,7 +316,7 @@ class BaseAgent(BaseTile):
         for _e in _expired:
             _was_hit = _was_hit or _e[1] == 'high'
             self.remove_effect(_e[0], _e[1])
-            
+
         return _was_hit
             
     def __count_flashlights_in_conditions(self):
@@ -691,7 +694,7 @@ class SecurityControlProgram(CyberspaceMonster):
         _hp = self.curr_hp
         _name += str(_hp/10) + '.'
         _name += str(_hp%10)
-        self.rename(_name)
+        self.name = _name
 
     def killed(self, dm, level, killer):
         # Killing a level's SCP results in security being disabled
@@ -775,6 +778,31 @@ class RelentlessPredator(BaseMonster):
             self.move_to(player_loc)
         
         self.energy -= STD_ENERGY_COST
+
+class ZombieScientist(RelentlessPredator):
+    def __init__(self, dm, row, col):
+        _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated programmer'))
+        super(ZombieScientist, self).__init__(vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
+            ab=0, dm=dm, ch='z', fg='darkblue', bg='black', lit='blue',
+            name=_name, row=row, col=col, xp_value=20, gender='male',
+            level=6)
+    
+    def chance_to_catch(self, item):
+        if item.name == 'Instant Coffee':
+            self.dm.alert_player(self.row, self.col, "It snatches the coffee and greedily chugs it.")
+            _effect = (('pacified', 0, 25 + self.dm.turn), item)
+            self.apply_effect(_effect, False)
+            self.attitude = 'pacified'
+            return True
+        
+        return False
+        
+    def perform_action(self):
+        if self.has_condition('pacified') and self.attitude == 'pacified':
+            self.make_random_move()
+            self.energy -= STD_ENERGY_COST
+        else:
+            super(ZombieScientist, self).perform_action()
         
 # Ninjas have their own special way of moving
 class Ninja(RelentlessPredator):

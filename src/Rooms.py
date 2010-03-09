@@ -94,7 +94,7 @@ def place_repair_shop_items(dm, room, level):
 def place_science_lab_monsters(dm, room, level):
     _count = 0  
     for _floor in room:
-        _roll = randrange(1,7)
+        _roll = randrange(1,8)
         if _roll == 1:
             _name = 'mutant'
         elif _roll == 2:
@@ -107,7 +107,9 @@ def place_science_lab_monsters(dm, room, level):
             _name = 'wolvog'
         elif _roll == 6:
             _name = 'enhanced mole'
-
+        elif _roll == 7:
+            _name = 'reanimated scientist'
+            
         _m = MonsterFactory.get_monster_by_name(dm, _name, _floor[0], _floor[1])
         level.add_monster_to_dungeon(_m, _floor[0], _floor[1])
 

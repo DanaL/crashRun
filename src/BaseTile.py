@@ -23,18 +23,14 @@ class BaseTile(object):
         self.fg_colour = fg
         self.bg_colour = bg
         self.lit_colour = lit
-        self.__name = name
+        self.name = name
 
     def get_ch(self):
         return self.ch
 
     def get_name(self, article=0):
         if article == 0:
-            return 'the ' + self.__name
+            return 'the ' + self.name
         elif article == 1:
-            return self.__name
-        return get_correct_article(self.__name) + ' ' + self.__name
-        
-    def rename(self, new_name):
-        self.__name = new_name
-        
+            return self.name
+        return get_correct_article(self.name) + ' ' + self.name        

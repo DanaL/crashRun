@@ -55,7 +55,7 @@ class ScienceComplexLevel(GameLevel):
                 self.add_pack(_monster.get_name(True), 2, 4, _monster.row, _monster.col)    
                 
     def __get_monster(self):
-        _rnd =  randrange(0,23)
+        _rnd =  randrange(0,26)
         if _rnd in range(0,3):
             return MonsterFactory.get_monster_by_name(self.dm,'reanimated maintenance worker',0,0)
         elif _rnd in range(3,6):
@@ -74,6 +74,8 @@ class ScienceComplexLevel(GameLevel):
             return MonsterFactory.get_monster_by_name(self.dm,'incinerator',0,0)
         elif _rnd in range(20,22):
             return MonsterFactory.get_monster_by_name(self.dm,'mq1 predator',0,0)
+        elif _rnd in range(22,24):
+            return MonsterFactory.get_monster_by_name(self.dm,'reanimated scientist',0,0)
         else:
             return MonsterFactory.get_monster_by_name(self.dm,'ninja',0,0)
             

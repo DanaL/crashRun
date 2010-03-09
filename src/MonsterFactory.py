@@ -208,7 +208,13 @@ def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
         _z.inventory.add_item(_if.gen_item('push broom'))
         
     return _z
-        
+
+    
+def _zombieScientist(dm, row, col):
+    _zs = ZombieScientist(dm, row, col)
+    _zs.conditions.append((('light protection',0,0), _zs))
+    return _zs
+            
 def _repairBot(dm, row, col):
     return RepairBot(dm, row, col)
                                                 
@@ -310,3 +316,4 @@ _monster_dict['two bit hacker'] = _twoBitHacker
 _monster_dict['reanimated maintenance worker'] = _reanimatedMaintenanceWorker
 _monster_dict['reanimated unionized maintenance worker'] = _reanimatedUnionizedMaintenanceWorker
 _monster_dict['wolvog'] = _wolvog
+_monster_dict['reanimated scientist'] = _zombieScientist
