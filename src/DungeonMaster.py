@@ -83,7 +83,7 @@ from Util import get_direction_tuple
 from Util import get_rnd_direction_tuple
 from Util import NonePicked
 
-ANIMATION_PAUSE = 0.05
+ANIMATION_PAUSE = 0.02
 FINAL_TURN = 20000
 
 class UnableToAccess:
@@ -1150,12 +1150,11 @@ class DungeonMaster:
                         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = item
                         _range -= 1
                 else:
-                    # we hit a non-open terrain, so move back one
+                    # we hit a non-open terrain, so move back one        
                     self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = ''
                     self.curr_lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
                     item_row = prev_r
-                    item_col = prev_c
-                    self.update_sqr(self.curr_lvl, item_row, item_col)
+                    item_col = prev_c                                      
                     break
 
             self.update_sqr(self.curr_lvl, item_row, item_col)
@@ -1164,8 +1163,9 @@ class DungeonMaster:
             sleep(ANIMATION_PAUSE) # do I really want to bother doing this?
 
         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
-        self.__item_hits_ground(self.curr_lvl, item_row,item_col,item)
-
+        self.__item_hits_ground(self.curr_lvl, item_row, item_col, item)
+        self.update_sqr(self.curr_lvl, item_row, item_col)  
+        
     def player_reload_firearm(self):
         try:
             ch = self.dui.pick_inventory_item('Reload which item (Enter to repeat last)?')
