@@ -91,6 +91,7 @@ class ScienceComplexLevel(GameLevel):
         _chart.common_items[5] = ('medkit', 0)
         _chart.common_items[6] = ('amphetamine', 5)
         _chart.common_items[7] = ('combat boots', 0)
+        _chart.common_items[8] = ('instant coffee', 0)
         
         _chart.uncommon_items[0] = ('army helmet', 0)
         _chart.uncommon_items[1] = ('C4 Charge', 0)

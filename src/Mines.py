@@ -53,6 +53,7 @@ class MinesLevel(GameLevel):
         _chart.uncommon_items[9] = ('throwing knife', 2)
         _chart.uncommon_items[10] = ('9mm clip', 0)
         _chart.uncommon_items[11] = ('m1911a1', 0)
+        _chart.uncommon_items[12] = ('instant coffee', 0)
         
         _chart.rare_items[0] = ('grenade', 3)
         _chart.rare_items[1] = ('kevlar vest', 0)
