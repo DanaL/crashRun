@@ -19,6 +19,9 @@ from random import randrange
 import Terrain
 from Terrain import TerrainFactory
 
+class FatalSplittingError:
+    pass
+    
 # if I create a method called get_sqr, I can factor much code that is common into an abstract DungeonFactory
 # class that would be shared with CaveFactory and eventually the other factories I'll be creating
 
@@ -42,7 +45,6 @@ class TowerFactory(object):
     __tf = TerrainFactory()
 
     def __init__(self,length,width,top,bottom):
-        self.map = []
         # subtract two because we generate the 'working area' of the tower, then draw the border around it
         self.__length = length - 2
         self.__width = width - 2
@@ -53,18 +55,30 @@ class TowerFactory(object):
         self.__top = top
         self.__bottom = bottom
 
+        self.reset_map()
+        
+        self.upStairs = ''
+        self.downStairs = ''
+    
+    def reset_map(self):
+        self.map = []
         # start the map off all floors
         for r in range(self.__length):
             row = []
             for c in range(self.__width):
                 row.append(self.__tf.get_terrain_tile(Terrain.FLOOR))
             self.map.append(row)
-    
-        self.upStairs = ''
-        self.downStairs = ''
-
+            
     def gen_map(self):
-        self.__split_map(0,0,self.__length,self.__width)
+        done = False
+        while not done:
+            try:
+                self.__split_map(0,0,self.__length,self.__width)
+                done = True
+            except FatalSplittingError:
+                done = False
+                self.reset_map()
+
         self.__set_border() # could be refactored into an abstract DungeonFactory superclass
         self.__fix_useless_doors()
 
@@ -181,10 +195,14 @@ class TowerFactory(object):
         # pick a row
         delta = int(0.2 * length)
 
+        x = 0
         row = randrange(start_r + delta, start_r - delta + length)
         while not self.__check_row(row,start_c,width):
+            x += 1
             row = randrange(start_r + delta, start_r - delta + length)
-
+            if x > 100: 
+                raise FatalSplittingError()
+                
         # draw walls along that row
         for c in range(width):
             self.set_cell(row-1,start_c+c,self.__wall)
@@ -214,9 +232,13 @@ class TowerFactory(object):
         # pick a column
         delta = int(0.2 * width)
 
+        x = 0
         col = randrange(start_c + delta, start_c - delta + width)
         while not self.__check_col(col,start_r,length):
+            x += 1
             col = randrange(start_c + delta, start_c - delta + width)
+            if x > 100: 
+                raise FatalSplittingError()
 
         # draw walls along that row
         for r in range(length):
@@ -360,7 +382,7 @@ class TowerFactory(object):
             else:
                 self.__do_v_split(start_r,start_c,length,width)
 
-
-#tf = TowerFactory(20,20,False,False)
-#tf.gen_map()
-#tf.print_grid()
+if __name__ == "__main__":
+    tf = TowerFactory(20,30,False,False)
+    tf.gen_map()
+    tf.print_grid()
