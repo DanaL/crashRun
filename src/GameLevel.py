@@ -130,7 +130,7 @@ class ItemChart:
         return _item
 
 class GameLevel:
-    def __init__(self,dm, level_num, length, width, category):
+    def __init__(self, dm, level_num, length, width, category):
         self.dm = dm
         self.eventQueue = PriorityQueue()
         self.cameras = {}

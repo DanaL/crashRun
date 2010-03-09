@@ -31,13 +31,12 @@ from Terrain import PERM_WALL
 from Terrain import TREE
 from Terrain import GRASS
 from Terrain import ROAD
-from Terrain import UP_STAIRS
 from Terrain import DOWN_STAIRS
 from TowerFactory import TowerFactory
 
 class Prologue(GameLevel):
     def __init__(self, dm):
-        GameLevel.__init__(self, dm, 0, 58, 90, 'prologue')     
+        GameLevel.__init__(self, dm, 0, 30, 70, 'prologue')     
         
     def add_monster(self, monster=''):
         rnd = randrange(0,3)
@@ -50,7 +49,7 @@ class Prologue(GameLevel):
         GameLevel.add_monster(self, _m)
         
     def generate_level(self):
-        self.player_start_loc = (29,4)
+        self.player_start_loc = (15,4)
         self.map = self.__generate_map()
         for x in range(1,11):
             self.add_monster()
@@ -64,15 +63,15 @@ class Prologue(GameLevel):
         # make all border squares walls
         # This could be moved to a superclass
         row = []
-        for j in range(0,self.lvl_width):
+        for j in range(0, self.lvl_width):
             row.append(_tf.get_terrain_tile(PERM_WALL))
         _map.append(row)
 
-        for r in range(1,self.lvl_length-1):
+        for r in range(1, self.lvl_length-1):
             row = []
             row.append(_tf.get_terrain_tile(PERM_WALL))
 
-            for c in range(1,self.lvl_width-1):
+            for c in range(1, self.lvl_width-1):
                 rnd = random()
                 
                 if rnd < 0.50:
@@ -84,75 +83,56 @@ class Prologue(GameLevel):
             row.append(_tf.get_terrain_tile(PERM_WALL))
             _map.append(row)
         row = []
-        for j in range(0,self.lvl_width):
+        for j in range(0, self.lvl_width):
             row.append(_tf.get_terrain_tile(PERM_WALL))
         _map.append(row)
         
-        # Add in the top-left building
-        for r in range(1,7):
-            for c in range(1,12):
-                _map[r][c] = _tf.get_terrain_tile(FLOOR)
-            _map[r][c+1] = _tf.get_terrain_tile(WALL)
-        _map[4][12] = _tf.get_terrain_tile(DOOR)
-        for c in range(1,13):
-            _map[7][c] = _tf.get_terrain_tile(WALL)
-            
-        # Add in bottom buildings
-        for c in range(30,39):
-            _map[self.lvl_length-6][c] = _tf.get_terrain_tile(WALL)
-        for r in range(self.lvl_length-5,self.lvl_length-1):
-            _map[r][30] = _tf.get_terrain_tile(WALL)
-            for c in range(31,39):
-                _map[r][c] = _tf.get_terrain_tile(FLOOR)
-        
-        box = Items.Box()
-        self.add_item_to_sqr(self.lvl_length-2, 32, box)
-
-        for x in range(randrange(0,7)):
-            box.add_item(_if.gen_item('ritalin', 1))
-        for x in range(randrange(0,19)):
-            box.add_item(_if.gen_item('shotgun shell', 1))
-        for x in range(randrange(0,4)):
-            box.add_item(_if.gen_item('flare', 1))
-        
-        for c in range(39,44):
-            _map[self.lvl_length-12][c] = _tf.get_terrain_tile(WALL)
-        for r in range(self.lvl_length-11,self.lvl_length-1):
-            _map[r][39] = _tf.get_terrain_tile(WALL)
-            _map[r][43] = _tf.get_terrain_tile(WALL)
-        for c in range(40,43):
-            _map[r][c] = _tf.get_terrain_tile(FLOOR)
-        _map[self.lvl_length-8][43] = _tf.get_terrain_tile(DOOR)
-        _map[self.lvl_length-3][39] = _tf.get_terrain_tile(DOOR)
-
         # generate the tower section
-        _tower = TowerFactory(length = 40, width = 40, top = True, bottom = False)
+        _tower = TowerFactory(length = 20, width = 30, top = True, bottom = False)
         _tower.gen_map()
         self.upStairs = None
         self.downStairs = _tower.downStairs
         
-        for r in range(0,40):
-            for c in range(0,40):
-                _map[10+r][self.lvl_width-41+c] = _tower.get_cell(r,c)
+        for r in range(0, 20):
+            for c in range(0, 30):
+                _map[10+r][self.lvl_width-31+c] = _tower.get_cell(r,c)
         
         # beat up the tower a bit
-        for x in range(randrange(500,700)):
-            r = 10 + randrange(0,40)
-            c = self.lvl_width - 41 + randrange(0,40)
-            if _map[r][c].get_type() not in (UP_STAIRS,DOWN_STAIRS):
+        for x in range(randrange(100, 200)):
+            r = 10 + randrange(0,20)
+            c = self.lvl_width - 31 + randrange(0, 30)
+            if _map[r][c].get_type() != DOWN_STAIRS:
                 if random() < 0.75:
                     _map[r][c] = _tf.get_terrain_tile(ROAD)
                 else:
                     _map[r][c] = _tf.get_terrain_tile(GRASS)
 
         # Add double door main entrance
-        for r in range(20,40):
-            if _map[r][self.lvl_width-40].get_type() == FLOOR and _map[r+1][self.lvl_width-40].get_type() == FLOOR:
+        for r in range(15,25):
+            if _map[r][self.lvl_width-30].get_type() == FLOOR and _map[r+1][self.lvl_width-30].get_type() == FLOOR:
                 break
-        _map[r][self.lvl_width-41] = _tf.get_terrain_tile(DOOR)
-        _map[r+1][self.lvl_width-41] = _tf.get_terrain_tile(DOOR)
+        _map[r][self.lvl_width-31] = _tf.get_terrain_tile(DOOR)
+        _map[r+1][self.lvl_width-31] = _tf.get_terrain_tile(DOOR)
 
-        for c in range(0,40):
-            _map[51][self.lvl_width-41+c] = _tf.get_terrain_tile(WALL)
+        for c in range(0, 30):
+            _map[29][self.lvl_width-31+c] = _tf.get_terrain_tile(WALL)
 
+        _box = Items.Box()
+        _box_placed = False
+        while not _box_placed:
+            _col = randrange(self.lvl_width-30, self.lvl_width)
+            _row = randrange(self.lvl_length-20, self.lvl_length)
+            if _map[_row][_col].get_type() not in (DOOR, WALL, PERM_WALL, DOWN_STAIRS):
+                self.add_item_to_sqr(_row, _col, _box)
+                _box_placed = True
+
+        for x in range(randrange(7)):
+            _box.add_item(_if.gen_item('ritalin', 1))
+        for x in range(randrange(19)):
+            _box.add_item(_if.gen_item('shotgun shell', 1))
+        for x in range(randrange(4)):
+            _box.add_item(_if.gen_item('flare', 1))
+        if randrange(4) > 2:
+            _box.add_item(_if.gen_item('medkit', 1))
+            
         return _map
