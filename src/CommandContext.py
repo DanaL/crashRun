@@ -251,16 +251,23 @@ class MeatspaceCC(CommandContext):
     def fire_weapon(self):
         try:
             _player = self.get_player()
-            _weapon = _player.inventory.get_primary_weapon()
+            _primary = _player.inventory.get_primary_weapon()
+            _secondary = _player.inventory.get_secondary_weapon()
+            _p_is_f = isinstance(_primary, Items.Firearm)
+            _s_is_f = isinstance(_secondary, Items.Firearm)
             
-            if not isinstance(_weapon, Items.Firearm):
+            if not _p_is_f and not _s_is_f:
+                self.dui.display_message("You aren't wielding a firearm...")
+            elif _p_is_f and _s_is_f:
                 ch = self.dui.pick_inventory_item('Shoot what?')
                 _weapon = _player.inventory.get_item(ch)
-                if not isinstance(_weapon, Items.Firearm):
-                    self.dui.display_message('That, uh, isn`t a firearm...')
+        
+                if _weapon != _primary and _weapon != _secondary:
+                    self.dui.display_message("You need to pick a gun that you're holding.")
                 else:
                     self.dm.player_fire_weapon(_weapon)
             else:
+                _weapon = _primary if _p_is_f else _secondary
                 self.dm.player_fire_weapon(_weapon)
         except NonePicked:
             self.dui.clear_msg_line()
