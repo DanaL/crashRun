@@ -20,12 +20,12 @@ VERSION: 0.4.0
 'U': USE_ITEM
 'w': WIELD_WEAPON
 'W': WEAR_ARMOUR
-'E': SWAP_WEAPONS
+'x': SWAP_WEAPONS
 
 # Dungeon interaction commands
 'a': ACTION
 ',': PICK_UP
-'x': EXAMINE
+'E': EXAMINE
 'X': FORCE_QUIT_CYBERSPACE
 's': SEARCH
 'B': BASH

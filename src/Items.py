@@ -355,8 +355,7 @@ class Firearm(BaseItem):
         self.current_ammo = 0
         self.__shooting_damage = dd
         self.__shooting_roll = dr
-        BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, 
-            4, 1, i)
+        BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, 6, 1, i)
 
     def add_ammo(self,amount):
         self.current_ammo += amount

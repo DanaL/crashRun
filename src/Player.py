@@ -315,7 +315,11 @@ class Player(BaseAgent):
             _die_rolls += self.skills.get_skill('Guns').get_rank() 
             
         return _die_rolls
-         
+    
+    def get_two_weapon_modifier(self):
+        _tw_rank = -3 + self.skills.get_skill('Two Weapon Fighting').get_rank()
+        return _tw_rank;
+        
     def get_thrown_attack_die(self):
         _rolls = self.level + self.get_attack_bonuses()
         _rolls += self.skills.get_skill('Thrown').get_rank() 

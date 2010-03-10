@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+import Items
 from Items import BatteryPowered
 from Items import Weapon
 from MessageResolver import MessageResolver
@@ -48,11 +49,33 @@ class CyberspaceCombatResolver(CombatResolver):
     def attack_agent(self,attack_roll, uke):
         _defense_rolls = uke.get_cyberspace_defense_die()
         _defense_bonus = uke.get_cyberspace_defense_bonus()
-        _roll = do_d10_roll(_defense_rolls, _defense_bonus) 
+        _roll = do_d10_roll(_defense_rolls, 0) + _defense_bonus 
         
         return attack_roll > _roll
         
 class MeleeResolver(CombatResolver):        
+    def __attack_uke(self, tori, uke, weapon, attack_modifiers):
+        _roll = do_d10_roll(tori.get_attack_die(), 0) + tori.get_attack_bonus() + attack_modifiers
+        if self.attack_agent(_roll, uke):
+            if isinstance(weapon, Weapon) and isinstance(weapon, BatteryPowered):
+                if weapon.charge > 0:
+                    weapon.charge -= 1
+                    if weapon.charge == 0: self.items_discharged(tori, [weapon])
+            _dmg = tori.get_melee_damage_roll()
+                    
+            _verb = 'hit'
+            if tori.melee_type == 'fire':
+                _verb = 'burn'
+            elif tori.melee_type == 'shock':
+                _verb = 'shock'
+            elif isinstance(weapon, Items.HandGun):
+                _verb = 'pistol whip'
+                
+            self.dm.mr.show_hit_message(tori, uke, _verb)
+            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, tori.melee_type)
+        else:
+            self.dm.mr.show_miss_message(tori, uke)
+            
     def attack(self, tori, uke):
         if tori.has_condition('dazed'):
             _dt = get_rnd_direction_tuple()
@@ -64,25 +87,18 @@ class MeleeResolver(CombatResolver):
             self.dm.mr.simple_verb_action(tori, ' %s wildly and %s',['swing','miss'])
             return
         
-        _roll = do_d10_roll(tori.get_attack_die(), tori.get_attack_bonus())
-        if self.attack_agent(_roll, uke):
-            _weapon = tori.inventory.get_primary_weapon()
-            if isinstance(_weapon, Weapon) and isinstance(_weapon, BatteryPowered):
-                if _weapon.charge > 0:
-                    _weapon.charge -= 1
-                    if _weapon.charge == 0: self.items_discharged(tori, [_weapon])
-            _dmg = tori.get_melee_damage_roll()
-                    
-            _verb = 'hit'
-            if tori.melee_type == 'fire':
-                _verb = 'burn'
-            elif tori.melee_type == 'shock':
-                _verb = 'shock'
-            
-            self.dm.mr.show_hit_message(tori, uke, _verb)
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, tori.melee_type)
+        _attack_modifiers = 0
+        _primary = tori.inventory.get_primary_weapon()
+        _secondary = tori.inventory.get_secondary_weapon()
+        
+        if _primary != '' and _secondary != '' and not isinstance(_secondary, Items.Firearm):
+            # two weapon fighting
+            _tw_modifier = tori.get_two_weapon_modifier()
+            self.__attack_uke(tori, uke, _primary, _tw_modifier)
+            if not uke.dead: # he may have been killed by the first blow
+                self.__attack_uke(tori, uke, _primary, _tw_modifier - 2)
         else:
-            self.dm.mr.show_miss_message(tori, uke)
+            self.__attack_uke(tori, uke, _primary, 0)
         
 class ShootingResolver(CombatResolver):     
     def attack(self, tori, uke, gun):

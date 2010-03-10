@@ -153,6 +153,7 @@ class BaseAgent(BaseTile):
         self.calc_ac()
         self.energy = self.ENERGY_THRESHOLD
         self.base_energy = self.ENERGY_THRESHOLD
+        self.dead = False
         
     def add_hp(self,delta):
         self.curr_hp += delta
@@ -271,13 +272,17 @@ class BaseAgent(BaseTile):
     def get_melee_type(self):
         return self.melee_type
       
+    def get_two_weapon_modifier(self):
+        return 0;
+        
     def has_condition(self, condition):
         for _condition in self.conditions:
             if _condition[0][0] == condition:
                 return True
         return False
         
-    def killed(self, dm, level, killer):            
+    def killed(self, dm, level, killer):        
+        self.dead = True    
         dm.monster_killed(level, self.row, self.col, killer == dm.player)
         
     def make_random_move(self):
