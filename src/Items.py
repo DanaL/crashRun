@@ -53,7 +53,8 @@ class BaseItem(BaseTile):
         self.__prev_slot = ''
         self.__stackable = stackable
         self.effects = []
-
+        self.hands_required = 1;
+        
     def set_prev_slot(self,slot):
         self.__prev_slot = slot
 
@@ -265,7 +266,7 @@ class ShotgunShell(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'Shotgun Shell', 'Ammunition', '*', 'grey',
             'white', 1, 0.1, 1, 1, 1)
-
+        
 class MachineGunClip(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'Machine Gun Clip', 'Ammunition', '*', 'grey',
@@ -298,10 +299,11 @@ class Medkit(Pharmaceutical):
                 
 class Weapon(BaseItem):
     def __init__(self, name, ch, fg, lt, dd, dr, w, t, thb, tdb, 
-            stackable, i=0):
+            stackable, hands, i=0):
         self.__type = t
         self.to_hit_bonus = thb
         self.to_dmg_bonus = tdb
+        self.hands_required = 2
         
         BaseItem.__init__(self, name, 'Weapon', ch, fg, lt, stackable, w, dd, dr, i)
 
@@ -332,6 +334,7 @@ class Chainsaw(Weapon, BatteryPowered):
         Weapon.__init__(self, 'chainsaw', '|', 'red', 'brown', 8, 3, 5, 
             'Melee', 1, 1, False, i)
         self.category = 'Tool'
+        self.hands_required = 2
         
     def get_full_name(self):
         return Weapon.get_full_name(self) + ' (' + str(self.charge) + ')'
@@ -384,6 +387,7 @@ class Shotgun(Firearm):
     def __init__(self, loaded, i=0):
         Firearm.__init__(self, 'Shotgun', '-', 'grey', 'white', 6, 4, 5, 0, 0, 
             0, 0, 1, i)
+        self.hands_required = 2
         
     def reload(self, ammo):
         if not isinstance(ammo, ShotgunShell):
@@ -398,12 +402,14 @@ class DoubleBarrelledShotgun(Shotgun):
     def __init__(self, loaded, i =0):
         Firearm.__init__(self, 'Double-Barrelled Shotgun', '-', 'grey', 
             'white', 8, 4, 5, 0, 0, 0, 0, 2, i)
-
+        self.hands_required = 2
+        
 class MachineGun(Firearm):
     def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
         super(MachineGun, self).__init__(name, '-', 'darkgrey', 'grey',
             dmg_dice, dmg_roll, 3, 0, thb, tdb, 0, max_ammo, i)   
-
+        self.hands_required = 2
+        
     def reload(self, ammo):
         if not isinstance(ammo, MachineGunClip):
             raise IncompatibleAmmo()
@@ -540,13 +546,13 @@ class ItemFactory:
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
-        self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,False,0,0)
-        self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0)
-        self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0)
-        self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2)
-        self.__item_db['grenade'] = ('weapon','Grenade','*','darkgrey','grey',1,1,1,True,0,0)
-        self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,False,0,0)
-        self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,True,0,0)
+        self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,False,0,0,1)
+        self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0,1)
+        self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0,2)
+        self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2,2)
+        self.__item_db['grenade'] = ('weapon','Grenade','*','darkgrey','grey',1,1,1,True,0,0,1)
+        self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,False,0,0,2)
+        self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,True,0,0,1)
         
         # add the armour
         self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-2,0)])
@@ -586,7 +592,7 @@ class ItemFactory:
             raise ItemDoesNotExist
         
         if it[0] == 'weapon':
-            return Weapon(item_name,it[2],it[3],it[4],it[5],it[6],it[7],it[1],it[9],it[10],it[8],i)
+            return Weapon(item_name,it[2],it[3],it[4],it[5],it[6],it[7],it[1],it[9],it[10],it[8],it[11],i)
         elif it[0] == 'firearm':
             if it[1] == 'Shotgun':
                 return Shotgun(0, i)
