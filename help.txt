@@ -21,27 +21,26 @@ Other commands:
 
 A - use Ability - If you had a special ability, this is how you would use it.
 B - Bash - Bash into something.  Sometimes opens doors.
-c - Close - Close a door.
+a - Action - Use a computer terminal, open/close a door. May required a 
+             direction. (Use > to access a computer terminal, if necessary)
 d - Drop - Drop item from inventory.  
-E - Execute - Start a program running.
-f - Fire - Shoot a firearm.
+f - Fire - Shoot a readied firearm.
 H - Hack - Hack an object in cyberspace (use to disarm logic bombs).
 i - Inventory - Display your stuff.
-I - Info - Information about your character.
-J - Jack-in - Access a computer terminal (?s are terminals).
-K - Kill process - Terminate a program running on your wetboard.
-o - Open - Open a door or box
+@ - Info - Information about your character.
 P - Practice - improve your skills if you have points to spend
 Q - Quit - Quit game.  Give up your mission.  Coward.
 r - Reload - Reload firearm.
 S - Save - Save game and exit.
+s - Search - Search the are surrounding you for hidden things.
 t - Throw - Throw an object.
 R - Remove - Remove something you are wearing.
-U - Use - Use an item in your inventory.
+U - Use - Use an item or software in your inventory.
 V - View Hall of Fame - Display high score list
 w - Wield - Select what you'll smack enemies with.
 W - Wear - Put on clothes, armour or accessories.
-x - Examine - Look at the squares on the map.
+E - Examine - Look at the squares on the map.
+x - Swap - Swap weapons between your primary and secondary hands.
 X - Exit - forcibly sever your link to cyberspace.  (Can be hazardous)
 > - Go Down - Take a lift down to the next floor down.
 < - Go Up - Take a lift to the next floor up.
@@ -49,8 +48,6 @@ X - Exit - forcibly sever your link to cyberspace.  (Can be hazardous)
 * - Message memory - Display last 100 messages.
 . - Wait - Stand still for a moment and catch your breath.
 ? - Help - Access online help.
-' - Subnet Node access - Access a subnet node in cyberspace.
-" - Camera security - Access to camera security node in cyberspace.
 
 Commands may be repeated by typing in a number before the command.
 Ie., 10dn means "Drop 10 of item 'n' in your inventory".
@@ -59,7 +56,9 @@ When targeting a square, move the cursor around with the standard
 movement commands.  Select target with a space.  If you loose your
 cursor, hit Enter to bring it back to you.
 
-Support for rebinding keys will likely be added at some point in the future.
+Keybindings may be changed by editing the keys.txt file.  If you 
+really mess up your key bindings, delete keys.txt and the game with
+generate a new file with default values.
 
 Symbols:
 
