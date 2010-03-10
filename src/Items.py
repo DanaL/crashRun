@@ -43,13 +43,11 @@ class ItemHasEffects:
 
 # Real class definitions begin
 class BaseItem(BaseTile):
-    def __init__(self, name, category, ch, fg, lt, stackable , w=1, v=0, dd=2,
-            dr = 1, i=0):
+    def __init__(self, name, category, ch, fg, lt, stackable , w=1, dd=2, dr = 1, i=0):
         BaseTile.__init__(self, ch, fg, 'black', lt, name)
         self.__dmg_dice = dd
         self.__dmg_roll = dr
         self.__weight = w
-        self.__value = v
         self.category = category
         self.__identified = i
         self.__prev_slot = ''
@@ -221,8 +219,7 @@ class Box(BaseItem):
 
 class BasicTool(BaseItem):
     def __init__(self, name, fg, lit, stackable=False):
-        BaseItem.__init__(self, name, 'Tool', ')', fg, lit, stackable, 0.1, 1,
-            1, 1, 1)
+        BaseItem.__init__(self, name, 'Tool', ')', fg, lit, stackable, 0.1, 1, 1, 1)
 
 class Battery(BasicTool):
     def __init__(self, name):
@@ -231,12 +228,12 @@ class Battery(BasicTool):
 class Flare(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'flare', 'Tool', ')', 'yellow-orange', 
-            'yellow', True, 0.1, 1, 1, 1, 1)
+            'yellow', True, 0.1, 1, 1)
         
 class LitFlare(BaseItem):
     def __init__(self, start_time):
         BaseItem.__init__(self, 'lit flare', 'Tool', '*', 'yellow-orange',
-            'yellow', False, 0.1, 1, 1, 1, 1)
+            'yellow', False, 0.1, 1, 1, 1)
         self.duration = randrange(5, 10)
         self.extinguished = False
         self.radius = 5
@@ -267,22 +264,22 @@ class Explosion(BaseItem):
 class ShotgunShell(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'Shotgun Shell', 'Ammunition', '*', 'grey',
-            'white', 1, 0.1, 1, 1, 1, 1)
+            'white', 1, 0.1, 1, 1, 1)
 
 class MachineGunClip(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, 'Machine Gun Clip', 'Ammunition', '*', 'grey',
-            'white', 1, 0.5, 1, 1, 1, 1)
+            'white', 1, 0.5, 1, 1, 1)
 
 class NineMMClip(BaseItem):
     def __init__(self):
         BaseItem.__init__(self, '9mm Clip', 'Ammunition', '*', 'grey',
-            'white', 1, 0.5, 1, 1, 1, 1)
+            'white', 1, 0.5, 1, 1, 1)
                         
 class Pharmaceutical(BaseItem):
     def __init__(self, name, colour, lit_colour, effects, message):
         BaseItem.__init__(self, name, 'Pharmaceutical', '!', colour, 
-            lit_colour, 1, 0.1, 1, 1, 1, 1)
+            lit_colour, 1, 0.1, 1, 1, 1)
         self.effects = effects
         self.message = message
 
@@ -300,14 +297,13 @@ class Medkit(Pharmaceutical):
         return _potency
                 
 class Weapon(BaseItem):
-    def __init__(self, name, ch, fg, lt, dd, dr, w, v, t, thb, tdb, 
+    def __init__(self, name, ch, fg, lt, dd, dr, w, t, thb, tdb, 
             stackable, i=0):
         self.__type = t
         self.to_hit_bonus = thb
         self.to_dmg_bonus = tdb
         
-        BaseItem.__init__(self, name, 'Weapon', ch, fg, lt, stackable, w, v,
-            dd, dr, i)
+        BaseItem.__init__(self, name, 'Weapon', ch, fg, lt, stackable, w, dd, dr, i)
 
     def get_type(self):
         return self.__type
@@ -333,7 +329,7 @@ class Weapon(BaseItem):
 class Chainsaw(Weapon, BatteryPowered):
     def __init__(self, i):
         BatteryPowered.__init__(self, 30, False)
-        Weapon.__init__(self, 'chainsaw', '|', 'red', 'brown', 8, 3, 5, 5, 
+        Weapon.__init__(self, 'chainsaw', '|', 'red', 'brown', 8, 3, 5, 
             'Melee', 1, 1, False, i)
         self.category = 'Tool'
         
@@ -348,7 +344,7 @@ class Chainsaw(Weapon, BatteryPowered):
         
 # Fire arms really need two different to damage rolls and damage dice
 class Firearm(BaseItem):
-    def __init__(self, name, ch, fg, lt, dd, dr, w, v, t, thb, tdb, stackable,
+    def __init__(self, name, ch, fg, lt, dd, dr, w, t, thb, tdb, stackable,
             max_ammo, i=0):
         self.__type = t
         self.__to_hit_bonus = thb
@@ -357,7 +353,7 @@ class Firearm(BaseItem):
         self.current_ammo = 0
         self.__shooting_damage = dd
         self.__shooting_roll = dr
-        BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, v, 
+        BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, 
             4, 1, i)
 
     def add_ammo(self,amount):
@@ -387,7 +383,7 @@ class Bullet(BaseTile):
 class Shotgun(Firearm):
     def __init__(self, loaded, i=0):
         Firearm.__init__(self, 'Shotgun', '-', 'grey', 'white', 6, 4, 5, 0, 0, 
-            0, 0, 0, 1, i)
+            0, 0, 1, i)
         
     def reload(self, ammo):
         if not isinstance(ammo, ShotgunShell):
@@ -401,12 +397,12 @@ class Shotgun(Firearm):
 class DoubleBarrelledShotgun(Shotgun):
     def __init__(self, loaded, i =0):
         Firearm.__init__(self, 'Double-Barrelled Shotgun', '-', 'grey', 
-            'white', 8, 4, 5, 0, 0, 0, 0, 0, 2, i)
+            'white', 8, 4, 5, 0, 0, 0, 0, 2, i)
 
 class MachineGun(Firearm):
     def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
         super(MachineGun, self).__init__(name, '-', 'darkgrey', 'grey',
-            dmg_dice, dmg_roll, 3, 0, 0, thb, tdb, 0, max_ammo, i)   
+            dmg_dice, dmg_roll, 3, 0, thb, tdb, 0, max_ammo, i)   
 
     def reload(self, ammo):
         if not isinstance(ammo, MachineGunClip):
@@ -420,7 +416,7 @@ class MachineGun(Firearm):
 class HandGun(Firearm):
     def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
         super(HandGun, self).__init__(name, '-', 'darkgrey', 'grey',
-            dmg_dice, dmg_roll, 3, 0, 0, thb, tdb, 0, max_ammo, i)   
+            dmg_dice, dmg_roll, 3, 0, thb, tdb, 0, max_ammo, i)   
  
     def reload(self, ammo):
         if not isinstance(ammo, NineMMClip):
@@ -432,12 +428,12 @@ class HandGun(Firearm):
         return 'Blam!'
                       
 class Armour(BaseItem):
-    def __init__(self, name, area, fg, lt, w, v, acm, acb, i=0):
+    def __init__(self, name, area, fg, lt, w, acm, acb, i=0):
         self.__ac_modifier = acm
         self.__ac_bonus = acb
         self.__area = area
 
-        BaseItem.__init__(self, name, 'Armour', '[', fg, lt, 0, w, v, 2, 1, i)
+        BaseItem.__init__(self, name, 'Armour', '[', fg, lt, 0, w, 2, 1, i)
 
     def get_area(self):
         return self.__area
@@ -457,7 +453,7 @@ class InfraRedGoggles(Armour, BatteryPowered):
     def __init__(self):
         BatteryPowered.__init__(self, 25, True)
         Armour.__init__(self, 'infra-red goggles', 'glasses', 'brown', 'red',
-            1, 1, 0, 0, True)
+            1, 0, 0, True)
         self.effects.append(('infrared', 0, 0))
         
     def get_full_name(self):
@@ -469,7 +465,7 @@ class TargetingWizard(Armour, BatteryPowered):
     def __init__(self):
         BatteryPowered.__init__(self, 100, True)
         Armour.__init__(self, 'targeting wizard', 'glasses', 'darkblue', 
-            'blue', 1, 1, 0, 0, True)
+            'blue', 1, 0, 0, True)
         self.effects.append(('aim', 3, 0))
         
     def get_full_name(self):
@@ -544,13 +540,13 @@ class ItemFactory:
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
-        self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,20,False,0,0)
-        self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,1,False,0,0)
-        self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,1,False,0,0)
-        self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,20,False,0,2)
-        self.__item_db['grenade'] = ('weapon','Grenade','*','darkgrey','grey',1,1,1,1,True,0,0)
-        self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,10,False,0,0)
-        self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,1,True,0,0)
+        self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,False,0,0)
+        self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0)
+        self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0)
+        self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2)
+        self.__item_db['grenade'] = ('weapon','Grenade','*','darkgrey','grey',1,1,1,True,0,0)
+        self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,False,0,0)
+        self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,True,0,0)
         
         # add the armour
         self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-2,0)])
@@ -590,7 +586,7 @@ class ItemFactory:
             raise ItemDoesNotExist
         
         if it[0] == 'weapon':
-            return Weapon(item_name,it[2],it[3],it[4],it[5],it[6],it[7],it[8],it[1],it[10],it[11],it[9],i)
+            return Weapon(item_name,it[2],it[3],it[4],it[5],it[6],it[7],it[1],it[9],it[10],it[8],i)
         elif it[0] == 'firearm':
             if it[1] == 'Shotgun':
                 return Shotgun(0, i)
@@ -619,7 +615,7 @@ class ItemFactory:
             else:
                 return Pharmaceutical(it[1], it[2], it[3], it[4], it[5])
         elif it[0] == 'armour':
-            a = Armour(name= item_name,area= it[1],fg= it[2],lt= it[3],w= it[4],v= 0,acm= it[6],acb= it[5],i =0)
+            a = Armour(name= item_name,area= it[1],fg= it[2],lt= it[3],w= it[4],acm= it[6],acb= it[5],i =0)
             for effect in it[7]:
                 a.effects.append(effect)
             return a
