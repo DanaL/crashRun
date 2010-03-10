@@ -57,7 +57,8 @@ class Inventory:
 
         self.__weight = 0
         self.__next_slot = 'a'
-        self.__readied_weapon = ''
+        self.__primary_weapon = ''
+        self.__secondary_weapon = ''
         self.__readied_armour = { 'suit':'', 'helmet':'', 'gloves':'', 'cloak':'',
                 'boots':'','glasses':'', 'watch':''}
         self.__armour_value = 0 # the total protection value of all readied armour
@@ -90,14 +91,14 @@ class Inventory:
     def get_effects_from_readied_items(self):
         effects = []
         
-        if self.__readied_weapon != '':
-            for e in self.__readied_weapon[0].effects:
-                effects.append ( (e,self.__readied_weapon[0]) )
+        if self.__primary_weapon != '':
+            for e in self.__primary_weapon[0].effects:
+                effects.append((e, self.__primary_weapon[0]))
             
         for ak in self.__readied_armour.keys():
             if self.__readied_armour[ak] != '':
                 for e in self.__readied_armour[ak][0].effects:
-                    effects.append( (e,self.__readied_armour[ak][0]) )
+                    effects.append((e, self.__readied_armour[ak][0]))
 
         return effects
 
@@ -109,7 +110,7 @@ class Inventory:
             # the item's category when needed, rather than a tuple
             i = (item,item.get_category())
             if readied and item.get_category() in ('Weapon','Firearm'):
-                self.__readied_weapon = i
+                self.__primary_weapon = i
             if readied and item.get_category() == 'Armour':
                 self.__armour_value += item.get_ac_modifier()
                 self.__readied_armour[item.get_area()] = i
@@ -157,7 +158,7 @@ class Inventory:
                 self.__weight -= item.get_weight()
     
     def is_readied(self, item):
-        if self.__readied_weapon != '' and item == self.__readied_weapon[0]:
+        if self.__primary_weapon != '' and item == self.__primary_weapon[0]:
             return True
         
         for _location in self.__readied_armour.keys():
@@ -254,8 +255,8 @@ class Inventory:
         if len(self.__inv[slot]) == 0:
             return
 
-        if self.__inv[slot] == self.__readied_weapon:
-            self.__readied_weapon = ''
+        if self.__inv[slot] == self.__primary_weapon:
+            self.__primary_weapon = ''
         elif self.__inv[slot][1] == 'Armour' and self.__readied_armour[ self.__inv[slot][0].get_area() ] == self.__inv[slot]:
             self.__armour_value -= self.__inv[slot][0].get_ac_modifier()
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
@@ -264,9 +265,9 @@ class Inventory:
     def ready_weapon(self,slot):
         if slot != '-':
             self.unready_item(slot)
-            self.__readied_weapon = self.__inv[slot]
+            self.__primary_weapon = self.__inv[slot]
         else:
-            self.__readied_weapon = ''
+            self.__primary_weapon = ''
 
     # Doesn't check to see if passed slot is armour, caller must verify this
     def unready_armour(self,slot):
@@ -298,9 +299,9 @@ class Inventory:
         except KeyError:
             return ''
     
-    def get_readied_weapon(self):
-        if self.__readied_weapon != '':
-            return self.__readied_weapon[0]
+    def get_primary_weapon(self):
+        if self.__primary_weapon != '':
+            return self.__primary_weapon[0]
         else:
             return ''
 
@@ -334,8 +335,8 @@ class Inventory:
                 _art = get_correct_article(_name)
                 if _art != '':
                     _name = _art + ' ' + _name
-                if self.__inv[letter] == self.__readied_weapon:
-                    _name += ' (weapon in hand)'
+                if self.__inv[letter] == self.__primary_weapon:
+                    _name += ' (primary weapon)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         _name += ' (being worn)'
@@ -355,8 +356,8 @@ class Inventory:
                 name = self.__inv[letter][0].get_full_name() 
                 name = get_correct_article(name) + ' ' + name
 
-                if self.__inv[letter] == self.__readied_weapon:
-                    name += ' (weapon in hand)'
+                if self.__inv[letter] == self.__primary_weapon:
+                    name += ' (primary weapon)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         name += ' (being worn)'

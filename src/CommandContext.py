@@ -251,7 +251,7 @@ class MeatspaceCC(CommandContext):
     def fire_weapon(self):
         try:
             _player = self.get_player()
-            _weapon = _player.inventory.get_readied_weapon()
+            _weapon = _player.inventory.get_primary_weapon()
             
             if not isinstance(_weapon, Items.Firearm):
                 ch = self.dui.pick_inventory_item('Shoot what?')
@@ -366,7 +366,7 @@ class MeatspaceCC(CommandContext):
                     self.dui.clear_msg_line()
                     self.dui.display_message('VrRRrRrroOOoOom!!')
                 else:
-                    self.dui.display_message('%s - %s (weapon in hand)' % (ch, item.get_full_name()))
+                    self.dui.display_message('%s - %s (primary weapon)' % (ch, item.get_full_name()))
 
                 self.dm.player.energy -= STD_ENERGY_COST
             else:

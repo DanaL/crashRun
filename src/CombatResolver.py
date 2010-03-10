@@ -66,7 +66,7 @@ class MeleeResolver(CombatResolver):
         
         _roll = do_d10_roll(tori.get_attack_die(), tori.get_attack_bonus())
         if self.attack_agent(_roll, uke):
-            _weapon = tori.inventory.get_readied_weapon()
+            _weapon = tori.inventory.get_primary_weapon()
             if isinstance(_weapon, Weapon) and isinstance(_weapon, BatteryPowered):
                 if _weapon.charge > 0:
                     _weapon.charge -= 1

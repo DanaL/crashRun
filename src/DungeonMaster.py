@@ -1446,7 +1446,7 @@ class DungeonMaster:
             if item == '':
                 self.dui.display_message('You do not have that item.')
             else:
-                rw = self.player.inventory.get_readied_weapon()
+                rw = self.player.inventory.get_primary_weapon()
                 if rw == item:
                     was_readied = True
 
