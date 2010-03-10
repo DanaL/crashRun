@@ -53,7 +53,7 @@ class BaseItem(BaseTile):
         self.__prev_slot = ''
         self.__stackable = stackable
         self.effects = []
-        self.hands_required = 1;
+        self.hands_required = 1
         
     def set_prev_slot(self,slot):
         self.__prev_slot = slot
@@ -300,13 +300,12 @@ class Medkit(Pharmaceutical):
 class Weapon(BaseItem):
     def __init__(self, name, ch, fg, lt, dd, dr, w, t, thb, tdb, 
             stackable, hands, i=0):
+        super(Weapon, self).__init__(name, 'Weapon', ch, fg, lt, stackable, w, dd, dr, i)
         self.__type = t
         self.to_hit_bonus = thb
         self.to_dmg_bonus = tdb
-        self.hands_required = 2
+        self.hands_required = hands
         
-        BaseItem.__init__(self, name, 'Weapon', ch, fg, lt, stackable, w, dd, dr, i)
-
     def get_type(self):
         return self.__type
 

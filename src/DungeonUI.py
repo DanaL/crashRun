@@ -378,7 +378,9 @@ class DungeonUI(object):
             self.__show_help()
         elif cmd == 'DEBUG_COMMAND':
             self.cc.debug_command(self.query_user('Debug command: '))
-      
+        elif cmd == 'SWAP_WEAPONS':
+            self.cc.swap_weapons()
+            
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
         self.__write_message(msg + ' ', False)

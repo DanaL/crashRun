@@ -94,7 +94,11 @@ class Inventory:
         if self.__primary_weapon != '':
             for e in self.__primary_weapon[0].effects:
                 effects.append((e, self.__primary_weapon[0]))
-            
+        
+        if self.__secondary_weapon != '':
+            for e in self.__secondary_weapon[0].effects:
+                effects.append((e, self.__secondary_weapon[0]))
+                
         for ak in self.__readied_armour.keys():
             if self.__readied_armour[ak] != '':
                 for e in self.__readied_armour[ak][0].effects:
@@ -262,10 +266,12 @@ class Inventory:
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
 
     # Note that it doesn't actually have to be a weapon item!
-    def ready_weapon(self,slot):
+    def ready_weapon(self, slot):
         if slot != '-':
             self.unready_item(slot)
             self.__primary_weapon = self.__inv[slot]
+            if self.__primary_weapon[0].hands_required == 2:
+                self.__secondary_weapon = ''
         else:
             self.__primary_weapon = ''
 
@@ -304,7 +310,18 @@ class Inventory:
             return self.__primary_weapon[0]
         else:
             return ''
-
+    
+    def get_secondary_weapon(self):
+        if self.__secondary_weapon != '':
+            return self.__secondary_weapon[0]
+        else:
+            return ''
+            
+    def swap_hands(self):
+        _tmp = self.__primary_weapon
+        self.__primary_weapon = self.__secondary_weapon
+        self.__secondary_weapon = _tmp
+        
     def get_total_weight(self):
         return self.__weight
 
@@ -337,6 +354,8 @@ class Inventory:
                     _name = _art + ' ' + _name
                 if self.__inv[letter] == self.__primary_weapon:
                     _name += ' (primary weapon)'
+                elif self.__inv[letter] == self.__secondary_weapon:
+                    _name += ' (secondary weapon)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         _name += ' (being worn)'
@@ -358,6 +377,8 @@ class Inventory:
 
                 if self.__inv[letter] == self.__primary_weapon:
                     name += ' (primary weapon)'
+                elif self.__inv[letter] == self.__secondary_weapon:
+                    name += ' (secondary weapon)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         name += ' (being worn)'

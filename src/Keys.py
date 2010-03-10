@@ -27,7 +27,7 @@ _commands = {'PASS':'.', 'SPECIAL_ABILITY':'A', 'BASH':'B', 'CLOSE_DOOR':'c',
     'SHOW_RECENT_MESSAGES':'*', 'SHOW_HELP':'?', 'DEBUG_COMMAND':'#', 
     'MOVE_WEST':'h', 'MOVE_SOUTH':'j', 'MOVE_NORTH':'k', 'MOVE_EAST':'l', 
     'MOVE_NORTHWEST':'y', 'MOVE_NORTHEAST':'u', 'MOVE_SOUTHWEST':'b', 
-    'MOVE_SOUTHEAST':'n', 'WEAR_ARMOUR':'W', 'ACTION':'A'}
+    'MOVE_SOUTHEAST':'n', 'WEAR_ARMOUR':'W', 'ACTION':'A', 'SWAP_WEAPONS':'E'}
 
 class KeysSyntaxError(Exception):
     pass

@@ -348,6 +348,24 @@ class MeatspaceCC(CommandContext):
         except EmptyInventory:
             pass
             
+    def swap_weapons(self):
+        _inv = self.dm.player.inventory
+        _primary = _inv.get_primary_weapon()
+        
+        if _primary != '' and _primary.hands_required == 2:
+            self.dui.display_message('Err...your weapon is two-handed.')
+            return
+        
+        _inv.swap_hands()
+        
+        _primary = _inv.get_primary_weapon()
+        if _primary == '':
+            self.dui.display_message('Your primary hand is now empty.')
+        else:
+            self.dui.display_message('The %s is in your primary hand.' % (_primary.get_full_name()))
+            
+        self.dm.player.energy -= STD_ENERGY_COST
+        
     # At the moment, I have no weapons in the game which, when
     # wielded, provide effects or conditions, but when I do, I'll
     # have to check for them.  Also, will need to remove effects
@@ -365,8 +383,10 @@ class MeatspaceCC(CommandContext):
                 elif item.get_name(True) == 'chainsaw':
                     self.dui.clear_msg_line()
                     self.dui.display_message('VrRRrRrroOOoOom!!')
+                elif item.hands_required == 2:
+                    self.dui.display_message('You hold the %s in both hands' % (item.get_full_name()))
                 else:
-                    self.dui.display_message('%s - %s (primary weapon)' % (ch, item.get_full_name()))
+                    self.dui.display_message('%s (primary weapon)' % (item.get_full_name()))
 
                 self.dm.player.energy -= STD_ENERGY_COST
             else:
@@ -474,4 +494,8 @@ class CyberspaceCC(CommandContext):
         
     def wield_weapon(self):
         self.not_in_cyberspace()
+        
+    def swap_weapons(self):
+        self.not_in_cyberspace()
+        
         
