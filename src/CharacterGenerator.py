@@ -135,7 +135,7 @@ class CharacterGenerator:
                 points -= 1
 
     def __select_skills(self):
-        skill_points = {'Combat':1,'Subterfuge':1,'Miscellaneous':1,'Tech':3}
+        skill_points = {'Combat':1,'Subterfuge':2,'Miscellaneous':1,'Tech':3}
         categories = skill_points.keys()
         categories.sort()
 

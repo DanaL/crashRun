@@ -54,11 +54,11 @@ class SkillTable(object):
         self.__categories = ['Combat','Tech','Subterfuge','Miscellaneous']
         self.__skills = {}
 
-        self.__skills['Beam Weapons'] = Skill('Beam Weapons','Combat')
         self.__skills['Guns'] = Skill('Guns','Combat')
         self.__skills['Hand-to-Hand'] = Skill('Hand-to-Hand','Combat')
         self.__skills['Melee'] = Skill('Melee','Combat')
         self.__skills['Thrown'] = Skill('Thrown','Combat')
+        self.__skills['Two Weapon Fighting'] = Skill('Two Weapon Fighting','Combat')
         
         self.__skills['Crypto'] = Skill('Crypto','Tech')
         self.__skills['Electronics'] = Skill('Electronics','Tech')
