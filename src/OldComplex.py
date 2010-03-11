@@ -190,5 +190,7 @@ class OldComplexLevel(GameLevel):
             self.disable_lifts()
             self.dispatch_security_bots()
             self.dm.dui.display_message('An alarm begins to sound.')
+            for _m in self.monsters:
+                _m.attitude = 'hostile'
         
             
