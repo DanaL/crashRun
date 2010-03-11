@@ -70,6 +70,7 @@ class OldComplexLevel(GameLevel):
         _chart.rare_items[9] = ('machine gun clip', 0)
         _chart.rare_items[10] = ('9mm clip', 0)
         _chart.rare_items[11] = ('m1911a1', 0)
+        _chart.rare_items[12] = ('taser', 0)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
 
