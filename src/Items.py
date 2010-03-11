@@ -81,6 +81,9 @@ class BaseItem(BaseTile):
 
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)
+    
+    def get_type(self):
+        return 'item'
         
 class BatteryPowered:
     # Passive indicates the battery will drain just by being used

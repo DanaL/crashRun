@@ -306,8 +306,10 @@ class Player(BaseAgent):
         else:
             _dmg = weapon.dmg_roll() 
             if weapon.get_type() != 'non-physical':
-               _dmg + self.calc_dmg_bonus()
-                
+                # Non-physical weapons are like tasers, whose effect comes not
+                # from bashing the monster
+                _dmg + self.calc_dmg_bonus()
+            
         return _dmg
 
     def get_shooting_attack_die(self, weapon):
