@@ -61,7 +61,7 @@ class MeleeResolver(CombatResolver):
             _dmg_types = weapon.get_damage_types()
                 
         if self.attack_agent(_roll, uke):
-            if weapon = '':
+            if weapon == '':
                 _dmg = tori.get_hand_to_hand_dmg_roll()
             else:
                 _dmg = weapon.dmg_roll(tori)

@@ -309,8 +309,8 @@ class Weapon(BaseItem):
     def get_bonuses(self):
         return (self.to_hit_bonus, self.to_dmg_bonus)
 
-    def dmg_roll(self):
-        dmg = BaseItem.dmg_roll(self)
+    def dmg_roll(self, user):
+        dmg = BaseItem.dmg_roll(self, user)
         
         dmg += self.to_dmg_bonus
 
@@ -338,11 +338,11 @@ class Chainsaw(Weapon, BatteryPowered):
     def get_full_name(self):
         return Weapon.get_full_name(self) + ' (' + str(self.charge) + ')'
     
-    def dmg_roll(self):
+    def dmg_roll(self, user):
         if self.charge == 0:
             return 1
         else:
-            return Weapon.dmg_roll(self)
+            return Weapon.dmg_roll(self, user)
 
 class Taser(Weapon, BatteryPowered):
     def __init__(self, i):
