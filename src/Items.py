@@ -553,7 +553,7 @@ class ItemFactory:
         self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,True,0,0,1)
         
         # add the armour
-        self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-2,0)])
+        self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-3,0)])
         self.__item_db['army helmet'] = ('armour','helmet','darkgreen','green',1,1,0,[])
         self.__item_db['stylish leather jacket'] = ('armour','suit','brown','lightbrown',1,4,0,[])
         self.__item_db['high-tech sandals'] = ('armour','boots','brown','lightbrown',1,0,0,[('sneaky',2,0)])

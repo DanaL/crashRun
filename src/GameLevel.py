@@ -34,18 +34,18 @@ from FieldOfView import Shadowcaster
 from Terrain import TerrainTile
 import MonsterFactory
 from Util import calc_distance
+from Util import do_d10_roll
 
 from random import choice
 from random import random
 from random import randrange
 
-# The code for generating levels and maps is kinda all over the place.
-# I'd like to someday refactor it so that each level type (prologue,
-# old complex, mine/cave, etc.) is a class descended from from GameLevel
-# and knows how to populate itself with monsters and items and generate
-# its own map.  This will eliminate a pile of if statements, and yank
-# a bunch of code out DungeonMaster and GameLevel.  Mmmm..smaller
-# source files..
+class Noise(object):
+    def __init__(self, volume, source, row, col):
+        self.volume = volume
+        self.source = source
+        self.row = row
+        self.col = col
 
 # Override the basic list structure to make a sort of priority queue
 # (so items stacked in a pile are stored sorted by category, which is
@@ -150,14 +150,29 @@ class GameLevel:
         self.cameras_active = random() < 0.4
         self.security_active = True
     
+    # It would be nice if instead of alerting all monsters within a 
+    # certain radius, if the sound were blocked by walls, muffled by
+    # doors etc.  A flood-fill algorithm of some sort?
     def handle_stealth_check(self, player):
-        _roll = player.stealth_roll() + 1
-        
+        _loudness = do_d10_roll(1,1)
+        _roll = player.stealth_roll()
+        _roll = int(round(_roll / 10.0))
+        _volume = _loudness - _roll
+        if _roll < 1:
+            _roll = 1
+
+        _radius = 6 - _roll
+        if _radius < 1:
+            _radius = 1
+            
+        _noise = Noise(_volume, player, player.row, player.col)
         for _mon in self.monsters:
             _d = calc_distance(player.row, player.col, _mon.row, _mon.col)
-            if (_d < 6):
-                _mon.notice_player(_roll)
-            
+            if _d <= _radius:
+                _spotted = _mon.react_to_noise(_noise)
+                # I can later use success or failure of action to count
+                # as practice toward the player improving his skills
+                
     # is a location a valid square in the current map
     def in_bounds(self,r,c):
         return r >= 0 and r < self.lvl_length and c >= 0 and c < self.lvl_width

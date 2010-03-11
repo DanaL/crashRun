@@ -480,6 +480,13 @@ class BaseMonster(BaseAgent, AStarMover):
         
     def get_melee_damage_roll(self):
         return self.dmg_roll()
+    
+    def get_name(self, article=0):
+        _name = super(BaseMonster, self).get_name(article)
+        if self.attitude == 'inactive':
+            _name += ' (inactive)'
+            
+        return _name
         
     def is_player_adjacent(self):
         _lvl = self.dm.curr_lvl
@@ -502,13 +509,18 @@ class BaseMonster(BaseAgent, AStarMover):
     def set_dm_ref(self,dm):
         self.dm = dm
         
-    def notice_player(self, stealth_roll):
+    def react_to_noise(self, noise):
         if self.attitude == 'inactive':
-            _roll = do_d10_roll(self.level/4 + 1, 0)
+            _roll = do_d10_roll(1, 0)
             
-            if _roll > stealth_roll:
+            if _roll < noise.volume:
                 self.attitude = 'hostile'
-                
+                return True
+        
+            return False
+        
+        return True
+            
     def get_xp_value(self):
         return self.__xp_value
 

@@ -340,9 +340,10 @@ class Player(BaseAgent):
         self.dm.refresh_player_view()
 
     def stealth_roll(self):
-        _dice = self.skills.get_skill('Stealth').get_rank()
+        _dice = 1 + self.skills.get_skill('Stealth').get_rank()
         _mod = sum(_con[0][1] for _con in self.conditions if _con[0][0] == 'sneaky')
- 
+        _mod += self.get_coordination_bonus()
+        
         return do_d10_roll(_dice, _mod)
         
     def stunned(self, dui):
