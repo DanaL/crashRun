@@ -349,6 +349,7 @@ class Player(BaseAgent):
         
     def stunned(self, dui):
         self.dm.alert_player(self.row, self.col, 'You are stunned.')
+        self.try_to_shake_off_shock()
         self.energy -= STD_ENERGY_COST
         
     def __advance_level(self):

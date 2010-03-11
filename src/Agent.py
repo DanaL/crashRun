@@ -249,7 +249,8 @@ class BaseAgent(BaseTile):
                 if attacker == '' and len(_special) > 0:
                     attacker = DamageDesc(list(special)[0])
                 self.killed(dm, level, attacker)
-            dm.handle_attack_effects(attacker, self, _special)
+            if not self.dead:
+                dm.handle_attack_effects(attacker, self, _special)
             
         return damage
             
@@ -298,6 +299,7 @@ class BaseAgent(BaseTile):
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
             
     def stunned(self, dui):
+        self.try_to_shake_off_shock()
         self.energy -= STD_ENERGY_COST
         
     def __check_for_overlapping_high_effects(self, effect, source):
@@ -356,24 +358,40 @@ class BaseAgent(BaseTile):
                 
     def restore_vision(self):
         self.vision_radius = self.__std_vision_radius
-
-    def shocked(self, attacker):
+    
+    def get_saving_throw_for_shock(self):
         if hasattr(self,'stats'):
             _saving_throw = self.stats.get_toughness()
         else:
             _saving_throw = self.level
+                
+        return _saving_throw
+        
+    def try_to_shake_off_shock(self):
+        _saving_throw =  self.get_saving_throw_for_shock()             
+        _roll = randrange(21)
+        
+        if _roll < _saving_throw:
+            for _c in self.conditions:
+                if _c[0][0] == 'stunned':
+                    self.remove_effect(_c[0], _c[1])
+                    _mr = MessageResolver(self.dm, self.dm.dui)
+                    _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' shakes off the stun.'
+                    self.dm.alert_player(self.row, self.col, _msg)
             
+    def shocked(self, attacker):
+        _saving_throw =  self.get_saving_throw_for_shock()    
         for _c in self.conditions:
-            if _c [0][0] == 'grounded':
-                _saving_throw += _c[0][1]
-            elif _c[0][0] == 'shock immune':
+            if _c[0][0] == 'shock immune':
                 return 
-                    
+            elif _c [0][0] == 'grounded':
+                _saving_throw += _c[0][1]
+                
         _roll = randrange(21)
         if _roll == 20 or _roll > _saving_throw:
             self.apply_effect((('stunned', 0, randrange(3, 6) + self.dm.turn), attacker), False)
             _mr = MessageResolver(self.dm, self.dm.dui)
-            _msg = self.get_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
+            _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
             self.dm.alert_player(self.row, self.col, _msg)
             
     def sum_effect_bonuses(self, effect):
@@ -868,7 +886,24 @@ class Ninja(RelentlessPredator):
                   
 class BasicBot(RelentlessPredator):
     pass
-    
+
+class SecurityBot(BasicBot):
+    def __init__(self, dm, row, col):
+        RelentlessPredator.__init__(self, vision_radius=10, ac=6, hp_low=20, hp_high=30, dmg_dice=7, dmg_rolls=3, ab=2,
+            dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
+            row=row, col=col, xp_value=20, gender='male', level=6)    
+            
+    def perform_action(self):
+        if randrange(3) == 0:
+            self.unarmed_rolls = 1
+            self.unarmed_dice = 1
+            self.melee_type = 'shock'
+        else:
+            self.unarmed_rolls = 3
+            self.unarmed_dice = 7
+            self.melee_type = 'melee'
+        super(SecurityBot, self).perform_action()
+            
 # UAV that can fire missles at the player
 class PredatorDrone(BasicBot):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,

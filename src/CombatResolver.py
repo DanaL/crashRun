@@ -78,7 +78,7 @@ class MeleeResolver(CombatResolver):
                 _dmg_types = ['shock']
             elif isinstance(weapon, Items.HandGun):
                 _verb = 'pistol whip'
-                
+            
             self.dm.mr.show_hit_message(tori, uke, _verb)
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, _dmg_types)
         else:

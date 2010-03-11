@@ -233,10 +233,7 @@ def _scriptKiddie(dm, row, col):
     return _sk
     
 def _securityBot(dm,row,col):
-    _bot = BasicBot(vision_radius=10, ac=6, hp_low=20, hp_high=30, dmg_dice=7, dmg_rolls=3, ab=2,
-            dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
-            row=row, col=col, xp_value=20, gender='male', level=6)
-    _bot.melee_type = 'shock'
+    _bot = SecurityBot(dm, row, col)
     
     if random() < 0.33:
         _if = Items.ItemFactory()
