@@ -63,6 +63,12 @@ class MeleeResolver(CombatResolver):
         if self.attack_agent(_roll, uke):
             _dmg = tori.get_melee_damage_roll(weapon)
                     
+            try:
+                if uke.attitude == 'inactive':
+                    _dmg *= 2
+            except AttributeError:
+                pass
+            
             _verb = 'hit'
             if tori.melee_type == 'fire':
                 _verb = 'burn'
@@ -94,17 +100,23 @@ class MeleeResolver(CombatResolver):
             return
         
         _attack_modifiers = 0
+        try:
+            if uke.attitude == 'inactive':
+                _attack_modifiers = 10
+        except AttributeError:
+            pass
+            
         _primary = tori.inventory.get_primary_weapon()
         _secondary = tori.inventory.get_secondary_weapon()
         
         if _primary != '' and _secondary != '' and not isinstance(_secondary, Items.Firearm):
             # two weapon fighting
-            _tw_modifier = tori.get_two_weapon_modifier()
+            _tw_modifier = tori.get_two_weapon_modifier() + _attack_modifiers
             self.__attack_uke(tori, uke, _primary, _tw_modifier)
             if not uke.dead: # he may have been killed by the first blow
                 self.__attack_uke(tori, uke, _primary, _tw_modifier - 2)
         else:
-            self.__attack_uke(tori, uke, _primary, 0)
+            self.__attack_uke(tori, uke, _primary, _attack_modifiers)
         
 class ShootingResolver(CombatResolver):     
     def attack(self, tori, uke, gun):
