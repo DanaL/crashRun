@@ -41,12 +41,13 @@ from random import random
 from random import randrange
 
 class Noise(object):
-    def __init__(self, volume, source, row, col):
+    def __init__(self, volume, source, row, col, description):
         self.volume = volume
         self.source = source
         self.row = row
         self.col = col
-
+        self.description = description
+        
 # Override the basic list structure to make a sort of priority queue
 # (so items stacked in a pile are stored sorted by category, which is
 # handy for display purposes)
@@ -164,14 +165,18 @@ class GameLevel:
         _radius = 6 - _roll
         if _radius < 1:
             _radius = 1
-            
-        _noise = Noise(_volume, player, player.row, player.col)
-        for _mon in self.monsters:
-            _d = calc_distance(player.row, player.col, _mon.row, _mon.col)
-            if _d <= _radius:
-                _spotted = _mon.react_to_noise(_noise)
+        
+        _noise = Noise(_volume, player, player.row, player.col, 'walking')
+        self.monsters_react_to_noise(_radius, _noise)
+        
+    def monsters_react_to_noise(self, radius, noise):
+        for _m in self.monsters:
+            _d = calc_distance(noise.row, noise.col, _m.row, _m.col)
+            if _d <= radius:
+                _spotted = _m.react_to_noise(noise)
                 # I can later use success or failure of action to count
                 # as practice toward the player improving his skills
+                # ie., if noise.description == 'walking'...
                 
     # is a location a valid square in the current map
     def in_bounds(self,r,c):

@@ -40,6 +40,7 @@ from Cyberspace import TrapSetOff
 from FieldOfView import get_lit_list
 from FieldOfView import Shadowcaster
 from GameLevel import GameLevel
+from GameLevel import Noise
 from GamePersistence import clean_up_files
 from GamePersistence import get_level_from_save_obj
 from GamePersistence import get_save_file_name
@@ -653,16 +654,19 @@ class DungeonMaster:
                 self.player.energy -= STD_ENERGY_COST  
             else:
                 randio = randrange(0,20) + self.player.calc_dmg_bonus()
-
+                
+                _noise = Noise(6, self.player, door_r, door_c, 'bashing')
+                self.curr_lvl.monsters_react_to_noise(6, _noise)
+        
                 if randio > 15:
                     tile.smash()
                     self.update_sqr(self.curr_lvl, door_r,door_c)
                     self.refresh_player_view()
                     self.dui.display_message('You smash open the door')
-                    self.player.energy -= STD_ENERGY_COST
                 else:
                     self.dui.display_message('WHAM!!')
-                    self.player.energy -= STD_ENERGY_COST
+                    
+                self.player.energy -= STD_ENERGY_COST
         else:
             self.__uncontrolled_move(self.player,door_r,door_c,dt)
 
@@ -803,6 +807,8 @@ class DungeonMaster:
                 self.pick_lock(door, pick)
             elif isinstance(pick, Items.Chainsaw):
                 if pick.charge > 0:
+                    _noise = Noise(7, self.player, self.player.row, self.player.col, 'chainsaw')
+                    self.curr_lvl.monsters_react_to_noise(5, _noise)
                     door.smash()
                     self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
                     pick.charge -= 1
@@ -1020,6 +1026,9 @@ class DungeonMaster:
     # I could perhaps merge a bunch of the code between this & throwing weapons?
     # the loop is essentially the same.  Would pass in the appropriate combat resolver
     def __fire_weapon(self, shooter, start_r, start_c, direction, gun):
+        _noise = Noise(8, shooter, start_r, start_c, 'gunfire')
+        self.curr_lvl.monsters_react_to_noise(8, _noise)
+        
         if direction == '<':
             self.fire_weapon_at_ceiling(shooter, gun)
             return
@@ -1793,6 +1802,9 @@ class DungeonMaster:
         self.alert_player_to_event(row, col, level,'BOOM!!', False)
         explosive = source.explosive
         
+        _noise = Noise(10, source, row, col, 'explosion')
+        self.curr_lvl.monsters_react_to_noise(explosive.blast_radius * 1.5, _noise)
+                    
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
         
         bullet = Items.Bullet('*')
