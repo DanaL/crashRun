@@ -76,14 +76,11 @@ class BaseItem(BaseTile):
     def is_stackable(self):
         return self.__stackable
 
-    def dmg_roll(self):
-        return do_dN(self.__dmg_roll, self.__dmg_dice)
+    def dmg_roll(self, user):
+        return do_dN(self.__dmg_roll, self.__dmg_dice) + user.calc_dmg_bonus()
 
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)
-    
-    def get_type(self):
-        return 'item'
         
 class BatteryPowered:
     # Passive indicates the battery will drain just by being used
@@ -308,9 +305,6 @@ class Weapon(BaseItem):
         self.to_hit_bonus = thb
         self.to_dmg_bonus = tdb
         self.hands_required = hands
-        
-    def get_type(self):
-        return self.__type
 
     def get_bonuses(self):
         return (self.to_hit_bonus, self.to_dmg_bonus)
@@ -354,7 +348,7 @@ class Taser(Weapon, BatteryPowered):
     def __init__(self, i):
         BatteryPowered.__init__(self, 3, False)
         Weapon.__init__(self, 'taser', '|', 'darkblue', 'blue', 1, 1, 1, 
-            'non-physical', 1, 1, False, i)
+            'stunner', 1, 1, False, i)
         
     def get_full_name(self):
         return Weapon.get_full_name(self) + ' (' + str(self.charge) + ')'
@@ -362,6 +356,9 @@ class Taser(Weapon, BatteryPowered):
     def get_damage_types(self):
         _types = ['shock'] if self.charge > 0 else []
         return _types
+    
+    def dmg_roll(self, user):
+        return 1
         
 # Fire arms really need two different to damage rolls and damage dice
 class Firearm(BaseItem):

@@ -299,19 +299,13 @@ class Player(BaseAgent):
     def get_defense_die(self):
         return self.level + self.skills.get_skill('Dodge').get_rank()
         
-    def get_melee_damage_roll(self, weapon):
-        if weapon == '':
-            _rank = self.skills.get_skill('Hand-to-Hand').get_rank()+1
-            _dmg = sum([randrange(1,7) for j in range(_rank)], 0) 
-        else:
-            _dmg = weapon.dmg_roll() 
-            if weapon.get_type() != 'non-physical':
-                # Non-physical weapons are like tasers, whose effect comes not
-                # from bashing the monster
-                _dmg + self.calc_dmg_bonus()
-            
+    def get_hand_to_hand_dmg_roll(self):
+        _rank = self.skills.get_skill('Hand-to-Hand').get_rank()+1
+        _dmg = sum([randrange(1,7) for j in range(_rank)], 0) 
+        _dmg += self.calc_dmg_bonus()
+        
         return _dmg
-
+        
     def get_shooting_attack_die(self, weapon):
         _die_rolls = self.level + self.get_attack_bonuses()
         if isinstance(weapon, Firearm):

@@ -257,10 +257,7 @@ class BaseAgent(BaseTile):
     def dazed(self, source):
         _effect = (('dazed', 0, randrange(5,15) + self.dm.turn), source)
         self.apply_effect(_effect, False)
-        
-    def dmg_roll(self):
-        return do_dN(self.unarmed_rolls, self.unarmed_dice)
-
+    
     def get_articled_name(self):
         return 'the ' + self.get_name()
 
@@ -272,7 +269,10 @@ class BaseAgent(BaseTile):
     
     def get_gender(self):
         return self.__gender
-
+        
+    def get_hand_to_hand_dmg_roll(self):
+        return do_dN(self.unarmed_rolls, self.unarmed_dice)
+        
     def get_melee_type(self):
         return self.melee_type
       
@@ -500,9 +500,6 @@ class BaseMonster(BaseAgent, AStarMover):
     
     def get_defense_die(self):
         return self.level
-        
-    def get_melee_damage_roll(self, weapon):
-        return self.dmg_roll()
     
     def get_name(self, article=0):
         _name = super(BaseMonster, self).get_name(article)
