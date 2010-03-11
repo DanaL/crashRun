@@ -299,15 +299,16 @@ class Player(BaseAgent):
     def get_defense_die(self):
         return self.level + self.skills.get_skill('Dodge').get_rank()
         
-    def get_melee_damage_roll(self):
-        _weapon = self.inventory.get_primary_weapon()
-        if _weapon == '':
+    def get_melee_damage_roll(self, weapon):
+        if weapon == '':
             _rank = self.skills.get_skill('Hand-to-Hand').get_rank()+1
             _dmg = sum([randrange(1,7) for j in range(_rank)], 0) 
         else:
-            _dmg = _weapon.dmg_roll() 
-            
-        return _dmg + self.calc_dmg_bonus()
+            _dmg = weapon.dmg_roll() 
+            if weapon.get_type() != 'non-physical':
+               _dmg + self.calc_dmg_bonus()
+                
+        return _dmg
 
     def get_shooting_attack_die(self, weapon):
         _die_rolls = self.level + self.get_attack_bonuses()

@@ -326,7 +326,10 @@ class Weapon(BaseItem):
         sig = BaseItem.get_signature(self)
 
         return (sig[0], sig[1], sig[2], self.to_hit_bonus, self.to_dmg_bonus)
-
+        
+    def get_damage_types(self):
+        return ['melee']
+        
 class Chainsaw(Weapon, BatteryPowered):
     def __init__(self, i):
         BatteryPowered.__init__(self, 30, False)
@@ -343,6 +346,19 @@ class Chainsaw(Weapon, BatteryPowered):
             return 1
         else:
             return Weapon.dmg_roll(self)
+
+class Taser(Weapon, BatteryPowered):
+    def __init__(self, i):
+        BatteryPowered.__init__(self, 3, False)
+        Weapon.__init__(self, 'taser', '|', 'darkblue', 'blue', 1, 1, 1, 
+            'non-physical', 1, 1, False, i)
+        
+    def get_full_name(self):
+        return Weapon.get_full_name(self) + ' (' + str(self.charge) + ')'
+    
+    def get_damage_types(self):
+        _types = ['shock'] if self.charge > 0 else []
+        return _types
         
 # Fire arms really need two different to damage rolls and damage dice
 class Firearm(BaseItem):
@@ -580,7 +596,8 @@ class ItemFactory:
         self.__item_db['targeting wizard'] = ('other')
         self.__item_db['chainsaw'] = ('other')
         self.__item_db['flashlight'] = ('other')
-
+        self.__item_db['taser'] = ('other')
+        
     # generate an item by passing it's name (katana, lockpick, etc.)
     def gen_item(self, item_name, i=0):
         try:
@@ -637,7 +654,9 @@ class ItemFactory:
             return Chainsaw(i)
         elif item_name == 'flashlight':
             return Flashlight()
-
+        elif item_name == 'taser':
+            return Taser(i)
+            
     def get_stack(self, item_name, max, i=0):
         _item = self.gen_item(item_name, i)
         _stack = ItemStack(_item)

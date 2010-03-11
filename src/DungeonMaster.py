@@ -566,11 +566,13 @@ class DungeonMaster:
         _explosion = Items.Explosion('missle', dmg_dice, dmg_rolls, radius)
         self.__item_hits_ground(self.curr_lvl, target_r, target_c, _explosion)
     
-    def handle_attack_effects(self, attacker, victim, method):
-        if method == 'fire':
-            self.__agent_burnt(self.player, attacker)
-        elif method == 'shock':
-            victim.shocked(attacker)
+    # I could/should move this and __agent_burnt to Agent.py
+    def handle_attack_effects(self, attacker, victim, damage_types):
+        for _method in damage_types:
+            if _method == 'fire':
+                self.__agent_burnt(victim, attacker)
+            elif _method == 'shock':
+                victim.shocked(attacker)
 
     def get_direction(self, direction):
         if self.player.has_condition('dazed'):

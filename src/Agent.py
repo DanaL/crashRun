@@ -25,6 +25,7 @@ from FieldOfView import Shadowcaster
 import Items
 from Items import ItemFactory
 from Inventory import Inventory
+from MessageResolver import MessageResolver
 from pq import PriorityQueue
 from Util import calc_distance
 from Util import do_dN
@@ -51,7 +52,7 @@ class Fact:
         self.time = time
 
 class DamageDesc(object):
-    def __init__(self,desc):
+    def __init__(self, desc):
         self.desc = desc
         
     def get_correct_article(self):
@@ -235,18 +236,20 @@ class BaseAgent(BaseTile):
     def chance_to_catch(self, item):
         return False
         
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):    
-        if attack_type not in ['shock','burn','brain damage']:
+    def damaged(self, dm, level, damage, attacker, damage_types=[]):
+        # what I want here is set intersection
+        _special = set(damage_types).intersection(set(('shock','burn','brain damage')))
+        if len(_special) == 0:
             damage -= self.get_curr_ac()
             if damage < 1 and random() < 0.5: damage = 1
             
         if damage > 0:
             self.add_hp(-damage)
             if self.curr_hp < 1:
-                if attacker == '' and attack_type != 'melee':
-                    attacker = DamageDesc(attack_type)
+                if attacker == '' and len(_special) > 0:
+                    attacker = DamageDesc(list(special)[0])
                 self.killed(dm, level, attacker)
-            dm.handle_attack_effects(attacker, self, attack_type)
+            dm.handle_attack_effects(attacker, self, _special)
             
         return damage
             
@@ -295,8 +298,6 @@ class BaseAgent(BaseTile):
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
             
     def stunned(self, dui):
-        _m = self.get_name() + ' is stunned.'
-        dui.alert_player(self.row, self.col, _m)
         self.energy -= STD_ENERGY_COST
         
     def __check_for_overlapping_high_effects(self, effect, source):
@@ -360,15 +361,20 @@ class BaseAgent(BaseTile):
         if hasattr(self,'stats'):
             _saving_throw = self.stats.get_toughness()
         else:
-            _saving_throw = 10
+            _saving_throw = self.level
             
         for _c in self.conditions:
             if _c [0][0] == 'grounded':
                 _saving_throw += _c[0][1]
-
+            elif _c[0][0] == 'shock immune':
+                return 
+                    
         _roll = randrange(21)
         if _roll == 20 or _roll > _saving_throw:
-            self.apply_effect((('stunned', 0, randrange(1,4) + self.dm.turn), attacker), False)
+            self.apply_effect((('stunned', 0, randrange(3, 6) + self.dm.turn), attacker), False)
+            _mr = MessageResolver(self.dm, self.dm.dui)
+            _msg = self.get_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
+            self.dm.alert_player(self.row, self.col, _msg)
             
     def sum_effect_bonuses(self, effect):
         return sum([_c[0][1] for _c in self.conditions if _c[0][0] == effect], 0)
@@ -477,7 +483,7 @@ class BaseMonster(BaseAgent, AStarMover):
     def get_defense_die(self):
         return self.level
         
-    def get_melee_damage_roll(self):
+    def get_melee_damage_roll(self, weapon):
         return self.dmg_roll()
     
     def get_name(self, article=0):

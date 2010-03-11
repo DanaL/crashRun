@@ -55,27 +55,33 @@ class CyberspaceCombatResolver(CombatResolver):
         
 class MeleeResolver(CombatResolver):        
     def __attack_uke(self, tori, uke, weapon, attack_modifiers):
+        _dmg_types = []
         _roll = do_d10_roll(tori.get_attack_die(), 0) + tori.get_attack_bonus() + attack_modifiers
+        if isinstance(weapon, Weapon):
+            _dmg_types = weapon.get_damage_types()
+                
         if self.attack_agent(_roll, uke):
-            if isinstance(weapon, Weapon) and isinstance(weapon, BatteryPowered):
-                if weapon.charge > 0:
-                    weapon.charge -= 1
-                    if weapon.charge == 0: self.items_discharged(tori, [weapon])
-            _dmg = tori.get_melee_damage_roll()
+            _dmg = tori.get_melee_damage_roll(weapon)
                     
             _verb = 'hit'
             if tori.melee_type == 'fire':
                 _verb = 'burn'
+                _dmg_types = ['burn']
             elif tori.melee_type == 'shock':
                 _verb = 'shock'
+                _dmg_types = ['shock']
             elif isinstance(weapon, Items.HandGun):
                 _verb = 'pistol whip'
                 
             self.dm.mr.show_hit_message(tori, uke, _verb)
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, tori.melee_type)
+            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, _dmg_types)
         else:
             self.dm.mr.show_miss_message(tori, uke)
-            
+        
+        if isinstance(weapon, BatteryPowered) and weapon.charge > 0:
+                weapon.charge -= 1
+                if weapon.charge == 0: self.dm.items_discharged(tori, [weapon])
+                
     def attack(self, tori, uke):
         if tori.has_condition('dazed'):
             _dt = get_rnd_direction_tuple()

@@ -154,6 +154,7 @@ def _mutant(dm, row, col):
     if random() < 0.25:
         _if = Items.ItemFactory()
         _m.inventory.add_item(_if.gen_item('tattered rags'))
+        
     return _m
     
 def _mutantMutt(dm,row,col):
@@ -192,7 +193,8 @@ def _reanimatedMaintenanceWorker(dm, row, col):
             name='reanimated maintenance worker', row=row, col=col, xp_value=20, gender='male',
             level=6)
     _r.base_energy = 9
-    _r.conditions.append( (('light protection',0,0), _r) )
+    _r.conditions.append((('light protection',0,0), _r))
+    _r.conditions.append((('shock immune',0,0), _r))
     
     return _r
     
@@ -202,7 +204,9 @@ def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
             name='reanimated unionzed maintenance worker', row=row, col=col, xp_value=25, 
             gender='male', level=8)
             
-    _z.conditions.append( (('light protection',0,0), _z) )
+    _z.conditions.append((('light protection',0,0), _z))
+    _z.conditions.append((('shock immune',0,0), _z))
+    
     if randrange(5) == 0:
         _if = Items.ItemFactory()
         _z.inventory.add_item(_if.gen_item('push broom'))
@@ -213,6 +217,8 @@ def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
 def _zombieScientist(dm, row, col):
     _zs = ZombieScientist(dm, row, col)
     _zs.conditions.append((('light protection',0,0), _zs))
+    _zs.conditions.append((('shock immune',0,0), _zs))
+    
     return _zs
             
 def _repairBot(dm, row, col):
