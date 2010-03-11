@@ -570,7 +570,7 @@ class DungeonMaster:
         if method == 'fire':
             self.__agent_burnt(self.player, attacker)
         elif method == 'shock':
-            self.player.shocked(attacker)
+            victim.shocked(attacker)
 
     def get_direction(self, direction):
         if self.player.has_condition('dazed'):

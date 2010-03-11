@@ -367,7 +367,7 @@ class BaseAgent(BaseTile):
                 _saving_throw += _c[0][1]
 
         _roll = randrange(21)
-        if _roll == 20 or randrange(21) > _saving_throw:
+        if _roll == 20 or _roll > _saving_throw:
             self.apply_effect((('stunned', 0, randrange(1,4) + self.dm.turn), attacker), False)
             
     def sum_effect_bonuses(self, effect):
@@ -418,8 +418,7 @@ class AStarMover:
                 # If the path we were following is not longer valid, start a
                 # new path
                 self.moves = []
-
-# needs a reference to DungeonMaster object 
+ 
 class BaseMonster(BaseAgent, AStarMover):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch, 
                 fg, bg, lit, name, row, col, xp_value, gender, level):
