@@ -121,7 +121,7 @@ class ScienceComplexLevel(GameLevel):
         _chart.rare_items[5] = ('Nike sneakers', 0)
         _chart.rare_items[6] = ('m16 assault rifle', 0)
         _chart.rare_items[7] = ('uzi', 0)
-        _chart.rare_items[8]] = ('taser', 0)
+        _chart.rare_items[8] = ('taser', 0)
         
         [self.add_item(_chart) for k in range(randrange(5,10))]
         
