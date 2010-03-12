@@ -20,6 +20,7 @@ import string
 from Agent import STD_ENERGY_COST
 import Items
 from Inventory import AlreadyWearingSomething
+from Inventory import CannotWieldSomethingYouAreWearing
 from SubnetNode import SubnetNode
 import Terrain
 from Terrain import DownStairs
@@ -430,6 +431,8 @@ class MeatspaceCC(CommandContext):
                 self.dui.display_message('You do not have that item.')          
         except NonePicked:
             self.dui.clear_msg_line()
+        except CannotWieldSomethingYouAreWearing:
+            self.dui.display_message("You can't wield something you are wearing.")
         except EmptyInventory:
             pass
 

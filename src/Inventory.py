@@ -17,6 +17,7 @@
 
 from random import choice
 
+import Items
 from Items import BatteryPowered
 from Items import ItemStack
 from Items import WithOffSwitch
@@ -42,6 +43,9 @@ class NotWearingItem:
     pass
 
 class OutOfWetwareMemory:
+    pass
+    
+class CannotWieldSomethingYouAreWearing:
     pass
     
 # stores tuples of the form (item,category)
@@ -91,11 +95,11 @@ class Inventory:
     def get_effects_from_readied_items(self):
         effects = []
         
-        if self.__primary_weapon != '':
+        if isinstance(self.__primary_weapon, Items.Weapon):
             for e in self.__primary_weapon[0].effects:
                 effects.append((e, self.__primary_weapon[0]))
         
-        if self.__secondary_weapon != '':
+        if isinstance(self.__secondary_weapon, Items.Weapon):
             for e in self.__secondary_weapon[0].effects:
                 effects.append((e, self.__secondary_weapon[0]))
                 
@@ -255,7 +259,7 @@ class Inventory:
         except KeyError:
             return ''
 
-    def unready_item(self,slot):
+    def unready_item(self, slot):
         if len(self.__inv[slot]) == 0:
             return
 
@@ -266,17 +270,22 @@ class Inventory:
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
 
     # Note that it doesn't actually have to be a weapon item!
-    def ready_weapon(self, slot):
+    def ready_weapon(self, slot):    
         if slot != '-':
+            _item = self.__inv[slot]
+            # check for the oddball case where the player tries to wield a piece of armour he is wearing.
+            if _item[1] == 'Armour' and self.__readied_armour[_item[0].get_area()] == _item:
+                raise CannotWieldSomethingYouAreWearing
+            
             self.unready_item(slot)
-            self.__primary_weapon = self.__inv[slot]
+            self.__primary_weapon = _item
             if self.__primary_weapon[0].hands_required == 2:
                 self.__secondary_weapon = ''
         else:
             self.__primary_weapon = ''
 
     # Doesn't check to see if passed slot is armour, caller must verify this
-    def unready_armour(self,slot):
+    def unready_armour(self, slot):
         if self.__readied_armour[ self.__inv[slot][0].get_area() ] == self.__inv[slot]:
             self.__armour_value -= self.__inv[slot][0].get_ac_modifier()
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
@@ -285,7 +294,7 @@ class Inventory:
 
     # Function assumes slot is actually referring to a valid piece of armour.
     # Caller must check this.
-    def ready_armour(self,slot):
+    def ready_armour(self, slot):
         area = self.__inv[slot][0].get_area()
 
         if self.__readied_armour[area] != '':
