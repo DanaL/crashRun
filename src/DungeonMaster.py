@@ -1154,7 +1154,7 @@ class DungeonMaster:
 
             if item == '':
                 if hasattr(self.player,'reload_memory'):
-                    self.load_shotgun(self.player.reload_memory[0], self.player.reload_memory[1])
+                    self.add_ammo_to_gun(self.player.reload_memory[0], self.player.reload_memory[1])
                 else:
                     self.dui.display_message('Huh?')
             elif item.get_category() != 'Firearm':
