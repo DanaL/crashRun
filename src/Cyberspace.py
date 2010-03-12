@@ -68,7 +68,7 @@ class CyberspaceLevel(GameLevel):
         _hack = player.skills.get_skill("Hacking").get_rank() + 1
         _roll = do_d10_roll(_hack, 0) + player.get_intuition_bonus()
         
-        if _roll < 4:
+        if _roll < 3:
             _msg = 'You set off ' + tile.get_name() + '!'
             self.dm.alert_player(player.row, player.col, _msg)
             raise TrapSetOff()
