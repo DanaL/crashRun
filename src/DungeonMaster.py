@@ -339,7 +339,8 @@ class DungeonMaster:
             for c in (-1,0,1):
                 _occ = self.curr_lvl.dungeon_loc[self.player.row+r][self.player.col+c].occupant
                 if _occ != '' and _occ != self.player:
-                    _monsters.append(_occ)
+                    if _occ.attitude != 'inactive' and not _occ.has_condition('stunned'):
+                        _monsters.append(_occ)
 
         return _monsters
         
