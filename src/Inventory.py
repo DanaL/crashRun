@@ -265,6 +265,8 @@ class Inventory:
 
         if self.__inv[slot] == self.__primary_weapon:
             self.__primary_weapon = ''
+        elif self.__inv[slot] == self.__secondary_weapon:
+            self.__secondary_weapon = ''
         elif self.__inv[slot][1] == 'Armour' and self.__readied_armour[ self.__inv[slot][0].get_area() ] == self.__inv[slot]:
             self.__armour_value -= self.__inv[slot][0].get_ac_modifier()
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
@@ -300,6 +302,7 @@ class Inventory:
         if self.__readied_armour[area] != '':
             raise AlreadyWearingSomething
         else:
+            self.unready_item(slot)
             self.__armour_value += self.__inv[slot][0].get_ac_modifier()
             self.__readied_armour[area] = self.__inv[slot]
 
