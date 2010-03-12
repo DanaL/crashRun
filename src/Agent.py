@@ -485,7 +485,7 @@ class BaseMonster(BaseAgent, AStarMover):
         return self.get_attack_bonus()
     
     def get_cyberspace_damage_roll(self):
-        return self.dmg_roll()
+        return self.get_hand_to_hand_dmg_roll()
         
     # Monsters don't currently get defense bonuses.  Just increase
     # their level or AC

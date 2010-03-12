@@ -283,7 +283,7 @@ class Player(BaseAgent):
         return self.sum_effect_bonuses('cyberspace attack')
     
     def get_cyberspace_damage_roll(self):
-        _rank = self.skills.get_skill('Hacking').get_rank()+1
+        _rank = self.skills.get_skill('Hacking').get_rank() + 1
         _bonus = self.get_cyberspace_attack_bonus()
         return sum([randrange(1,7) + _bonus for j in range(_rank)])
         
