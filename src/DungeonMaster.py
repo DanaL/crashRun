@@ -1237,27 +1237,6 @@ class DungeonMaster:
                     self.player.inventory.add_item(ammo)
                     break
                     
-    def player_remove_armour(self,i):
-        item = self.player.inventory.get_item(i)
-
-        if item == '':
-            self.dui.display_message('You do not have that item.')
-        elif item.get_category() != 'Armour':
-            self.dui.display_message('That is a strange thing to take off.')
-        else:
-            try:
-                self.player.inventory.unready_armour(i)
-                self.dui.display_message('You remove the ' + item.get_full_name())
-                if item.get_name(1) == 'stylish sunglasses':
-                    self.dui.display_message('You can see much better without those shades on.')
-                self.player.remove_effects(item)
-
-                self.player.calc_ac()
-                self.dui.update_status_bar()
-                self.player.energy -= STD_ENERGY_COST
-            except NotWearingItem:
-                self.dui.display_message('You aren\'t wearing that!')
-
     def drop_lit_light_source(self, row, col, light):
         light.row = row
         light.col = col

@@ -19,6 +19,7 @@ import string
 
 from Agent import STD_ENERGY_COST
 import Items
+import Inventory
 from Inventory import AlreadyWearingSomething
 from Inventory import CannotWieldSomethingYouAreWearing
 from SubnetNode import SubnetNode
@@ -312,11 +313,30 @@ class MeatspaceCC(CommandContext):
         self.dm.player_reload_firearm()
         
     def remove_armour(self):
+        _player = self.get_player()
+        
         try:
-            ch = self.dui.pick_inventory_item('Take off what?')
-            self.dm.player_remove_armour(ch)
+            _ch = self.dui.pick_inventory_item('Take off what?')
+            _item = _player.inventory.get_item(_ch)
+                        
+            if _item == '':
+                self.dui.display_message('You do not have that item.')
+            elif _item.get_category() != 'Armour':
+                self.dui.display_message('That is a strange thing to take off.')
+            else:
+                try:
+                    _player.inventory.unready_armour(_ch)
+                    self.dui.display_message('You remove the ' + _item.get_full_name())
+                    if _item.get_name(1) == 'stylish sunglasses':
+                        self.dui.display_message('You can see much better without those shades on.')
+                    _player.remove_effects(_item)
+                    _player.calc_ac()
+                    self.dui.update_status_bar()
+                    _player.energy -= STD_ENERGY_COST
+                except Inventory.NotWearingItem:
+                    self.dui.display_message('You aren\'t wearing that!')
         except NonePicked:
-            self.dui.display_message(' ')
+            self.dui.clear_msg_line()
         except EmptyInventory:
             pass
         
