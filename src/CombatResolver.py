@@ -140,7 +140,7 @@ class ThrowingResolver(CombatResolver):
         
         if _hit:
             self.dm.mr.thrown_message(item, uke)
-            _dmg = item.dmg_roll()
+            _dmg = item.dmg_roll(tori)
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
             
         return _hit

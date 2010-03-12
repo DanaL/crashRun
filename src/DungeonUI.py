@@ -345,7 +345,7 @@ class DungeonUI(object):
         elif cmd == 'CHAR_INFO':
             self.__draw_char_sheet()
         elif cmd == 'PRACTICE_SKILLS':
-            self.practice_skills()
+            self.practice_skills(self.cc.dm.player)
         elif cmd == 'QUIT':
             self.cc.quit()
         elif cmd == 'RELOAD':
@@ -416,13 +416,12 @@ class DungeonUI(object):
         
         return _ch
 
-    def __selectCategory(self,category):
+    def __select_category(self, category, player):
         header =['Select the skills from the ' + category + ' category you wish to improve:']
         j = 0
-        _player = self.cc.get_player()
         menu = []
 
-        for skill in _player.skills.get_category(category):
+        for skill in player.skills.get_category(category):
             menu.append((chr(j+97),skill.get_name() + ' - ' + skill.get_rank_name(),skill))
             j += 1
             
@@ -430,8 +429,8 @@ class DungeonUI(object):
         if choice == '':
             return True
         else:
-            _player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
-            _player.skillPoints -= 1
+            player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
+            player.skill_points -= 1
             return False
             
     def write_cursor(self, row, col, tile):
@@ -480,21 +479,20 @@ class DungeonUI(object):
         self.cc.display_high_scores(100)
         self.redraw_screen()
         
-    def practice_skills(self):
-        _player = self.cc.get_player()
-        _sp = _player.skillPoints
+    def practice_skills(self, player):
+        _sp = player.skill_points
         if _sp == 0:
             self.__write_message('You have no skill points to spend.', False)
         else:
             menu = []
             j = 1
-            for c in _player.skills.get_categories():
+            for c in player.skills.get_categories():
                 menu.append( (`j`,c,c) )
                 j += 1
                 
             _continue = True
             while _continue:
-                _sp = _player.skillPoints
+                _sp = player.skill_points
                 if _sp == 0: break
                 elif _sp == 1:
                     header = ['You have 1 skill point']
@@ -507,7 +505,7 @@ class DungeonUI(object):
                     self.display_message('Never mind.')
                     _continue = False
                 else:
-                    self.__selectCategory(category)
+                    self.__select_category(category, player)
                     
     def query_for_amount(self):
         _ch = ('', '')

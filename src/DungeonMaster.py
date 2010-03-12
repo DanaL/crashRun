@@ -1567,8 +1567,8 @@ class DungeonMaster:
         _p = self.player
         _m = 'Welcome to level %d!' % (new_level)
         self.alert_player_to_event(_p.row, _p.col, self.curr_lvl,_m,False)
-        if _p.skillPoints > 0:
-            _m = 'You have %d skill points to spend.' % (_p.skillPoints)
+        if _p.skill_points > 0:
+            _m = 'You have %d skill points to spend.' % (_p.skill_points)
             self.alert_player_to_event(_p.row, _p.col, self.curr_lvl,_m,False)
         self.dui.update_status_bar()
 

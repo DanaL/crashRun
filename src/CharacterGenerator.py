@@ -16,6 +16,7 @@
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
 from copy import deepcopy
+from random import choice
 from random import randrange
 
 from Items import ItemFactory
@@ -30,23 +31,21 @@ class CharacterGenerator:
         self.dm = dm
 
     def new_character(self,player_name):
-        sex = self.__choose_gender()
-        self.__gen_new_character(sex,player_name)
+        _sex = self.__choose_gender()
+        self.__gen_new_character(_sex, player_name)
         self.__show_initial_stats()
 
-        msg = [self.__player.background,' ',' Press any key to continue']
+        msg = [self.__player.background,' ','Press any key to continue']
         self.__dungeon_listener.write_screen(msg, True)
     
         self.__select_skills()
         self.__display_player_skills()
-
-        self.__setStartingInventory()
-
+        self.__set_starting_inventory()
         self.__player.calc_ac()
 
         return self.__player
     
-    def __setStartingInventory(self):
+    def __set_starting_inventory(self):
         _if = ItemFactory()
 
         self.__player.inventory.add_item(_if.gen_item('shotgun',1), 0)
@@ -68,7 +67,7 @@ class CharacterGenerator:
             self.__player.inventory.add_item( _if.gen_item('amphetamine',1), 0)
 
         self.__player.inventory.add_item( _if.gen_item('lockpick',1), 0)
-
+        
     def __choose_gender(self):
         header = ['Choose your character\'s gender.']
         menu = [('m','Male','male'),('f','Female','female')]
@@ -87,9 +86,52 @@ class CharacterGenerator:
     
         self.__dungeon_listener.write_screen(msg, True)
 
-    def __gen_new_character(self,sex,name):
-        background = 'You were a two-bit high school dropout.'
-        self.__player = Player(PlayerStats(),background,name,0,0,self.dm,sex)
+    def __generate_background(self):
+        _roll = randrange(7)
+        _st = SkillTable()
+        _st.set_skill('Wetware Admin', 1)
+
+        if _roll == 0:
+            if randrange(2) == 0:
+                _background = "You were a two-bit high school dropout.  You learned to hack looking over your\nboyfriend's shoulder."
+            else:
+                _background = "You were a two-bit high school dropout.  You learned to hack looking over your\ngirlfiend's shoulder."
+            _st.set_skill('Hacking', 1)
+            _st.set_skill(choice(['Lock Picking', 'Stealth']), 1)    
+        elif _roll == 1:
+            _background = "You were a punk street kid.  You joined a gang and they handed you a deck\nbecause you sucked at car jacking."
+            _st.set_skill('Melee', 1)
+            _st.set_skill(choice(['Lock Picking', 'Stealth']), 1)
+        elif _roll == 2:
+            _st.set_skill('Hardware Tech', 1)
+            _st.set_skill('Hacking', 1)
+            _background = "You were a suburban middle-class kid who became a script kiddie and are now\ntrying to make a name for yourself."
+        elif _roll == 3:
+            _st.set_skill('Melee', 1)
+            _st.set_skill('Guns', 1)
+            _background = "You were a soldier recruited into a saboteur unit.  You were eventually\ndischarged after being injured in the line of duty.  (Carpal tunnel syndrome)"
+        elif _roll == 4:
+            _st.set_skill('Hacking', 1)
+            _st.set_skill('Crypto', 1)
+            _background = "You were a university prof who was laid off and subsequently fell into the\ncrash runner underworld."
+        elif _roll == 5:
+            _st.set_skill('Hacking', 1)
+            _st.set_skill(choice(['Crypto', 'Hardware Tech', 'Electronics']), 1)
+            _background = "A recent university graduate, you turned to crash running to pay off your \nstudent loans after your Web 11.0 start-up tanked."
+        elif _roll == 6:
+            _background = "You were a corporate programmer until you finally got sick of maintaining\n200 year old Visual Basic code and quit your job."
+            for j in range(2):
+                _skill_name = choice(['Crypto', 'Electronics', 'Hacking', 'Hardware Tech', 'Robot Psychology', 'Wetware Admin'])
+                _skill = _st.get_skill(_skill_name)
+                _st.set_skill(_skill_name, _skill.get_rank()+1)
+            
+        return _background, _st
+        
+    def __gen_new_character(self, sex, name):
+        _background, _skills = self.__generate_background()
+
+        self.__player = Player(PlayerStats(), _background, name, 0, 0, self.dm, sex)
+        self.__player.skills = _skills
         self.__set_starting_software()
         
     def __set_starting_software(self):
@@ -106,42 +148,15 @@ class CharacterGenerator:
         _sw = get_software_by_name('ACME ICE Breaker, Home Edition', 0)
         _sw.executing = True
         _p.software.upload(_sw)
-                
-    # Need to add support for both addition and removal of points
-    # Perhaps when letter is selected, '+/-' appears beside the skill
-    # and the user and hit appropriate key to increase or decrease that skill?
-    def __select_skill_category(self,category,points):
-        while points > 0:
-            header =['Select the skills from the ' + category + ' category you wish to improve:']
-            j = 0
-
-            menu = []
-
-            for skill in self.__player.skills.get_category(category):
-                menu.append((chr(j+97),skill.get_name() + ' - ' + skill.get_rank_name(),skill))
-                j += 1
-
-            footer = [' ']
-
-            if points > 1:
-                footer.append(`points` + ' points left in this category')
-            else:
-                footer.append(`points` + ' point left in this category')
-            
-            choice = self.__dungeon_listener.ask_menued_question(header,menu,footer)
-
-            if choice != '':
-                self.__player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
-                points -= 1
-
+           
     def __select_skills(self):
-        skill_points = {'Combat':1,'Subterfuge':2,'Miscellaneous':1,'Tech':3}
-        categories = skill_points.keys()
-        categories.sort()
-
-        for category in categories:
-            self.__select_skill_category(category,skill_points[category])
-
+        _msg = ["You'll select your initial skills next.",' ','Press any key to continue']
+        self.__dungeon_listener.write_screen(_msg, True)
+        
+        self.__player.skill_points = 6
+        while self.__player.skill_points > 0:
+            self.__dungeon_listener.practice_skills(self.__player)
+            
     def __show_initial_stats(self):
         msg = ['Your initial stats are:']
         msg.append('   Strength:  ' + `self.__player.stats.get_strength()`)

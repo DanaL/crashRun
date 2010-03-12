@@ -91,10 +91,10 @@ class SkillTable(object):
             if self.__skills[k].get_category() == category:
                 yield self.__skills[k]
 
-    def get_skill(self,skill):
+    def get_skill(self, skill):
         return copy(self.__skills[skill])
 
-    def set_skill(self,name,skill):
+    def set_skill(self, name, skill):
         self.__skills[name].change_rank(skill)
 
 

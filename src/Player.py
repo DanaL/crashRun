@@ -26,7 +26,6 @@ import Items
 from Items import ItemFactory
 from Items import Firearm
 from Items import Weapon
-from Skills import SkillTable
 from Util import do_d10_roll
 from Util import do_dN
 
@@ -104,7 +103,7 @@ class Player(BaseAgent):
         self.dm = dm
         self.__xp = 0
         self.level = 1
-        self.skillPoints = 0
+        self.skill_points = 0
         self.time_since_last_hit = 1000
         self.stats = stats
 
@@ -119,7 +118,6 @@ class Player(BaseAgent):
         self.background = background
         BaseAgent.__init__(self,12,0,1,2,'@','white','black','white',name,row,col,gender)
     
-        self.skills = self.get_initial_skills()
         self.__calc_initial_hp()
         self.calc_ac()
         self.__calc_next_level()
@@ -184,14 +182,6 @@ class Player(BaseAgent):
 
     def get_hacking_bonus(self):
         return self.get_chutzpah_bonus() + self.get_intuition_bonus()
-
-    def get_initial_skills(self):
-        st = SkillTable()
-        st.set_skill('Melee', 1)
-        st.set_skill('Guns', 1)
-        st.set_skill('Wetware Admin', 1)
-        
-        return st
 
     def get_search_bonus(self, in_cyberspace):
         _bonus = 0
@@ -353,7 +343,7 @@ class Player(BaseAgent):
         self.__base_hp.append(randrange(1,self.__hp_roll+1))
         
         if self.level % 2 != 0:
-            self.skillPoints += 1
+            self.skill_points += 1
 
         # re-calculate the player's hitpoints
         delta_hp = self.max_hp - self.curr_hp
