@@ -706,23 +706,28 @@ class DungeonUI(object):
     # This method is used to display a full screen of text.
     # 'lines' should be a list of successive lines to display
     # TO BE ADDED: support for lines too large for one row, scrolling up/down on multiple pages of text
-    def write_screen(self,lines, pause_at_end, allow_esc = False):
+    def write_screen(self, raw_lines, pause_at_end, allow_esc = False):
+        # Split lines that contain newlines
+        _lines = []
+        for _line in raw_lines:
+            _lines += _line.split("\n")
+            
         j = 0
-        while j < len(lines):
+        while j < len(_lines):
             self.clear_screen(1)
             curr_row = 0
         
             for k in range(j,j + self.display_rows - 1):
-                if k >= len(lines):
+                if k >= len(_lines):
                     break
                 else:
-                    text = self.font.render(lines[k],True,colour_table['white'],colour_table['black'])
+                    text = self.font.render(_lines[k],True,colour_table['white'],colour_table['black'])
                     self.screen.blit(text,(0,curr_row))
                     curr_row += self.font.get_linesize()
                 
             j += self.display_rows - 1
 
-            if j < len(lines):
+            if j < len(_lines):
                 text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
                 self.screen.blit(text,(0,curr_row + self.font.get_linesize()))
                 _msg = '-- more -- Press any key to continue'
