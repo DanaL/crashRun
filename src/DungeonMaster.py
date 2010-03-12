@@ -55,7 +55,6 @@ import Items
 from Items import ItemDoesNotExist
 from Items import ItemFactory
 from Items import ItemStack
-from Inventory import AlreadyWearingSomething
 from Inventory import BUSError
 from Inventory import CannotDropReadiedArmour
 from Inventory import InventorySlotsFull
@@ -957,36 +956,6 @@ class DungeonMaster:
                     break
         
         self.player.energy -= STD_ENERGY_COST
-
-    def player_wear_armour(self,i):
-        item = self.player.inventory.get_item(i)
-    
-        if item == '':
-            self.dui.display_message('You do not have that item.')
-        elif item != '' and item.get_category() != 'Armour':
-            self.dui.display_message('You cannot wear that!')
-        else:
-            try:
-                self.player.inventory.ready_armour(i)
-                self.player.calc_ac()
-                self.player.apply_effects_from_equipment()
-                self.dui.display_message('You put on the ' + item.get_full_name())
-                
-                # Yes! I will definitely use three lines of code just for a bad joke!!
-                if isinstance(item, Items.TargetingWizard):
-                    self.dui.display_message("It looks like you're wasting some foes!  Would you like help?")
-                    
-                self.dui.update_status_bar()
-                self.player.energy -= STD_ENERGY_COST
-            except AlreadyWearingSomething:
-                msg = 'You are already wearing '
-                area = item.get_area()
-
-                if area not in ['gloves','boots']:
-                    msg += get_correct_article(area) + ' '
-
-                msg += area
-                self.dui.display_message(msg)
             
     def player_fire_weapon(self,weapon):
         if weapon.current_ammo == 0:

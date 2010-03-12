@@ -19,6 +19,7 @@ import string
 
 from Agent import STD_ENERGY_COST
 import Items
+from Inventory import AlreadyWearingSomething
 from SubnetNode import SubnetNode
 import Terrain
 from Terrain import DownStairs
@@ -30,6 +31,7 @@ from Terrain import EXIT_NODE
 from Terrain import TERMINAL
 from Util import EmptyInventory
 from Util import do_d10_roll
+from Util import get_correct_article
 from Util import get_direction_tuple
 from Util import NonePicked
 from Util import pluralize
@@ -345,13 +347,41 @@ class MeatspaceCC(CommandContext):
             self.dui.clear_msg_line()
         except EmptyInventory:
             pass
-         
+        
     def wear_armour(self):
         try:
-            ch = self.dui.pick_inventory_item('Put on what?')
-            self.dm.player_wear_armour(ch)
+            _ch = self.dui.pick_inventory_item('Put on what?')
+            _player = self.dm.player
+            _item = _player.inventory.get_item(_ch)
+    
+            if _item == '':
+                self.dui.display_message('You do not have that item.')
+            elif _item != '' and _item.get_category() != 'Armour':
+                self.dui.display_message('You cannot wear that!')
+            else:
+                try:
+                    _player.inventory.ready_armour(_ch)
+                    _player.calc_ac()
+                    _player.apply_effects_from_equipment()
+                    self.dui.display_message('You put on the ' + _item.get_full_name())
+                
+                    # Yes! I will definitely use three lines of code just for a bad joke!!
+                    if isinstance(_item, Items.TargetingWizard):
+                        self.dui.display_message("It looks like you're wasting some foes!  Would you like help?")
+                    
+                    self.dui.update_status_bar()
+                    _player.energy -= STD_ENERGY_COST
+                except AlreadyWearingSomething:
+                    _msg = 'You are already wearing '
+                    _area = _item.get_area()
+
+                    if _area not in ['gloves','boots']:
+                        _msg += get_correct_article(_area) + ' '
+
+                    _msg += _area
+                    self.dui.display_message(_msg)
         except NonePicked:
-            self.dui.display_message(' ')
+            self.dui.clear_msg_line()
         except EmptyInventory:
             pass
             
