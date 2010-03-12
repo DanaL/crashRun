@@ -65,10 +65,10 @@ class CyberspaceLevel(GameLevel):
     # Eventually traps should have a difficulty level, for now 
     # we'll require a roll of 15 to disarm the trap
     def attempt_to_hack_trap(self, player, tile, row, col):
-        _hack = player.skills.get_skill("Hacking").get_rank()
-        _roll = do_d10_roll(_hack, player.get_intuition_bonus())
+        _hack = player.skills.get_skill("Hacking").get_rank() + 1
+        _roll = do_d10_roll(_hack, 0) + player.get_intuition_bonus()
         
-        if _roll < 3:
+        if _roll < 4:
             _msg = 'You set off ' + tile.get_name() + '!'
             self.dm.alert_player(player.row, player.col, _msg)
             raise TrapSetOff()
