@@ -214,7 +214,7 @@ class DungeonMaster:
 
         if _hp_delta_cyberspace > 1 or exit_dmg > 0:
             _dmg = _hp_delta_cyberspace / 5 + exit_dmg
-            self.player.damaged(self, self.curr_lvl, _dmg, '', 'brain damage')
+            self.player.damaged(self, self.curr_lvl, _dmg, '', ['brain damage'])
             self.dui.display_message(self.get_meatspace_dmg_msg(_dmg, self.player.curr_hp), True)
             
     def __clear_current_level_info(self):
@@ -930,7 +930,7 @@ class DungeonMaster:
             if item.get_category() == 'Tool' and item.get_name(1) == 'lit flare':
                 self.dui.display_message('Youch!  You burn your hand on the lit flare!')
                 self.__item_hits_ground(self.curr_lvl, self.player.row,self.player.col,item)
-                self.player.damaged(self, self.curr_lvl, randrange(1,5), '', 'burn')
+                self.player.damaged(self, self.curr_lvl, randrange(1,5), '', ['burn'])
                 self.player.energy -= STD_ENERGY_COST
                 return
                 
@@ -1768,7 +1768,7 @@ class DungeonMaster:
             if not victim.has_condition('light protection'):
                 victim.dazed(explosive)
         else:
-            victim.damaged(self, level, dmg, '', 'explosion')
+            victim.damaged(self, level, dmg, '', ['explosion'])
             
     def handle_explosion(self, level, row, col, source):
         self.alert_player_to_event(row, col, level,'BOOM!!', False)

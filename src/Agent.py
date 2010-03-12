@@ -63,7 +63,7 @@ class DamageDesc(object):
     def get_name(self, article=0):
         if self.desc == 'brain damage': 
             return self.desc            
-        return self.get_correct_article() + ' ' + self.desc
+        return self.get_correct_article() + self.desc
         
 class AStarPathFactory: 
     MAX_SEARCH_DEPTH = 120
@@ -237,7 +237,6 @@ class BaseAgent(BaseTile):
         return False
         
     def damaged(self, dm, level, damage, attacker, damage_types=[]):
-        # what I want here is set intersection
         _special = set(damage_types).intersection(set(('shock','burn','brain damage')))
         if len(_special) == 0:
             damage -= self.get_curr_ac()
@@ -246,8 +245,8 @@ class BaseAgent(BaseTile):
         if damage > 0:
             self.add_hp(-damage)
             if self.curr_hp < 1:
-                if attacker == '' and len(_special) > 0:
-                    attacker = DamageDesc(list(special)[0])
+                if attacker == '' and len(damage_types) > 0:
+                    attacker = DamageDesc(list(damage_types)[0])
                 self.killed(dm, level, attacker)
             if not self.dead:
                 dm.handle_attack_effects(attacker, self, _special)
