@@ -148,7 +148,7 @@ class GameLevel:
         self.monsters = []
         self.melee = MeleeResolver(dm, dm.dui)
         self.subnet_nodes = []
-        self.cameras_active = random() < 0.4
+        self.cameras_active = random() < 0.2
         self.security_active = True
     
     # It would be nice if instead of alerting all monsters within a 
