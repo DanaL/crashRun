@@ -1200,7 +1200,7 @@ class MoreauBot6000(CleanerBot, Unique):
 class Roomba3000(Roomba, Unique):
     def __init__(self, dm, row, col):
         RelentlessPredator.__init__(self, vision_radius=8, ac=8, hp_low=40, hp_high=50, dmg_dice=6, 
-            dmg_high=5, ab=3, dm=dm, ch='o', fg='grey', bg='black', lit='white', 
+            dmg_rolls=5, ab=3, dm=dm, ch='o', fg='grey', bg='black', lit='white', 
             name='Roomba 3000', row=row, col=col, xp_value=60, gender='male', level=12)
         self.can_steal_readied = True
         self.conditions.append((('light protection',0,0), self))
