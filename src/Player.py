@@ -99,7 +99,7 @@ class MeatspaceStats(object):
         self.vision_r = vision_r
         
 class Player(BaseAgent):
-    def __init__(self,stats,background,name,row,col,dm,gender):
+    def __init__(self,stats,background,name,row,col,dm):
         self.dm = dm
         self.__xp = 0
         self.level = 1
@@ -116,7 +116,7 @@ class Player(BaseAgent):
         self.temp_bonus_hp = 0
         
         self.background = background
-        BaseAgent.__init__(self,12,0,1,2,'@','white','black','white',name,row,col,gender)
+        BaseAgent.__init__(self,12,0,1,2,'@','white','black','white',name,row,col,'')
     
         self.__calc_initial_hp()
         self.calc_ac()

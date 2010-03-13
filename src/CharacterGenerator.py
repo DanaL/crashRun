@@ -31,8 +31,7 @@ class CharacterGenerator:
         self.dm = dm
 
     def new_character(self,player_name):
-        _sex = self.__choose_gender()
-        self.__gen_new_character(_sex, player_name)
+        self.__gen_new_character(player_name)
         self.__show_initial_stats()
 
         msg = [self.__player.background,' ','Press any key to continue']
@@ -67,15 +66,6 @@ class CharacterGenerator:
             self.__player.inventory.add_item( _if.gen_item('amphetamine',1), 0)
 
         self.__player.inventory.add_item( _if.gen_item('lockpick',1), 0)
-        
-    def __choose_gender(self):
-        header = ['Choose your character\'s gender.']
-        menu = [('m','Male','male'),('f','Female','female')]
-
-        _choice = ''
-        while _choice == '':
-            _choice = self.__dungeon_listener.ask_menued_question(header,menu)
-        return _choice
         
     def __display_player_skills(self):
         msg = ['You are trained in the following skills:']
@@ -127,10 +117,10 @@ class CharacterGenerator:
             
         return _background, _st
         
-    def __gen_new_character(self, sex, name):
+    def __gen_new_character(self, name):
         _background, _skills = self.__generate_background()
 
-        self.__player = Player(PlayerStats(), _background, name, 0, 0, self.dm, sex)
+        self.__player = Player(PlayerStats(), _background, name, 0, 0, self.dm)
         self.__player.skills = _skills
         self.__set_starting_software()
         
@@ -150,7 +140,7 @@ class CharacterGenerator:
         _p.software.upload(_sw)
            
     def __select_skills(self):
-        _msg = ["You'll select your initial skills next.",' ','Press any key to continue']
+        _msg = ["Select your initial skills.",' ','Press any key to continue']
         self.__dungeon_listener.write_screen(_msg, True)
         
         self.__player.skill_points = 6
