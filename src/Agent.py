@@ -1207,7 +1207,7 @@ class Roomba3000(Roomba, Unique):
 
     def killed(self, dm, level, killer):
         Unique.killed(self, dm)
-        super(Roomba, self).killed(self, dm, level, killer)
+        super(Roomba, self).killed(dm, level, killer)
         
     def perform_action(self):
         _pl = self.dm.get_player_loc()
