@@ -574,7 +574,7 @@ class DungeonMaster:
             elif _method == 'shock':
                 victim.shocked(attacker)
 
-    def get_direction(self, direction):
+    def convert_to_dir_tuple(self, direction):
         if self.player.has_condition('dazed'):
             self.dui.display_message('You are dazed.')
             _dt = get_rnd_direction_tuple()
@@ -618,7 +618,7 @@ class DungeonMaster:
         elif direction == '>':
             self.player_moves_down_a_level()
         else:
-            dt = self.get_direction(direction)
+            dt = self.convert_to_dir_tuple(direction)
             _p = self.player
             next_r = _p.row + dt[0]
             next_c = _p.col + dt[1] 
@@ -638,7 +638,7 @@ class DungeonMaster:
                 self.dui.display_message('You cannot move that way!')
             
     def player_bash(self,direction):
-        dt = self.get_direction(direction)
+        dt = self.convert_to_dir_tuple(direction)
 
         door_r = self.player.row + dt[0]
         door_c = self.player.col + dt[1]
@@ -701,7 +701,7 @@ class DungeonMaster:
             self.close_door(_door_r, _door_c)
         else:
             _dir = self.dui.get_direction()
-            _dt = self.get_direction(_dir)
+            _dt = self.convert_to_dir_tuple(_dir)
             if _dt != None:
                 _door_r = self.player.row + _dt[0]
                 _door_c = self.player.col + _dt[1]
@@ -742,7 +742,7 @@ class DungeonMaster:
             return None
 
     def __get_tile_from_dir(self, _dir):
-        _dt = self.get_direction(_dir)
+        _dt = self.convert_to_dir_tuple(_dir)
         _r = self.player.row + _dt[0]
         _c = self.player.col + _dt[1]
         return self.curr_lvl.map[_r][_c], _r, _c
@@ -793,7 +793,8 @@ class DungeonMaster:
             self.dui.display_message('Click.')
         else:
             self.dui.display_message('You can\'t figure the stupid lock out.')
-                    
+        self.player.energy -= STD_ENERGY_COST
+        
     def __attempt_to_unlock_door(self,door):
         try:
             self.dui.clear_msg_line()
@@ -815,6 +816,7 @@ class DungeonMaster:
                     self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
                     pick.charge -= 1
                     if pick.charge == 0: self.items_discharged(self.player, [pick])
+                    self.player.energy -= STD_ENERGY_COST
                 else:
                     self.dui.display_message("It hasn't got the juice.")
             else:
@@ -1009,7 +1011,7 @@ class DungeonMaster:
             return
             
         _sr = ShootingResolver(self, self.dui)
-        dt = self.get_direction(direction)
+        dt = self.convert_to_dir_tuple(direction)
         if dt[1] == 0:
             ch = '|'
         elif dt[0] == 0:
@@ -1096,7 +1098,7 @@ class DungeonMaster:
         
         _tr = ThrowingResolver(self, self.dui)
         _range = self.__calc_thrown_range(self.player,item)
-        dt = self.get_direction(direction)
+        dt = self.convert_to_dir_tuple(direction)
 
         item_row = start_r
         item_col = start_c
@@ -1347,8 +1349,12 @@ class DungeonMaster:
     
     def player_uses_lockpick(self, lockpick):
         _dir = self.dui.get_direction()
-        _dt = self.get_direction(_dir)
-        if _dt != None:
+        if _dir == '':
+            self.dui.display_message('Never mind.')
+            return
+            
+        _dt = self.convert_to_dir_tuple(_dir)
+        if _dt != '':
             _door_r = self.player.row + _dt[0]
             _door_c = self.player.col + _dt[1]
             _tile = self.curr_lvl.map[_door_r][_door_c]
@@ -1360,7 +1366,7 @@ class DungeonMaster:
                     self.pick_lock(_tile, lockpick)
             else:
                 self.dui.display_message("You aren't making any sense.")
-        
+            
     def player_takes_drugs(self,hit):
         for _effect in hit.effects:
             _instant = _effect[2] == 0
