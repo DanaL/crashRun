@@ -561,6 +561,7 @@ class ItemFactory:
             
         # add the weapons
         self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,False,0,0,1)
+        self.__item_db['combat knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,False,0,0,1)
         self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0,1)
         self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0,2)
         self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2,2)
