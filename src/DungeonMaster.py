@@ -1716,6 +1716,7 @@ class DungeonMaster:
         trap.trigger(self, self.player)
                 
     # Eventually, weight of the item will be a factor
+    # I could get rid of the conditionals by have items know their range modifier...
     def __calc_thrown_range(self,agent,item):
         range = agent.stats.get_strength() / 3 + 2
 

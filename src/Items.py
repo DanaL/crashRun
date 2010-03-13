@@ -311,7 +311,6 @@ class Weapon(BaseItem):
 
     def dmg_roll(self, user):
         dmg = BaseItem.dmg_roll(self, user)
-        
         dmg += self.to_dmg_bonus
 
         return dmg
@@ -323,6 +322,9 @@ class Weapon(BaseItem):
         sig = BaseItem.get_signature(self)
 
         return (sig[0], sig[1], sig[2], self.to_hit_bonus, self.to_dmg_bonus)
+        
+    def get_type(self):
+        return self.__type
         
     def get_damage_types(self):
         return ['melee']
@@ -565,9 +567,9 @@ class ItemFactory:
         self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0,1)
         self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0,2)
         self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2,2)
-        self.__item_db['grenade'] = ('weapon','Grenade','*','darkgrey','grey',1,1,1,True,0,0,1)
+        self.__item_db['grenade'] = ('weapon','Thrown','*','darkgrey','grey',1,1,1,True,0,0,1)
         self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,False,0,0,2)
-        self.__item_db['throwing knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,True,0,0,1)
+        self.__item_db['throwing knife'] = ('weapon','Thrown','|','grey','white',5,2,1,True,0,0,1)
         
         # add the armour
         self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-3,0)])
