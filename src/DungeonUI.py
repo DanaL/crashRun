@@ -40,10 +40,8 @@ ALT = 308
 ENTER = 13 # Probably system dependent but need to test on windows
 
 MESS_HIST_SIZE = 100
-# RGB values for colours used in system
-#green = (0,187,0)
-#darkgreen = (0,102,0)
 
+# RGB values for colours used in system
 colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
     'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87), 
     'brown':(153,0,0), 'lightbrown':(153,51,0), 'blue':(0,0,221), 'darkblue':(0,0,153), 
