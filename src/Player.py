@@ -297,10 +297,8 @@ class Player(BaseAgent):
         return _dmg
         
     def get_shooting_attack_die(self, weapon):
-        _die_rolls = self.level + self.get_attack_bonuses()
-        if isinstance(weapon, Firearm):
-            _die_rolls += self.skills.get_skill('Guns').get_rank() 
-            
+        _die_rolls = self.level + self.get_attack_bonuses() + self.skills.get_skill('Guns').get_rank() 
+
         return _die_rolls
     
     def get_two_weapon_modifier(self):
