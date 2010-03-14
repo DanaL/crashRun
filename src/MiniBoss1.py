@@ -191,6 +191,13 @@ class MiniBoss1Level(GameLevel):
             self.map[_start_r-1][_c] = self.__tf.get_terrain_tile(OCEAN)
         for _c in range(_start_c + randrange(-1,2),_start_c + randrange(3,6)):
             self.map[_start_r-2][_c] = self.__tf.get_terrain_tile(OCEAN)
+    
+    def check_special_door(self, tile):
+        _player = self.dm.player
+        if "the Roomba 3000 killed" in _player.events:
+            tile.unlock()
+        else:
+            tile.lock()
             
     def generate_level(self):
         self.map = []

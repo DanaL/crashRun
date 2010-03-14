@@ -30,6 +30,7 @@ from Terrain import Terminal
 from Terrain import UpStairs
 from Terrain import DOOR
 from Terrain import EXIT_NODE
+from Terrain import SPECIAL_DOOR
 from Terrain import TERMINAL
 from Util import EmptyInventory
 from Util import do_d10_roll
@@ -237,7 +238,7 @@ class MeatspaceCC(CommandContext):
                         _sqrs.append((_sqr, (row, col)))
                 
                     _sqrs += self.get_boxes(_lvl, row, col)
-                elif _type == DOOR:
+                elif _type == DOOR or _type == SPECIAL_DOOR:
                     _sqrs.append((_sqr, (row+r, col+c)))
                                         
         return _sqrs[0] if len(_sqrs) == 1 else None

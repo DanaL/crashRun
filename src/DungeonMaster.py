@@ -68,12 +68,15 @@ from NewComplexFactory import NewComplexFactory
 from OldComplex import OldComplexLevel
 from Player import Player
 from Prologue import Prologue
+from ProvingGrounds import ProvingGroundsLevel
 from ScienceComplex import ScienceComplexLevel
 from Software import Software
 import Terrain
 from Terrain import TerrainTile
 from Terrain import Trap
 from Terrain import EXIT_NODE
+from Terrain import SPECIAL_DOOR
+from Terrain import SPECIAL_FLOOR
 from Terrain import SUBNET_NODE
 from TowerFactory import TowerFactory
 from Util import calc_distance
@@ -117,6 +120,8 @@ def GetGameFactoryObject(dm, level, length, width, category):
         return MiniBoss1Level(dm, level, length, width)
     elif category == 'cyberspace':
         return CyberspaceLevel(dm, level, length, width)
+    elif category == 'proving grounds':
+        return ProvingGroundsLevel(dm, level, length, width)
         
 # This is simply a wrapper for passing information about a square from the DM to the UI
 class DungeonSqrInfo:
@@ -261,16 +266,20 @@ class DungeonMaster:
 
     # Moving to a level the player has never visited, so we need to generate a new map and 
     # replace current with it.
-    def move_to_new_level(self,nextLvl):
+    def move_to_new_level(self, nextLvl):
         self.__clear_current_level_info()
         nextLvl.generate_level()
         
         if nextLvl.is_cyberspace():
             self.player_enters_cyberspace(nextLvl)
             nextLvl.add_subnet_nodes(self.curr_lvl.subnet_nodes)
-            
-        self.player.row = nextLvl.upStairs[0]
-        self.player.col = nextLvl.upStairs[1]
+        
+        if nextLvl.upStairs == '':
+            self.player.row = nextLvl.player_start_loc[0]
+            self.player.col = nextLvl.player_start_loc[1]
+        else:
+            self.player.row = nextLvl.upStairs[0]
+            self.player.col = nextLvl.upStairs[1]
             
         self.curr_lvl = nextLvl         
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
@@ -379,7 +388,9 @@ class DungeonMaster:
                     self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex'))
                 else:
                     self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1'))
-
+            elif self.curr_lvl.category == 'mini-boss 1':
+                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'))
+                
     def start_game(self, dui):
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
@@ -539,12 +550,18 @@ class DungeonMaster:
     def is_clear(self,r,c):
         return self.curr_lvl.is_clear(r,c)
     
+    def is_special_tile(self, r, c):
+        _tile = self.curr_lvl.map[r][c]
+        return _tile.get_type() == SPECIAL_FLOOR or _tile.get_type() == SPECIAL_DOOR
+        
     # Does the location block light or not.  (Note that a square might
     # be open, but not necessarily passable)
     def is_open(self,r,c):
         if self.in_bounds(r,c):
-            return self.curr_lvl.map[r][c].is_open()
-        
+            try:
+                return not self.curr_lvl.map[r][c].is_opaque()
+            except AttributeError:
+                return not self.curr_lvl.map[r][c].is_open()
         return False
 
     # Hardcoded for now, I'm fixing how terrain types are stored soon enough.
@@ -583,6 +600,15 @@ class DungeonMaster:
             
         return _dt
 
+    def player_moves_onto_a_special_sqr(self, row, col):
+        self.player.energy -= STD_ENERGY_COST
+        _sqr = self.curr_lvl.map[row][col]
+        
+        try:
+            self.__determine_next_level(_sqr.direction)
+        except AttributeError:
+            self.__determine_next_level('down')
+            
     def player_moves_down_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previousTile, Terrain.DownStairs):
@@ -623,7 +649,7 @@ class DungeonMaster:
             next_r = _p.row + dt[0]
             next_c = _p.col + dt[1] 
 
-            if self.is_clear(next_r, next_c):
+            if self.is_clear(next_r, next_c) or self.is_special_tile(next_r, next_c):
                 self.__move_player(_p.row, _p.col, next_r, next_c, dt)
             elif self.curr_lvl.dungeon_loc[next_r][next_c].occupant <> '':
                 _occ = self.curr_lvl.dungeon_loc[next_r][next_c].occupant
@@ -767,8 +793,7 @@ class DungeonMaster:
     # This will eventually have to have generic user messages and I'll have to pass a reference to the opener
     def open_door(self, tile, r, c):
         if isinstance(tile, Terrain.SpecialDoor):
-            self.dui.display_message("You can't open it because Dana hasn't implemented that part of the game yet...")
-            return
+            self.curr_lvl.check_special_door(tile)
                      
         if tile.is_locked():
             ch = self.dui.query_yes_no('The door is locked.  Attempt to unlock')
@@ -1666,13 +1691,16 @@ class DungeonMaster:
         level.remove_monster(monster, row, col)
 
     def __move_player(self,curr_r,curr_c,next_r,next_c,dt):
+        self.player.energy -= STD_ENERGY_COST
         self.curr_lvl.dungeon_loc[curr_r][curr_c].visited = True
         self.__agent_moves_to_sqr(next_r,next_c,self.player)
         self.curr_lvl.handle_stealth_check(self.player)
         self.update_player()
         self.__check_ground(next_r,next_c)
-        self.player.energy -= STD_ENERGY_COST
         
+        if self.is_special_tile(self.player.row, self.player.col):
+            self.player_moves_onto_a_special_sqr(self.player.row, self.player.col)
+            
     def __agent_moves_to_sqr(self,r,c,agent):
         self.curr_lvl.dungeon_loc[agent.row][agent.col].occupant = ''
         self.update_sqr(self.curr_lvl, agent.row, agent.col)
@@ -1707,7 +1735,7 @@ class DungeonMaster:
         if isinstance(_sqr, Terrain.Trap):
             self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
             self.__player_steps_on_trap(_sqr)
-            
+                    
         if self.curr_lvl.size_of_item_stack(r,c) == 1:
             item_name = _loc.item_stack[0].get_name(True)
             msg = 'You see ' + get_correct_article(item_name)

@@ -45,9 +45,11 @@ CYBERSPACE_WALL = 21
 CYBERSPACE_FLOOR = 22
 EXIT_NODE = 23
 SUBNET_NODE = 24
+SPECIAL_FLOOR = 25
 
-TERRAINS = (FLOOR,WALL,PERM_WALL,UP_STAIRS,DOWN_STAIRS,PILLAR,GRASS,TREE,OCEAN,ROAD,DOOR,MOUNTAIN,POOL,WATER,SAND,TERMINAL, \
-        SECURITY_CAMERA, STEEL_DOOR, SPECIAL_DOOR, PUDDLE, CYBERSPACE_WALL, CYBERSPACE_FLOOR, EXIT_NODE, SUBNET_NODE)
+TERRAINS = (FLOOR,WALL,PERM_WALL,UP_STAIRS,DOWN_STAIRS,PILLAR,GRASS,TREE,OCEAN,ROAD,DOOR,MOUNTAIN,POOL,WATER,SAND,TERMINAL, 
+        SECURITY_CAMERA, STEEL_DOOR, SPECIAL_DOOR, PUDDLE, CYBERSPACE_WALL, CYBERSPACE_FLOOR, EXIT_NODE, SUBNET_NODE,
+        SPECIAL_FLOOR)
 
 class TerrainTile(BaseTile):
     def __init__(self,ch,fg,bg,lit,passable,opaque,open,recepticle,name,type):
@@ -209,7 +211,7 @@ class Door(TerrainTile):
         return self.__open
 
     def is_opaque(self):
-        return self.__open
+        return not self.__open
 
     def is_open(self):
         return self.__open
@@ -237,13 +239,24 @@ class Door(TerrainTile):
 class SpecialDoor(Door):
     def __init__(self):
         Door.__init__(self)
-        TerrainTile.__init__(self,'+','darkgrey','black','grey',0,0,0,0,'door',SPECIAL_DOOR)
+        TerrainTile.__init__(self,'+','darkgrey','black','grey',False,0,0,0,'door',SPECIAL_DOOR)
         self.lock_difficulty = 100
         self.damagePoints = 999999
         self.lock()
         
     def smash(self):
         pass
+    
+    def is_opaque(self):
+        return True
+    
+    def is_passable(self):
+        return False
+         
+class SpecialFloor(TerrainTile):
+    def __init__(self, direction):
+        super(SpecialFloor, self).__init__('.', 'darkgrey', 'black', 'grey', False, 1, 1, 0, 'floor', SPECIAL_FLOOR)
+        self.direction = direction
         
 # self,ch,fg,bg,lit,passable,opaque,open,recepticle,name,type
 class Trap(TerrainTile):
