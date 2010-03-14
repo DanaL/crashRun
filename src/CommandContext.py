@@ -151,7 +151,19 @@ class MeatspaceCC(CommandContext):
 
     def move(self, k):
         self.dm.cmd_move_player(k)
-             
+                 
+    def open_box(self, box, row, col):
+        if self.dui.query_yes_no('Open box') == 'y': 
+            if box.is_locked():
+                self.dui.display_message('That box is locked.')
+            elif box.open:
+                self.dui.display_message("It's already been opened.")
+            else:
+                box.open = True
+                self.dui.display_message('You open the box.')
+                self.dm.empty_box_contents(box, row, col)
+            self.dm.player.energy -= STD_ENERGY_COST
+            
     def do_action(self):
         _p = self.dm.player
         _lvl = self.dm.curr_lvl
@@ -188,7 +200,7 @@ class MeatspaceCC(CommandContext):
             _sqr.jack_in(self.dm)
             self.dm.player.energy -= STD_ENERGY_COST
         elif isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
-            self.dm.player_opens_box(_sqr, _sr, _sc)
+            self.open_box(_sqr, _sr, _sc)
         else:
             self.dui.display_message("Hmm?")
             

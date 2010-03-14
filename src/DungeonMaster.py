@@ -562,10 +562,8 @@ class DungeonMaster:
     # be open, but not necessarily passable)
     def is_open(self,r,c):
         if self.in_bounds(r,c):
-            try:
-                return not self.curr_lvl.map[r][c].is_opaque()
-            except AttributeError:
-                return not self.curr_lvl.map[r][c].is_open()
+            return not self.curr_lvl.map[r][c].is_opaque()
+
         return False
 
     # Hardcoded for now, I'm fixing how terrain types are stored soon enough.
@@ -737,24 +735,12 @@ class DungeonMaster:
                 _door_c = self.player.col + _dt[1]
                 self.close_door(_door_r, _door_c)
 
-    def __empty_box_contents(self, box, row, col):
+    def empty_box_contents(self, box, row, col):
         if len(box.contents) == 0:
             self.alert_player(row, col, 'The box was empty.')
         else:
             for c in box.contents:
                 self.__item_hits_ground(self.curr_lvl, row, col, c)
-                
-    def player_opens_box(self, box, row, col):
-        if self.dui.query_yes_no('Open box') == 'y': 
-            if box.is_locked():
-                self.dui.display_message('That box is locked.')
-            elif box.open:
-                self.dui.display_message("It's already been opened.")
-            else:
-                box.open = True
-                self.dui.display_message('You open the box.')
-                self.__empty_box_contents(box, row, col)
-            self.player.energy -= STD_ENERGY_COST
 
     # If there is just one adjacent door, pick it, otherwise return None
     def get_adjacent_door(self, row, col, open):
