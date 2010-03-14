@@ -202,19 +202,19 @@ class DungeonUI(object):
                 if self.map_r < 1:
                     self.map_r = -1
                 redraw = True
-            elif self.map_r < self.cc.get_lvl_length() - self.display_rows - 1 and r >= self.display_rows - 5:
+            elif self.map_r <= self.cc.get_lvl_length() - self.display_rows and r >= self.display_rows - 5:
                 self.map_r = _pl[0] - 5
                 if self.map_r + self.display_rows > self.cc.get_lvl_length():
                     self.map_r = self.cc.get_lvl_length() - self.display_rows + 1
                 redraw = True
-        
+
         if self.display_cols <= self.cc.get_lvl_width():
             if self.map_c > 0 and c < 3:
                 self.map_c = _pl[1] - self.display_cols + 5
                 if self.map_c < 1:
                     self.map_c = 0
                 redraw = True
-            elif self.map_c < self.cc.get_lvl_width() - self.display_cols - 1 and c >= self.display_cols - 5:
+            elif self.map_c <= self.cc.get_lvl_width() - self.display_cols and c >= self.display_cols - 5:
                 self.map_c = _pl[1] - 5
                 if self.map_c + self.display_cols > self.cc.get_lvl_width():
                     self.map_c = self.cc.get_lvl_width() - self.display_cols
