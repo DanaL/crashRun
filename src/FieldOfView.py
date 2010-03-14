@@ -17,10 +17,6 @@
 
 # This is an implementation of a shadowcasting line-of-sight algorithm described by
 # Bjorn Bergstrom at www.roguelikedevelopment.org. 
-from math import sqrt
-from math import atan
-from math import cos
-from math import sin
 
 lit_matrix = {}
 lit_matrix[1] = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
@@ -88,6 +84,7 @@ class Shadowcaster(object):
         self.__p_col = p_col
         self.__dm = dm
         self.__max_radius = max_radius
+        self.__max_radius_sqred = max_radius * max_radius
         self.__visible = {}
 
     # When light radius is 1, we can probably just calculate it manually.
@@ -147,7 +144,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(curr_row,start_c)
             while start_c <= end_c:
                 #Are we within the circle?
-                if sqrt(y**2 +self.__c_to_x(start_c)**2) > self.__max_radius + 0.5:
+                if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c += 1
                     continue
                 
@@ -212,7 +209,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(curr_row,start_c)    
             while start_c >= end_c:
                 # Are we within the circle?
-                if sqrt(y**2 + self.__c_to_x(start_c)**2) > self.__max_radius + 0.5:
+                if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c -= 1
                     continue
 
@@ -251,7 +248,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(start_r,curr_col)
             while start_r <= end_r:
                 # Are we within the circle?
-                if sqrt(self.__r_to_y(start_r)**2 + x**2) > self.__max_radius + 0.5:
+                if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r += 1
                     continue
 
@@ -289,7 +286,7 @@ class Shadowcaster(object):
 
             while start_r >= end_r:
                 # Are we within the circle?
-                if sqrt(self.__r_to_y(start_r)**2 + x**2) > self.__max_radius + 0.5:
+                if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r -= 1
                     continue
 
@@ -327,7 +324,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(curr_row,start_c)
             while start_c  >= end_c:
                 # Are we within the circle?
-                if sqrt(y**2 + self.__c_to_x(start_c)**2) > self.__max_radius + 0.5:
+                if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c -= 1
                     continue
 
@@ -365,7 +362,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(curr_row,start_c)
             while start_c  <= end_c:
                 # Are we within the circle?
-                if sqrt(y**2 + self.__c_to_x(start_c)**2) > self.__max_radius + 0.5:
+                if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c += 1
                     continue
 
@@ -403,7 +400,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(start_r,curr_col)
             while start_r >= end_r:
                 # Are we within the circle?
-                if sqrt(self.__r_to_y(start_r)**2 + x**2) > self.__max_radius + 0.5:
+                if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r -= 1
                     continue
 
@@ -442,7 +439,7 @@ class Shadowcaster(object):
             pclear = self.__dm.is_open(start_r,curr_col)
             while start_r <= end_r:
                 # Are we within the circle?
-                if sqrt(self.__r_to_y(start_r)**2 + x**2) > self.__max_radius + 0.5:
+                if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r += 1
                     continue
 
