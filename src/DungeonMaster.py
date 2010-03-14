@@ -355,7 +355,7 @@ class DungeonMaster:
 
         return _monsters
         
-    def __determine_next_level(self,direction):
+    def __determine_next_level(self, direction):
         if direction == 'up':
             next_level_num = self.curr_lvl.level_num - 1
         else:
@@ -392,11 +392,13 @@ class DungeonMaster:
                     self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1'))
             elif self.curr_lvl.category == 'mini-boss 1':
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'))
+            elif self.curr_lvl.level_num == 13:
+                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'))
                 
     def start_game(self, dui):
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
-        msg = ['Welcome to crashRun!','  Copyright 2008 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
+        msg = ['Welcome to crashRun!','  Copyright 2010 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
         self.dui.write_screen(msg, False)
         self.dui.wait_for_key_input()
         self.dui.clear_screen(True)

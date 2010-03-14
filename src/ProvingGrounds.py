@@ -65,7 +65,8 @@ class ProvingGroundsLevel(GameLevel):
                 
         # Now draw the tunnel entrance tunnel
         self.draw_entrance_tunnel()
-        self.draw_exit_tunnel()
+        if self.level_num == 13:
+            self.draw_exit_tunnel()
         self.add_buildings()
         self.add_toxic_pools()
         
@@ -116,7 +117,7 @@ class ProvingGroundsLevel(GameLevel):
             self.add_pool(TOXIC_WASTE)
         for j in range(randrange(1,4)):
             self.add_pool(ACID_POOL)
-            
+
     def get_square_building(self):
         _sqrs = []
         _start_r = randrange(5, self.lvl_length - 10)
