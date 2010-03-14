@@ -46,7 +46,7 @@ colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 's
     'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87), 
     'brown':(153,0,0), 'lightbrown':(153,51,0), 'blue':(0,0,221), 'darkblue':(0,0,153), 
     'yellow':(255,255,0), 'yellow-orange':(255,200,0), 'orange':(255,165,0), 'orchid':(218,112,214), 
-    'plum':(221,160,221)}
+    'plum':(221,160,221), 'bright pink':(255,105,180), 'pink':(255,20,147)}
 
 directions = {'MOVE_NORTH':'n', 'MOVE_SOUTH':'s', 'MOVE_WEST':'w', 
     'MOVE_EAST':'e', 'MOVE_SOUTHWEST':'sw', 'MOVE_SOUTHEAST':'se',

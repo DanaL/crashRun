@@ -27,6 +27,8 @@ from Items import ItemFactory
 from Inventory import Inventory
 from MessageResolver import MessageResolver
 from pq import PriorityQueue
+from Terrain import ACID_POOL
+from Terrain import TOXIC_WASTE
 from Util import calc_distance
 from Util import do_dN
 from Util import do_d10_roll
@@ -86,7 +88,15 @@ class AStarPathFactory:
                 _cost = self.__open[j][1]
         
         return self.__open.pop(_t)[0]
+    
+    def not_passable(self, row, col):
+        if not self.dm.is_clear(row, col):
+            return True
+        if self.dm.curr_lvl.map[row][col].get_type() in (TOXIC_WASTE, ACID_POOL):
+            return True
         
+        return False
+            
     def find_path(self):
         self.__visited = {self.__start:(0.0,self.__start)}
         self.__open = [(self.__start,0)] 
@@ -99,7 +109,7 @@ class AStarPathFactory:
                     if r == 0 and c == 0: continue
                     successor = (current[0]+r,current[1]+c)
 
-                    if not self.dm.is_clear(successor[0],successor[1]):
+                    if self.not_passable(successor[0], successor[1]):
                         continue
                     
                     if successor[0] - self.__goal[0] in (-1,0,1) and successor[1] - self.__goal[1] in (-1,0,1):
@@ -237,7 +247,7 @@ class BaseAgent(BaseTile):
         return False
         
     def damaged(self, dm, level, damage, attacker, damage_types=[]):
-        _special = set(damage_types).intersection(set(('shock','burn','brain damage')))
+        _special = set(damage_types).intersection(set(('shock','burn','brain damage', 'toxic waste', 'acid')))
         if len(_special) == 0:
             damage -= self.get_curr_ac()
             if damage < 1 and random() < 0.5: damage = 1

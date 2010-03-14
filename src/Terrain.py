@@ -46,10 +46,12 @@ CYBERSPACE_FLOOR = 22
 EXIT_NODE = 23
 SUBNET_NODE = 24
 SPECIAL_FLOOR = 25
+ACID_POOL = 26
+TOXIC_WASTE = 27
 
 TERRAINS = (FLOOR,WALL,PERM_WALL,UP_STAIRS,DOWN_STAIRS,PILLAR,GRASS,TREE,OCEAN,ROAD,DOOR,MOUNTAIN,POOL,WATER,SAND,TERMINAL, 
         SECURITY_CAMERA, STEEL_DOOR, SPECIAL_DOOR, PUDDLE, CYBERSPACE_WALL, CYBERSPACE_FLOOR, EXIT_NODE, SUBNET_NODE,
-        SPECIAL_FLOOR)
+        SPECIAL_FLOOR, ACID_POOL, TOXIC_WASTE)
 
 class TerrainTile(BaseTile):
     def __init__(self,ch,fg,bg,lit,passable,opaque,open,recepticle,name,type):
@@ -299,6 +301,8 @@ class TerrainFactory:
         self.__terrain_cache[CYBERSPACE_WALL] = TerrainTile('=','darkgreen','black','green',0,1,0,0,'firewall',CYBERSPACE_WALL)
         self.__terrain_cache[CYBERSPACE_FLOOR] = TerrainTile('.','darkgreen','black','green',1,0,1,0,'datapth',CYBERSPACE_FLOOR)
         self.__terrain_cache[EXIT_NODE] = TerrainTile("'",'red','black','brown',1,0,1,0,'exit node',EXIT_NODE)
+        self.__terrain_cache[ACID_POOL] = TerrainTile("{",'darkgreen','black','green',1,0,1,0,'pool of acid', ACID_POOL)
+        self.__terrain_cache[TOXIC_WASTE] = TerrainTile("{",'pink','black','bright pink',1,0,1,0,'toxic waste', TOXIC_WASTE)
         
     def get_terrain_tile(self,type):
         if type == DOOR:

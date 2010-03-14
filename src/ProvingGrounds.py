@@ -23,9 +23,11 @@ from GameLevel import GameLevel
 import MonsterFactory
 from Terrain import SpecialFloor
 from Terrain import TerrainFactory
+from Terrain import ACID_POOL
 from Terrain import DOOR
 from Terrain import FLOOR
 from Terrain import PERM_WALL
+from Terrain import TOXIC_WASTE
 from Terrain import UP_STAIRS
 from Terrain import WALL
 
@@ -65,7 +67,8 @@ class ProvingGroundsLevel(GameLevel):
         self.draw_entrance_tunnel()
         self.draw_exit_tunnel()
         self.add_buildings()
-    
+        self.add_toxic_pools()
+        
     def draw_entrance_tunnel(self):
         _row = randrange(5, self.lvl_length-5)
         _col = 3
@@ -92,7 +95,28 @@ class ProvingGroundsLevel(GameLevel):
                 _row += 1
                 self.map[_row][_col] = self.tf.get_terrain_tile(FLOOR)
             _col -= 1
-                    
+    
+    def add_pool(self, pool_type):
+        # get starting point
+        while True:
+            _row = randrange(2, self.lvl_length - 2)
+            _col = randrange(2, self.lvl_width - 2)
+            print _row, _col
+            if self.map[_row][_col].get_type() == FLOOR:
+                break
+                
+        self.map[_row][_col] = self.tf.get_terrain_tile(pool_type)
+        for _dr in (-1, 0, 1):
+            for _dc in (-1, 0, 1):
+                if self.map[_row + _dr][_col + _dc].get_type() == FLOOR and randrange(5) == 0:
+                    self.map[_row + _dr][_col + _dc] = self.tf.get_terrain_tile(pool_type)
+                     
+    def add_toxic_pools(self):
+        for j in range(randrange(1,4)):
+            self.add_pool(TOXIC_WASTE)
+        for j in range(randrange(1,4)):
+            self.add_pool(ACID_POOL)
+            
     def get_square_building(self):
         _sqrs = []
         _start_r = randrange(5, self.lvl_length - 10)

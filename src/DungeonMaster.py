@@ -74,10 +74,12 @@ from Software import Software
 import Terrain
 from Terrain import TerrainTile
 from Terrain import Trap
+from Terrain import ACID_POOL
 from Terrain import EXIT_NODE
 from Terrain import SPECIAL_DOOR
 from Terrain import SPECIAL_FLOOR
 from Terrain import SUBNET_NODE
+from Terrain import TOXIC_WASTE
 from TowerFactory import TowerFactory
 from Util import calc_distance
 from Util import do_d10_roll
@@ -1665,7 +1667,8 @@ class DungeonMaster:
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
-                
+        self.__check_ground(self.player.row, self.player.col)
+        
     def monster_killed(self, level, r, c, by_player):
         victim = level.dungeon_loc[r][c].occupant
         
@@ -1721,7 +1724,7 @@ class DungeonMaster:
             
         return isinstance(tile.previousTile, Terrain.DownStairs) or isinstance(tile.previousTile, Terrain.UpStairs)
         
-    def __check_ground(self,r,c):
+    def __check_ground(self, r, c):
         _loc = self.curr_lvl.dungeon_loc[r][c]
         _sqr = self.curr_lvl.map[r][c]
         if isinstance(_sqr,Terrain.DownStairs) or isinstance(_sqr, Terrain.UpStairs):
@@ -1730,8 +1733,13 @@ class DungeonMaster:
             self.dui.display_message('There is a lift access here.')
         if _sqr.get_type() == EXIT_NODE:
             self.dui.display_message('There is an exit node here.')
-        if _sqr.get_type() == SUBNET_NODE:
+        elif _sqr.get_type() == SUBNET_NODE:
             self.dui.display_message('There is a subnet node access point here.')
+        elif _sqr.get_type() == TOXIC_WASTE:
+            self.player_steps_in_toxic_waste(r, c)
+        elif _sqr.get_type() == ACID_POOL:
+            self.player_steps_in_acid_pool(r, c)
+            
         if isinstance(_sqr, Terrain.Trap):
             self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
             self.__player_steps_on_trap(_sqr)
@@ -1851,6 +1859,27 @@ class DungeonMaster:
         
         self.__end_of_game(_score)
     
+    def player_steps_in_acid_pool(self, row, col):
+        self.dui.display_message('Acid!')
+        
+        _shoes = self.player.inventory.get_armour_in_location('boots')
+        if _shoes != '':
+            self.dui.display_message('The acid eats through your shoes.')
+            self.player.inventory.destroy_item(_shoes)
+            self.player.remove_effects(_shoes)
+            self.player.calc_ac()
+            self.dui.update_status_bar()
+        else:
+            _dmg = randrange(5,11)
+            self.player.damaged(self, self.curr_lvl, _dmg, '', ['acid'])
+            
+    def player_steps_in_toxic_waste(self, row, col):
+        self.dui.display_message('Gross! You step in toxic waste.')
+        _dmg = randrange(1,11)
+        self.player.damaged(self, self.curr_lvl, _dmg, '', ['toxic waste'])
+        self.dui.display_message('You feel dizzy.')
+        self.player.dazed('')
+        
     def __player_killed_in_cyberspace(self):
         self.dui.display_message('You have been expunged.', True)
         self.player_forcibly_exits_cyberspace()

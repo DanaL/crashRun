@@ -89,6 +89,12 @@ class Inventory:
 
         self.__next_slot = ''
 
+    def get_armour_in_location(self, location):
+        if self.__readied_armour[location] != '':
+            return self.__readied_armour[location][0]
+        else:
+            return ''
+        
     def get_armour_value(self):
         return self.__armour_value
 
