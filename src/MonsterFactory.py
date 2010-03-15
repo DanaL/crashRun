@@ -187,8 +187,17 @@ def _rabidDog(dm,row,col):
             dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='rabid dog', row=row,
             col=col, xp_value=3, gender='male', level=1)
 
+def _reanimatedMailroomClerk(dm, row, col):
+    _rp = RelentlessPredator(vision_radius=7, ac=4, hp_low=15, hp_high=30, dmg_dice=5, dmg_rolls=3,
+            ab=0, dm=dm, ch='z', fg='brown', bg='black', lit='red',
+            name='reanimated mailroom clerk', row=row, col=col, xp_value=10, gender='male',
+            level=6)
+    _rp.base_energy = 9
+    
+    return _rp
+    
 def _reanimatedMaintenanceWorker(dm, row, col):
-    _r = RelentlessPredator(vision_radius=8, ac=4, hp_low=20, hp_high=40, dmg_dice=6, dmg_rolls=3,
+    _r = RelentlessPredator(vision_radius=8, ac=5, hp_low=20, hp_high=40, dmg_dice=6, dmg_rolls=3,
             ab=0, dm=dm, ch='z', fg='darkgreen', bg='black', lit='green',
             name='reanimated maintenance worker', row=row, col=col, xp_value=20, gender='male',
             level=6)
@@ -199,7 +208,7 @@ def _reanimatedMaintenanceWorker(dm, row, col):
     return _r
     
 def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
-    _z = RelentlessPredator(vision_radius=8, ac=4, hp_low=25, hp_high=45, dmg_dice=4, dmg_rolls=5,
+    _z = RelentlessPredator(vision_radius=8, ac=5, hp_low=25, hp_high=45, dmg_dice=4, dmg_rolls=5,
             ab=0, dm=dm, ch='z', fg='darkgreen', bg='black',  lit='darkgreen',
             name='reanimated unionzed maintenance worker', row=row, col=col, xp_value=25, 
             gender='male', level=8)
@@ -320,3 +329,4 @@ _monster_dict['reanimated maintenance worker'] = _reanimatedMaintenanceWorker
 _monster_dict['reanimated unionized maintenance worker'] = _reanimatedUnionizedMaintenanceWorker
 _monster_dict['wolvog'] = _wolvog
 _monster_dict['reanimated scientist'] = _zombieScientist
+_monster_dict['reanimated mailroom clerk'] = _reanimatedMailroomClerk

@@ -88,28 +88,30 @@ class OldComplexLevel(GameLevel):
             
     def __get_monster(self, _monster_level):
         if _monster_level < 4:
-            rnd = randrange(0,8)
+            rnd = randrange(0, 8)
         else:
-            rnd = randrange(4,19)
+            rnd = randrange(4, 20)
             
         if rnd in range(0,2):
-            return MonsterFactory.get_monster_by_name(self.dm,'rabid dog',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'rabid dog', 0, 0)
         elif rnd in range(2,4):
-            return MonsterFactory.get_monster_by_name(self.dm,'junkie',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'junkie', 0, 0)
         elif rnd in range(4,6):
-            return MonsterFactory.get_monster_by_name(self.dm,'extra large cockroach',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'extra large cockroach', 0, 0)
         elif rnd in range(6,8):
-            return MonsterFactory.get_monster_by_name(self.dm,'mutant rat',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'mutant rat', 0, 0)
         elif rnd in range(8,10):
-            return MonsterFactory.get_monster_by_name(self.dm,'dust head',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'dust head', 0, 0)
         elif rnd in range(10,12):
             return MonsterFactory.get_monster_by_name(self.dm,'mutant mutt', 0, 0)
         elif rnd in range(12,14):
-            return MonsterFactory.get_monster_by_name(self.dm,'damaged security bot',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'damaged security bot', 0, 0)
         elif rnd in range(14,17):
-            return MonsterFactory.get_monster_by_name(self.dm,'mutant',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'mutant', 0, 0)
+        elif rnd in range(17,19):
+            return MonsterFactory.get_monster_by_name(self.dm,'reanimated mailroom clerk', 0, 0)
         else:
-            return MonsterFactory.get_monster_by_name(self.dm,'surveillance drone',0,0)
+            return MonsterFactory.get_monster_by_name(self.dm,'surveillance drone', 0, 0)
     
     def add_monster(self):
         _monster_level = self.level_num
