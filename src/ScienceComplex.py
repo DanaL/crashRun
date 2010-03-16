@@ -57,30 +57,32 @@ class ScienceComplexLevel(GameLevel):
     def __get_monster(self):
         _rnd =  randrange(0,28)
         if _rnd in range(0,3):
-            return MonsterFactory.get_monster_by_name(self.dm,'reanimated maintenance worker',0,0)
+            _name = 'reanimated maintenance worker'
         elif _rnd in range(3,6):
-            return MonsterFactory.get_monster_by_name(self.dm,'reanimated unionized maintenance worker',0,0)
+            _name = 'reanimated unionized maintenance worker'
         elif _rnd in range(6,7):
-            return MonsterFactory.get_monster_by_name(self.dm,'roomba',0,0)
+            _name = 'roomba'
         elif _rnd in range(7,10):
-            return MonsterFactory.get_monster_by_name(self.dm,'wolvog',0,0)
+            _name = 'wolvog'
         elif _rnd in range(10,13):
-            return MonsterFactory.get_monster_by_name(self.dm,'pigoon',0,0)
+            _name = 'pigoon'
         elif _rnd in range(13,16):
-            return MonsterFactory.get_monster_by_name(self.dm,'beastman',0,0)
+            _name = 'beastman'
         elif _rnd in range(16,18):
-            return MonsterFactory.get_monster_by_name(self.dm,'security bot',0,0)
+            _name = 'security bot'
         elif _rnd in range(18,20):
-            return MonsterFactory.get_monster_by_name(self.dm,'incinerator',0,0)
+            _name = 'incinerator'
         elif _rnd in range(20,22):
-            return MonsterFactory.get_monster_by_name(self.dm,'mq1 predator',0,0)
+            _name = 'mq1 predator'
         elif _rnd in range(22,24):
-            return MonsterFactory.get_monster_by_name(self.dm,'reanimated scientist',0,0)
+            _name = 'reanimated scientist'
         elif _rnd in range(24,26):
-            return MonsterFactory.get_monster_by_name(self.dm, 'reanimated mathematician', 0, 0)
+            _name = 'reanimated mathematician'
         else:
-            return MonsterFactory.get_monster_by_name(self.dm,'ninja',0,0)
-            
+            _name = 'ninja'
+        
+        return MonsterFactory.get_monster_by_name(self.dm, _name, 0, 0)
+        
     def __add_monsters(self):
         for j in range(randrange(15,31)):
             self.add_monster()
