@@ -665,7 +665,12 @@ class DungeonMaster:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
             else:
-                self.dui.display_message('You cannot move that way!')
+                if self.player.has_condition('dazed'):
+                    self.player.energy -= STD_ENERGY_COST
+                    _tile = self.curr_lvl.map[next_r][next_c]
+                    self.dui.display_message('You stagger into ' + _tile.get_name() + '!')
+                else:
+                    self.dui.display_message('You cannot move that way!')
             
     def player_bash(self,direction):
         dt = self.convert_to_dir_tuple(self.player, direction)

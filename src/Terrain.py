@@ -285,7 +285,7 @@ class TerrainFactory:
     def __init__(self):
         self.__terrain_cache = {}
         
-        self.__terrain_cache[PERM_WALL] = TerrainTile('#','darkgrey','black','grey',0,1,0,0,'perm wall',PERM_WALL)
+        self.__terrain_cache[PERM_WALL] = TerrainTile('#','darkgrey','black','grey',0,1,0,0,'wall',PERM_WALL)
         self.__terrain_cache[WALL] = TerrainTile('#','darkgrey','black','grey',0,1,0,0,'wall',WALL)
         self.__terrain_cache[FLOOR] = TerrainTile('.','grey','black','yellow',1,0,1,0,'floor',FLOOR)
         self.__terrain_cache[PILLAR] = TerrainTile('#','darkgrey','black','grey',0,1,0,0,'pillar',PILLAR)

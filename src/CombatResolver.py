@@ -99,7 +99,7 @@ class MeleeResolver(CombatResolver):
             uke = self.dm.curr_lvl.dungeon_loc[r][c].occupant
     
         if uke == '':
-            self.dm.mr.simple_verb_action(tori, ' %s wildly and %s',['swing','miss'])
+            self.dm.mr.simple_verb_action(tori, ' %s wildly and %s.',['swing','miss'])
             return
         
         _attack_modifiers = 0
