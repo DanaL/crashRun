@@ -226,14 +226,6 @@ def _reanimatedUnionizedMaintenanceWorker(dm, row, col):
         _z.inventory.add_item(_if.gen_item('push broom'))
         
     return _z
-
-    
-def _zombieScientist(dm, row, col):
-    _zs = ZombieScientist(dm, row, col)
-    _zs.conditions.append((('light protection',0,0), _zs))
-    _zs.conditions.append((('shock immune',0,0), _zs))
-    
-    return _zs
             
 def _repairBot(dm, row, col):
     return RepairBot(dm, row, col)
@@ -289,7 +281,21 @@ def _wolvog(dm,row,col):
     return AltPredator(vision_radius=8, ac=6, hp_low=30, hp_high=50, dmg_dice=4, dmg_rolls=5, ab=0,
         dm=dm, ch='d', fg='darkgrey', bg='black', lit='darkgrey', name='wolvog', row=row,
         col=col, xp_value=40, gender='male', level=8)
-            
+
+def _zombieMathematician(dm, row, col):
+    _zm = ZombieMathematician(dm, row, col)
+    _zm.conditions.append((('light protection',0,0), _zm))
+    _zm.conditions.append((('shock immune',0,0), _zm))
+    
+    return _zm
+        
+def _zombieScientist(dm, row, col):
+    _zs = ZombieScientist(dm, row, col)
+    _zs.conditions.append((('light protection',0,0), _zs))
+    _zs.conditions.append((('shock immune',0,0), _zs))
+    
+    return _zs
+              
 def get_monster_by_name(dm, name, row, col):
     return _monster_dict[name](dm,row,col)
 
@@ -336,3 +342,4 @@ _monster_dict['reanimated unionized maintenance worker'] = _reanimatedUnionizedM
 _monster_dict['wolvog'] = _wolvog
 _monster_dict['reanimated scientist'] = _zombieScientist
 _monster_dict['reanimated mailroom clerk'] = _reanimatedMailroomClerk
+_monster_dict['reanimated mathematician'] = _zombieMathematician

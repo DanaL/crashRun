@@ -585,6 +585,18 @@ class DungeonMaster:
         _explosion = Items.Explosion('missle', dmg_dice, dmg_rolls, radius)
         self.__item_hits_ground(self.curr_lvl, target_r, target_c, _explosion)
     
+    def handle_mathematics_attack(self, attacker, victim):
+        try:
+            _defence = victim.stats.get_intuition()
+            _skill = victim.skills.get_skill('Crypto')        
+            _defence += _skill.get_rank()
+        except AttributeError:
+            _defence = victim.level
+            
+        _roll = randrange(21)
+        if _roll == 20 or _roll > _defence:
+            victim.dazed(attacker)
+            
     # I could/should move this and __agent_burnt to Agent.py
     def handle_attack_effects(self, attacker, victim, damage_types):
         for _method in damage_types:
@@ -592,7 +604,9 @@ class DungeonMaster:
                 self.__agent_burnt(victim, attacker)
             elif _method == 'shock':
                 victim.shocked(attacker)
-
+            elif _method == 'mathematics':
+                self.handle_mathematics_attack(attacker, victim)
+                    
     def convert_to_dir_tuple(self, agent, direction):
         if agent.has_condition('dazed'):
             _mr = MessageResolver(self, self.dui)

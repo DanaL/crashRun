@@ -266,11 +266,11 @@ class BaseAgent(BaseTile):
         return damage
             
     def dazed(self, source):
-        _effect = (('dazed', 0, randrange(5,15) + self.dm.turn), source)
+        _effect = (('dazed', 0, randrange(1,11) + self.dm.turn), source)
         self.apply_effect(_effect, False)
     
     def get_articled_name(self):
-        return 'the ' + self.get_name()
+        return self.get_name()
 
     def get_base_ac(self):
         return self.__base_ac
@@ -910,7 +910,7 @@ class ED209(Shooter):
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):
         _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated programmer'))
-        super(ZombieScientist, self).__init__(vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
+        RelentlessPredator.__init__(self, vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
             ab=0, dm=dm, ch='z', fg='darkblue', bg='black', lit='blue',
             name=_name, row=row, col=col, xp_value=20, gender='male',
             level=6)
@@ -931,7 +931,22 @@ class ZombieScientist(RelentlessPredator):
             self.energy -= STD_ENERGY_COST
         else:
             super(ZombieScientist, self).perform_action()
-        
+
+class ZombieMathematician(RelentlessPredator):
+    def __init__(self, dm, row, col):
+        RelentlessPredator.__init__(self, vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
+            ab=0, dm=dm, ch='z', fg='darkgrey', bg='black', lit='grey',
+            name='reanimated mathematician', row=row, col=col, xp_value=24, gender='male',
+            level=7)
+            
+    def perform_action(self):
+        if self.is_player_adjacent() and randrange(5) == 0:
+            _msg = self.get_articled_name() + ' babbles equations at you.'
+            self.dm.alert_player(self.row, self.col, _msg)
+            self.dm.handle_attack_effects(self, self.dm.player, ['mathematics'])
+        else:
+            RelentlessPredator.perform_action(self)             
+            
 # Ninjas have their own special way of moving
 class Ninja(RelentlessPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls , ab, dm, ch,
