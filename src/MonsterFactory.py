@@ -139,6 +139,11 @@ def _lolcat(dm, row, col):
     return CyberspaceMonster(8, 8, 50, 60, 6, 3, 0, dm, 'f', 'yellow', 'black', 'yellow',
             'lolcat', row, col, 2, 'male', 8)
 
+def _ed209(dm, row, col):
+    _ed = ED209(dm, row, col)
+    
+    return _ed
+    
 def _mq1predator(dm, row, col):
     _mq1 = PredatorDrone(vision_radius=8, ac=6, hp_low=25, hp_high=35, dmg_dice=4, dmg_rolls=6,
             ab=2, dm=dm, ch='i', fg='darkgrey', bg='black', lit='darkgrey', 
@@ -300,6 +305,7 @@ _monster_dict['console cowboy'] = _cowboy
 _monster_dict['damaged security bot'] = _damagedSecurityBot
 _monster_dict['docbot'] = _docBot
 _monster_dict['dust head'] = _dusthead
+_monster_dict['ed-209'] = _ed209
 _monster_dict['enhanced mole'] = _enhancedMole
 _monster_dict['extra large cockroach'] = _extraLargeCockroach
 _monster_dict['giant bat'] = _giantBat

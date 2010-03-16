@@ -29,7 +29,9 @@ from MessageResolver import MessageResolver
 from pq import PriorityQueue
 from Terrain import ACID_POOL
 from Terrain import TOXIC_WASTE
+from Util import calc_angle_between
 from Util import calc_distance
+from Util import convert_locations_to_dir
 from Util import do_dN
 from Util import do_d10_roll
 
@@ -451,7 +453,7 @@ class AStarMover:
                 # If the path we were following is not longer valid, start a
                 # new path
                 self.moves = []
- 
+            
 class BaseMonster(BaseAgent, AStarMover):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch, 
                 fg, bg, lit, name, row, col, xp_value, gender, level):
@@ -482,9 +484,15 @@ class BaseMonster(BaseAgent, AStarMover):
     def get_attack_bonus(self):
         return self.__ab
     
+    def calc_missile_to_hit_bonus(self):
+        return self.__ab
+        
     def get_attack_die(self):
         return self.level + 1
     
+    def get_shooting_attack_die(self, gun):
+        return self.level + 1
+        
     # This works because a monster won't exist in both cyberspace
     # and meatspace (currently)
     def get_cyberspace_attack_die(self):
@@ -516,14 +524,17 @@ class BaseMonster(BaseAgent, AStarMover):
             _name += ' (inactive)'
             
         return _name
-        
-    def is_player_adjacent(self):
+    
+    def is_player_adjacent_to_loc(self, row, col):
         _lvl = self.dm.curr_lvl
         for r in (-1,0,1):
             for c in (-1,0,1):
-                if _lvl.get_occupant(self.row+r,self.col+c) == self.dm.player:
+                if _lvl.get_occupant(row + r, col + c) == self.dm.player:
                     return True
         return False
+    
+    def is_player_adjacent(self):
+        return self.is_player_adjacent_to_loc(self.row, self.col)
                 
     def is_player_visible(self):
         player_loc = self.dm.get_player_loc()
@@ -825,6 +836,77 @@ class RelentlessPredator(BaseMonster):
         
         self.energy -= STD_ENERGY_COST
 
+class Shooter(BaseMonster):
+    def __init__(self, vision_radius, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, dm, ch,
+            fg, bg, lit, name, row, col, xp_value, gender, level):
+        BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level) 
+        self.range = 5
+        self.weapon = Items.MachineGun('ED-209 Canon', 7, 4, 0, 0, 0)
+        
+    def pick_loc_to_move_to(self, p_loc):
+        _good_sqs = []
+        for _dr in (-1, 0 , 1):
+            for _dc in (-1, 0 ,1):
+                if _dr != 0 or _dc != 0:
+                    _new_r = self.row + _dr
+                    _new_c = self.col + _dc
+                    _angle = calc_angle_between(_new_r, _new_c, p_loc[0], p_loc[1])
+                    _distance = calc_distance(_new_r, _new_c, p_loc[0], p_loc[1])
+                    
+                    if _angle % 45 == 0 and _distance <= self.range and self.dm.is_clear(_new_r, _new_c):
+                        _good_sqs.append((_new_r, _new_c, _distance))
+        
+        if len(_good_sqs):
+            return ()
+            
+        # By preference, pick a square that's not adjacent to the player
+        try:
+            _non_adj = [_p for _p in _good_sqs if not self.is_player_adjacent_to_loc(_p[0], _p[1])]
+            if len(_non_adj) > 0:
+                _ch = choice(_non_adj)
+            else:
+                _ch = choice(_good_sqs)
+            return (_ch[0], _ch[1])
+        except IndexError:
+            return ()
+                      
+    def perform_action(self):
+        _player_loc = self.dm.get_player_loc()
+        _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
+        _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
+        
+        if _angle % 45 == 0 and _distance <= self.range and self.is_player_visible():
+            self.shoot_at_player(_player_loc)
+        else:
+            _loc = self.pick_loc_to_move_to(_player_loc)
+            if _loc == ():
+                self.move_to(_player_loc)
+            else:
+                self.move_to(_loc)
+            
+        self.energy -= STD_ENERGY_COST
+
+    def shoot_at_player(self, player_loc):
+        self.dm.alert_player(self.row, self.col, "The ED-209 fires at you!")
+        _dir = convert_locations_to_dir(player_loc[0], player_loc[1], self.row, self.col)
+        self.dm.fire_weapon(self, self.row, self.col, _dir, self.weapon) 
+
+class ED209(Shooter):
+    def __init__(self, dm, row, col):
+        Shooter.__init__(self, vision_radius=5, ac=10, hp_low=30, hp_high=40, dmg_dice=9, dmg_rolls=3, ab=2,
+            dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
+            col=col, xp_value=50, gender='male', level=10)
+            
+    def perform_action(self):
+        if randrange(5) == 0:
+            if randrange(2) == 0:
+                self.dm.alert_player(self.row, self.col, "Drop your weapon!")
+            else:
+                self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
+                
+        Shooter.perform_action(self)
+        
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):
         _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated programmer'))
@@ -975,9 +1057,8 @@ class DocBot(CleanerBot):
         self.dm.alert_player(self.row, self.col, _msg)
         
     def perform_action(self):
-        _pl = self.dm.get_player_loc()
-        
         if self.is_player_visible():
+            _pl = self.dm.get_player_loc()
             d = self.distance_from_player(_pl)
             if d <= self.vision_radius and randrange(3) == 0:
                 self.proffer_diagnosis()

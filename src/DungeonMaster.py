@@ -593,9 +593,11 @@ class DungeonMaster:
             elif _method == 'shock':
                 victim.shocked(attacker)
 
-    def convert_to_dir_tuple(self, direction):
-        if self.player.has_condition('dazed'):
-            self.dui.display_message('You are dazed.')
+    def convert_to_dir_tuple(self, agent, direction):
+        if agent.has_condition('dazed'):
+            _mr = MessageResolver(self, self.dui)
+            _msg = "%s %s dazed." % (agent.get_articled_name(), _mr.parse(agent, "etre"))
+            self.dui.display_message(_msg)
             _dt = get_rnd_direction_tuple()
         else:
             _dt = get_direction_tuple(direction)
@@ -646,7 +648,7 @@ class DungeonMaster:
         elif direction == '>':
             self.player_moves_down_a_level()
         else:
-            dt = self.convert_to_dir_tuple(direction)
+            dt = self.convert_to_dir_tuple(self.player, direction)
             _p = self.player
             next_r = _p.row + dt[0]
             next_c = _p.col + dt[1] 
@@ -666,7 +668,7 @@ class DungeonMaster:
                 self.dui.display_message('You cannot move that way!')
             
     def player_bash(self,direction):
-        dt = self.convert_to_dir_tuple(direction)
+        dt = self.convert_to_dir_tuple(self.player, direction)
 
         door_r = self.player.row + dt[0]
         door_c = self.player.col + dt[1]
@@ -729,7 +731,7 @@ class DungeonMaster:
             self.close_door(_door_r, _door_c)
         else:
             _dir = self.dui.get_direction()
-            _dt = self.convert_to_dir_tuple(_dir)
+            _dt = self.convert_to_dir_tuple(self.player, _dir)
             if _dt != None:
                 _door_r = self.player.row + _dt[0]
                 _door_c = self.player.col + _dt[1]
@@ -758,7 +760,7 @@ class DungeonMaster:
             return None
 
     def __get_tile_from_dir(self, _dir):
-        _dt = self.convert_to_dir_tuple(_dir)
+        _dt = self.convert_to_dir_tuple(self.player, _dir)
         _r = self.player.row + _dt[0]
         _c = self.player.col + _dt[1]
         return self.curr_lvl.map[_r][_c], _r, _c
@@ -986,7 +988,7 @@ class DungeonMaster:
             if _dir != '':
                 self.dui.display_message(weapon.get_firing_message())
                 weapon.fire()
-                self.__fire_weapon(self.player, self.player.row, self.player.col, _dir, weapon)
+                self.fire_weapon(self.player, self.player.row, self.player.col, _dir, weapon)
                 self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('Never mind.')
@@ -1014,7 +1016,7 @@ class DungeonMaster:
                 
     # I could perhaps merge a bunch of the code between this & throwing weapons?
     # the loop is essentially the same.  Would pass in the appropriate combat resolver
-    def __fire_weapon(self, shooter, start_r, start_c, direction, gun):
+    def fire_weapon(self, shooter, start_r, start_c, direction, gun):
         _noise = Noise(8, shooter, start_r, start_c, 'gunfire')
         self.curr_lvl.monsters_react_to_noise(8, _noise)
         
@@ -1026,7 +1028,7 @@ class DungeonMaster:
             return
             
         _sr = ShootingResolver(self, self.dui)
-        dt = self.convert_to_dir_tuple(direction)
+        dt = self.convert_to_dir_tuple(shooter, direction)
         if dt[1] == 0:
             ch = '|'
         elif dt[0] == 0:
@@ -1113,7 +1115,7 @@ class DungeonMaster:
         
         _tr = ThrowingResolver(self, self.dui)
         _range = self.__calc_thrown_range(self.player,item)
-        dt = self.convert_to_dir_tuple(direction)
+        dt = self.convert_to_dir_tuple(self.player, direction)
 
         item_row = start_r
         item_col = start_c
@@ -1368,7 +1370,7 @@ class DungeonMaster:
             self.dui.display_message('Never mind.')
             return
             
-        _dt = self.convert_to_dir_tuple(_dir)
+        _dt = self.convert_to_dir_tuple(self.player, _dir)
         if _dt != '':
             _door_r = self.player.row + _dt[0]
             _door_c = self.player.col + _dt[1]

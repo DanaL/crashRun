@@ -18,6 +18,8 @@
 # File for functions which are used in several places but don't have
 # an obvious place to belong
 
+import math
+from math import atan2
 from math import sqrt
 from random import choice
 from random import randrange
@@ -27,15 +29,38 @@ class EmptyInventory:
     
 class NonePicked:
     pass
-    
-# Calculate the distance between two points.  Value is returned as 
-# an integer.
+                    
 def calc_distance(x0, y0, x1, y1):
     xd = x0 - x1
     yd = y0 - y1
     
     return int(sqrt(xd * xd + yd * yd))
-
+    
+def calc_angle_between(x0, y0, x1, y1):
+    _ang = atan2(float(y1) - float(y0), float(x1) - float(x0)) * 180 / math.pi
+    return int(round(_ang))
+    
+def convert_locations_to_dir(row0, col0, row1, col1):
+    if row0 == row1:
+        if col0 < col1:
+            return 'w'
+        else:
+            return 'e'
+    elif col0 == col1:
+        if row0 < row1:
+            return 'n'
+        else:
+            return 's'
+    else:
+        if row0 < row1 and col0 < col1:
+            return 'nw'
+        elif row0 > row1 and col0 > col1:
+            return 'se'
+        elif row0 < row1 and col0 > col1:
+            return 'ne'
+        else:
+            return 'sw'
+        
 def get_correct_article(word):
     if word[0] in ['a','e','i','o','u']:
         return 'an'
