@@ -317,7 +317,7 @@ class Player(BaseAgent):
     def remove_effect(self, effect, source):
         BaseAgent.remove_effect(self, effect, source)
         
-        if effect[0] == 'dazed':
+        if effect[0] == 'dazed' and not self.has_condition('dazed'):
             self.dm.alert_player(self.row, self.col, "You shake off your daze.")
             
     def remove_effects(self, source):
