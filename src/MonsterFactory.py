@@ -295,7 +295,18 @@ def _zombieScientist(dm, row, col):
     _zs.conditions.append((('shock immune',0,0), _zs))
     
     return _zs
-              
+
+def _cyborg(dm, row, col):
+    _cy = Cyborg(dm, row, col)
+    _if = Items.ItemFactory()
+    _cy.inventory.add_item(_if.gen_item('shotgun'))
+    _cy.inventory.add_item(_if.get_stack('shotgun shell', randrange(10,21)))
+    _cy.inventory.add_item(_if.gen_item('p90 assault rifle'))
+    _cy.inventory.add_item(_if.gen_item('katana'))
+    _cy.select_weapon()
+    
+    return _cy
+    
 def get_monster_by_name(dm, name, row, col):
     return _monster_dict[name](dm,row,col)
 
@@ -343,3 +354,6 @@ _monster_dict['wolvog'] = _wolvog
 _monster_dict['reanimated scientist'] = _zombieScientist
 _monster_dict['reanimated mailroom clerk'] = _reanimatedMailroomClerk
 _monster_dict['reanimated mathematician'] = _zombieMathematician
+
+_monster_dict['cyborg'] = _cyborg
+

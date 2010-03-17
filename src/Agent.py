@@ -34,6 +34,7 @@ from Util import calc_distance
 from Util import convert_locations_to_dir
 from Util import do_dN
 from Util import do_d10_roll
+from Util import get_correct_article
 
 STD_ENERGY_COST = 12
 
@@ -836,13 +837,12 @@ class RelentlessPredator(BaseMonster):
         
         self.energy -= STD_ENERGY_COST
 
-class Shooter(BaseMonster):
+class Shooter(RelentlessPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level) 
         self.range = 5
-        self.weapon = Items.MachineGun('ED-209 Canon', 7, 4, 0, 0, 0)
         
     def pick_loc_to_move_to(self, p_loc):
         _good_sqs = []
@@ -888,24 +888,118 @@ class Shooter(BaseMonster):
         self.energy -= STD_ENERGY_COST
 
     def shoot_at_player(self, player_loc):
-        self.dm.alert_player(self.row, self.col, "The ED-209 fires at you!")
+        self.dm.alert_player(self.row, self.col, self.get_articled_name() + " fires at you!")
         _dir = convert_locations_to_dir(player_loc[0], player_loc[1], self.row, self.col)
         self.dm.fire_weapon(self, self.row, self.col, _dir, self.weapon) 
+        self.weapon.fire()
+        
+class Cyborg(Shooter):
+    def __init__(self, dm, row, col):
+        Shooter.__init__(self, vision_radius=5, ac=10, hp_low=30, hp_high=40, dmg_dice=6, dmg_rolls=2, ab=2,
+            dm=dm,ch='@', fg='darkblue', bg='black', lit='blue', name='Cyborg', row=row,
+            col=col, xp_value=50, gender='male', level=10)
+        self.weapon = ''
+        self.attitude = 'hostile'
+        
+    def has_ammo_for(self, gun):
+        _a = ord('a')
+        for _num in range(26):
+            _letter = chr(_a + _num)
+            _item = self.inventory.get_item(_letter)
+            if _item != '' and gun.is_ammo_compatible(_item):
+                return _letter
+        return ''
+                
+    def check_inventory_for_guns(self):
+        _guns = []
+        _a = ord('a')
+        for _num in range(26):
+            _letter = chr(_a + _num)
+            _item = self.inventory.get_item(_letter)
+            if isinstance(_item, Items.Firearm):
+                if _item.current_ammo > 0 or self.has_ammo_for(_item) != '':
+                    _guns.append((_item, _letter))
 
+        return _guns
+    
+    def find_best_melee_weapon(self):
+        _a = ord('a')
+        _max_dmg = 0
+        _pick = '-'
+        for _num in range(26):
+            _letter = chr(_a + _num)
+            _item = self.inventory.get_item(_letter)
+            if isinstance(_item, Items.Weapon):
+                _dmg = _item.dmg_roll * _item.dmg_dice
+                if _dmg > _max_dmg:
+                    _pick = _letter
+                    _max_dmg = _dmg
+
+        return _pick
+        
+    def pick_gun(self):
+        _pick = ''
+        _guns = self.check_inventory_for_guns()
+        _max_dmg = 0
+        for _gun in _guns:
+            _dmg = _gun[0].shooting_roll * _gun[0].shooting_damage
+            if _dmg > _max_dmg:
+                _max_dmg = _dmg
+                _pick = _gun[1]
+        return _pick
+        
+    def select_weapon(self):
+        _gun = self.pick_gun()
+        if _gun != '':
+            self.inventory.ready_weapon(_gun)
+        else:
+            _pick = self.find_best_melee_weapon()
+            _msg = self.get_articled_name()
+            if _pick == '-':
+                _msg += " cracks his knuckles."
+            else:
+                _item = self.inventory.get_item(_pick)
+                _name = _item.get_name(1)
+                _msg += " readies " + get_correct_article(_name) + " " + _name
+            self.dm.alert_player(self.row, self.col, _msg)
+            self.inventory.ready_weapon(_pick)
+            
+        self.energy -= STD_ENERGY_COST    
+        
+    def perform_action(self):            
+        self.weapon = self.inventory.get_primary_weapon()
+        if isinstance(self.weapon, Items.Firearm): 
+            if self.weapon.current_ammo > 0:
+                Shooter.perform_action(self)
+            else:
+                _letter = self.has_ammo_for(self.weapon)
+                if _letter != '':
+                    self.dm.add_ammo_to_gun(self, self.weapon, _letter)
+                else:
+                    self.select_weapon()
+        else:
+            RelentlessPredator.perform_action(self)
+            
 class ED209(Shooter):
     def __init__(self, dm, row, col):
         Shooter.__init__(self, vision_radius=5, ac=10, hp_low=30, hp_high=40, dmg_dice=9, dmg_rolls=3, ab=2,
             dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
             col=col, xp_value=50, gender='male', level=10)
-            
+        self.weapon = Items.MachineGun('ED-209 Canon', 7, 4, 0, 0, 0)
+        self.attitude = 'hostile'
+        
     def perform_action(self):
         if randrange(5) == 0:
             if randrange(2) == 0:
                 self.dm.alert_player(self.row, self.col, "Drop your weapon!")
             else:
                 self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
-                
-        Shooter.perform_action(self)
+        
+        try:
+            Shooter.perform_action(self)
+        except Items.EmptyFirearm:
+            # The ED-209 never runs out of ammo
+            self.weapon.current_ammo = 1
         
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):

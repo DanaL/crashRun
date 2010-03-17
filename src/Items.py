@@ -45,8 +45,8 @@ class ItemHasEffects:
 class BaseItem(BaseTile):
     def __init__(self, name, category, ch, fg, lt, stackable , w=1, dd=2, dr = 1, i=0):
         BaseTile.__init__(self, ch, fg, 'black', lt, name)
-        self.__dmg_dice = dd
-        self.__dmg_roll = dr
+        self.dmg_dice = dd
+        self.dmg_roll = dr
         self.__weight = w
         self.category = category
         self.__identified = i
@@ -77,7 +77,7 @@ class BaseItem(BaseTile):
         return self.__stackable
 
     def dmg_roll(self, user):
-        return do_dN(self.__dmg_roll, self.__dmg_dice) + user.calc_dmg_bonus()
+        return do_dN(self.dmg_roll, self.dmg_dice) + user.calc_dmg_bonus()
 
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)
@@ -155,7 +155,13 @@ class ItemStack(BaseItem):
             self.__merge(item)
         else: 
             self.__items.append(item)
-
+    
+    def peek_at_item(self):
+        if len(self) > 0:
+            return self.__items[0]
+        else:
+            return None
+            
     def remove_item(self, count=1):
         if count == 1:
             return self.__items.pop()
@@ -371,8 +377,8 @@ class Firearm(BaseItem):
         self.__to_dmg_bonus = tdb
         self.max_ammo = max_ammo
         self.current_ammo = 0
-        self.__shooting_damage = dd
-        self.__shooting_roll = dr
+        self.shooting_damage = dd
+        self.shooting_roll = dr
         BaseItem.__init__(self, name, 'Firearm', ch, fg, lt, stackable, w, 6, 1, i)
 
     def add_ammo(self,amount):
@@ -384,6 +390,14 @@ class Firearm(BaseItem):
 
         return name
 
+    def is_ammo_compatible(self, ammo):
+        if isinstance(ammo, ItemStack):
+            _item = ammo.peek_at_item()
+        else:
+            _item = ammo
+            
+        return isinstance(_item, self.ammo_type)
+        
     def fire(self):
         if self.current_ammo == 0:
             raise EmptyFirearm()
@@ -391,7 +405,7 @@ class Firearm(BaseItem):
             self.current_ammo -= 1
 
     def shooting_dmg_roll(self):
-        _rolls = [randrange(2, self.__shooting_damage+1) + self.__to_dmg_bonus for j in range(self.__shooting_roll)]
+        _rolls = [randrange(2, self.shooting_damage+1) + self.__to_dmg_bonus for j in range(self.shooting_roll)]
         return sum(_rolls, 0)
 
 # Mainly just a transient class to hold the bullet info as it flies through the air
@@ -404,6 +418,7 @@ class Shotgun(Firearm):
         Firearm.__init__(self, 'Shotgun', '-', 'grey', 'white', 6, 4, 5, 0, 0, 
             0, 0, 1, i)
         self.hands_required = 2
+        self.ammo_type = ShotgunShell
         
     def reload(self, ammo):
         if not isinstance(ammo, ShotgunShell):
@@ -413,18 +428,20 @@ class Shotgun(Firearm):
 
     def get_firing_message(self):
         return 'BOOM!'
-        
+    
 class DoubleBarrelledShotgun(Shotgun):
     def __init__(self, loaded, i =0):
         Firearm.__init__(self, 'Double-Barrelled Shotgun', '-', 'grey', 
             'white', 8, 4, 5, 0, 0, 0, 0, 2, i)
         self.hands_required = 2
+        self.ammo_type = ShotgunShell
         
 class MachineGun(Firearm):
     def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
         super(MachineGun, self).__init__(name, '-', 'darkgrey', 'grey',
             dmg_dice, dmg_roll, 3, 0, thb, tdb, 0, max_ammo, i)   
         self.hands_required = 2
+        self.ammo_type = MachineGunClip
         
     def reload(self, ammo):
         if not isinstance(ammo, MachineGunClip):
@@ -439,7 +456,8 @@ class HandGun(Firearm):
     def __init__(self, name, dmg_dice, dmg_roll, thb, tdb, max_ammo, i = 0):
         super(HandGun, self).__init__(name, '-', 'darkgrey', 'grey',
             dmg_dice, dmg_roll, 3, 0, thb, tdb, 0, max_ammo, i)   
- 
+        self.ammo_type = NineMMClip
+        
     def reload(self, ammo):
         if not isinstance(ammo, NineMMClip):
             raise IncompatibleAmmo()
@@ -562,13 +580,13 @@ class ItemFactory:
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
-        self.__item_db['truncheon'] = ('weapon','Club','/','brown','lightbrown',6,2,2,False,0,0,1)
-        self.__item_db['combat knife'] = ('weapon','Small Blade','|','grey','white',5,2,1,False,0,0,1)
-        self.__item_db['rusty switchblade'] = ('weapon','Small Blade','|','grey','white',4,2,1,False,0,0,1)
-        self.__item_db['katana'] = ('weapon','Sword','|','grey','white',7,3,1,False,0,0,2)
-        self.__item_db['baseball bat'] = ('weapon','Club','/','yellow-orange','yellow',7,2,2,False,0,2,2)
+        self.__item_db['truncheon'] = ('weapon','Melee','/','brown','lightbrown',6,2,2,False,0,0,1)
+        self.__item_db['combat knife'] = ('weapon','Melee','|','grey','white',5,2,1,False,0,0,1)
+        self.__item_db['rusty switchblade'] = ('weapon','Melee','|','grey','white',4,2,1,False,0,0,1)
+        self.__item_db['katana'] = ('weapon','Melee','|','grey','white',7,3,1,False,0,0,2)
+        self.__item_db['baseball bat'] = ('weapon','Melee','/','yellow-orange','yellow',7,2,2,False,0,2,2)
         self.__item_db['grenade'] = ('weapon','Thrown','*','darkgrey','grey',1,1,1,True,0,0,1)
-        self.__item_db['push broom'] =  ('weapon','Club','/','red','brown',6,3,2,False,0,0,2)
+        self.__item_db['push broom'] =  ('weapon','Melee','/','red','brown',6,3,2,False,0,0,2)
         self.__item_db['throwing knife'] = ('weapon','Thrown','|','grey','white',5,2,1,True,0,0,1)
         
         # add the armour

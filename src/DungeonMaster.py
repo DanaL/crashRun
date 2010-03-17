@@ -1192,33 +1192,33 @@ class DungeonMaster:
 
             if item == '':
                 if hasattr(self.player,'reload_memory'):
-                    self.add_ammo_to_gun(self.player.reload_memory[0], self.player.reload_memory[1])
+                    self.add_ammo_to_gun(self.player, self.player.reload_memory[0], self.player.reload_memory[1])
                 else:
                     self.dui.display_message('Huh?')
             elif item.get_category() != 'Firearm':
                 self.dui.display_message("That isn't a firearm.")
             else:
                 ch = self.dui.pick_inventory_item('Reload with what?')
-                self.add_ammo_to_gun(item, ch)
+                self.add_ammo_to_gun(self.player, item, ch)
         except NonePicked:
                 self.dui.clear_msg_line()
 
-    def add_ammo_to_gun(self, gun, ammo_pick):
-        if isinstance(gun, Items.Shotgun) or isinstance(gun, Items.DoubleBarrelledShotgun):
-            self.load_shotgun(gun, ammo_pick)
+    def add_ammo_to_gun(self, agent, gun, ammo_pick):
+        if agent == self.player:
             self.player.reload_memory = (gun, ammo_pick)
+            
+        if isinstance(gun, Items.Shotgun) or isinstance(gun, Items.DoubleBarrelledShotgun):
+            self.load_shotgun(agent, gun, ammo_pick)
         elif isinstance(gun, Items.MachineGun):
             _fm = "You require an ISO Standardized Assault Rifle clip."
-            self.load_automatic_gun(gun, ammo_pick, _fm)
-            self.player.reload_memory = (gun, ammo_pick)
+            self.load_automatic_gun(agent, gun, ammo_pick, _fm)
         elif isinstance(gun, Items.HandGun):
             _fm = "That won't fit!"
-            self.load_automatic_gun(gun, ammo_pick, _fm)
-            self.player.reload_memory = (gun, ammo_pick)
-        self.player.energy -= STD_ENERGY_COST
+            self.load_automatic_gun(agent, gun, ammo_pick, _fm)
+        agent.energy -= STD_ENERGY_COST
         
-    def load_automatic_gun(self, gun, pick, fail_msg):
-        _picked = self.player.inventory.get_item(pick)
+    def load_automatic_gun(self, agent, gun, pick, fail_msg):
+        _picked = agent.inventory.get_item(pick)
         self.dui.clear_msg_line()
         
         if _picked == '':
@@ -1228,22 +1228,28 @@ class DungeonMaster:
         if isinstance(_picked, ItemStack):
             _clip = _picked.remove_item()
             if len(_picked) == 0:
-                self.player.inventory.clear_slot(pick)
+                agent.inventory.clear_slot(pick)
         else:
             _clip = _picked
-            self.player.inventory.clear_slot(pick)
+            agent.inventory.clear_slot(pick)
                 
         try:
             gun.reload(_clip)
-            self.dui.display_message('Locked and loaded!')
+            if agent == self.player:
+                self.dui.display_message('Locked and loaded!')
+            else:
+                self.alert_player(agent.row, agent.col, agent.get_articled_name() + " reloads his weapon.")
         except Items.IncompatibleAmmo:
             self.dui.display_message(fail_msg)
-            self.player.inventory.add_item(_clip)
+            agent.inventory.add_item(_clip)
     
-    def add_ammo_to_shotgun(self, gun, ammo):
+    def add_ammo_to_shotgun(self, agent, gun, ammo):
         try:
             gun.reload(ammo)
-            self.dui.display_message('You load your shotgun.')
+            if agent == self.player:
+                self.dui.display_message('You load your shotgun.')
+            else:
+                self.alert_player(agent.row, agent.col, agent.get_articled_name() + " reloads his shotgun.")
             _successful = True
         except Items.IncompatibleAmmo:
             self.dui.display_message('That won\'t fit in your shotgun.')
@@ -1251,11 +1257,11 @@ class DungeonMaster:
         
         return _successful
           
-    def load_shotgun(self, gun, pick):
-        _picked = self.player.inventory.get_item(pick)
+    def load_shotgun(self, agent, gun, pick):
+        _picked = agent.inventory.get_item(pick)
         self.dui.clear_msg_line()
             
-        if gun.current_ammo == gun.max_ammo:
+        if gun.current_ammo == gun.max_ammo and agent == self.player:
             self.dui.display_message('Your shotgun is already loaded.')
             return
         
@@ -1265,14 +1271,14 @@ class DungeonMaster:
              
         if not isinstance(_picked, ItemStack):
             if self.add_ammo_to_shotgun(gun, _picked):
-                self.player.inventory.clear_slot(pick)
+                agent.inventory.clear_slot(pick)
         else:
             while len(_picked) > 0 and gun.current_ammo < gun.max_ammo:
                 ammo = _picked.remove_item()
                 if len(_picked) == 0:
-                    self.player.inventory.clear_slot(pick)
-                if not self.add_ammo_to_shotgun(gun, ammo):
-                    self.player.inventory.add_item(ammo)
+                    agent.inventory.clear_slot(pick)
+                if not self.add_ammo_to_shotgun(agent, gun, ammo):
+                    agent.inventory.add_item(ammo)
                     break
                     
     def drop_lit_light_source(self, row, col, light):
