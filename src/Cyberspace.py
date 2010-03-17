@@ -225,7 +225,16 @@ class CyberspaceLevel(GameLevel):
         self.map = _maze.gen_map()
         self.lvl_length = _maze.length
         self.lvl_width = _maze.width
-    
+        
+        # Add a few open spaces
+        _tf = TerrainFactory()
+        for j in range(randrange(1,4)):
+            _row = randrange(4, self.lvl_length - 4)
+            _col = randrange(4, self.lvl_width - 4)
+            for _r in (-1, 0, 1):
+                for _c in (-1, 0 , 1):
+                    self.map[_row + _r][_col + _c] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
+                    
     def __get_monster(self):
         if self.level_num == 1:
             _monster = choice([0, 0, 1, 1, 2, 2, 3])

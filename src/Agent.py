@@ -842,7 +842,7 @@ class Shooter(RelentlessPredator):
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level) 
-        self.range = 5
+        self.range = 6
         
     def pick_loc_to_move_to(self, p_loc):
         _good_sqs = []
@@ -875,7 +875,7 @@ class Shooter(RelentlessPredator):
         _player_loc = self.dm.get_player_loc()
         _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
         _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
-        
+
         if _angle % 45 == 0 and _distance <= self.range and self.is_player_visible():
             self.shoot_at_player(_player_loc)
         else:
@@ -930,7 +930,7 @@ class Cyborg(Shooter):
             _letter = chr(_a + _num)
             _item = self.inventory.get_item(_letter)
             if isinstance(_item, Items.Weapon):
-                _dmg = _item.dmg_roll * _item.dmg_dice
+                _dmg = _item.d_roll * _item.d_dice
                 if _dmg > _max_dmg:
                     _pick = _letter
                     _max_dmg = _dmg
@@ -999,6 +999,7 @@ class ED209(Shooter):
             Shooter.perform_action(self)
         except Items.EmptyFirearm:
             # The ED-209 never runs out of ammo
+            self.energy -= STD_ENERGY_COST
             self.weapon.current_ammo = 1
         
 class ZombieScientist(RelentlessPredator):

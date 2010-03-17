@@ -45,8 +45,8 @@ class ItemHasEffects:
 class BaseItem(BaseTile):
     def __init__(self, name, category, ch, fg, lt, stackable , w=1, dd=2, dr = 1, i=0):
         BaseTile.__init__(self, ch, fg, 'black', lt, name)
-        self.dmg_dice = dd
-        self.dmg_roll = dr
+        self.d_dice = dd
+        self.d_roll = dr
         self.__weight = w
         self.category = category
         self.__identified = i
@@ -77,7 +77,7 @@ class BaseItem(BaseTile):
         return self.__stackable
 
     def dmg_roll(self, user):
-        return do_dN(self.dmg_roll, self.dmg_dice) + user.calc_dmg_bonus()
+        return do_dN(self.d_roll, self.d_dice) + user.calc_dmg_bonus()
 
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)
