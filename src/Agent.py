@@ -842,7 +842,6 @@ class Shooter(RelentlessPredator):
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level) 
-        self.range = 6
         
     def pick_loc_to_move_to(self, p_loc):
         _good_sqs = []
@@ -876,7 +875,7 @@ class Shooter(RelentlessPredator):
         _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
         _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
 
-        if _angle % 45 == 0 and _distance <= self.range and self.is_player_visible():
+        if _angle % 45 == 0 and _distance <= self.range:
             self.shoot_at_player(_player_loc)
         else:
             _loc = self.pick_loc_to_move_to(_player_loc)
@@ -900,6 +899,7 @@ class Cyborg(Shooter):
             col=col, xp_value=50, gender='male', level=10)
         self.weapon = ''
         self.attitude = 'hostile'
+        self.range = 5
         
     def has_ammo_for(self, gun):
         _a = ord('a')
@@ -987,6 +987,7 @@ class ED209(Shooter):
             col=col, xp_value=50, gender='male', level=10)
         self.weapon = Items.MachineGun('ED-209 Canon', 7, 4, 0, 0, 0)
         self.attitude = 'hostile'
+        self.range = 5
         
     def perform_action(self):
         if randrange(5) == 0:
@@ -995,12 +996,8 @@ class ED209(Shooter):
             else:
                 self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
         
-        try:
-            Shooter.perform_action(self)
-        except Items.EmptyFirearm:
-            # The ED-209 never runs out of ammo
-            self.energy -= STD_ENERGY_COST
-            self.weapon.current_ammo = 1
+        self.weapon.current_ammo = 1 # The ED-209 never runs out of ammo
+        Shooter.perform_action(self)
         
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):
