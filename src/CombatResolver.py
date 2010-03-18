@@ -28,7 +28,16 @@ class CombatResolver(object):
     def __init__(self, dm, dui):
         self.dm = dm
         self.dui = dui
-        
+    
+    def get_total_uke_ac(self, uke):
+        _uke_ac = uke.get_curr_ac()
+        try:
+            _uke_ac += uke.skills.get_skill("Dodge").get_rank() * 2
+        except AttributeError:
+            pass
+            
+        return _uke_ac
+
 class CyberspaceCombatResolver(CombatResolver):
     def attack(self, tori, uke):
         attack_die = tori.get_cyberspace_attack_die()
@@ -53,15 +62,12 @@ class MeleeResolver(CombatResolver):
         _dmg_types = []
         if isinstance(weapon, Weapon):
              _dmg_types = weapon.get_damage_types()
-        _roll = randrange(20) + 1 + tori.level / 2 + tori.get_melee_attack_modifier(weapon)
-         
-        _uke_ac = uke.get_curr_ac()
-        try:
-            _uke_ac += uke.skills.get_skill("Dodge").get_rank()
-        except AttributeError:
-            pass
-                
-        if _roll > _uke_ac:
+        _base_roll = randrange(20) + 1 
+        _roll = _base_roll + tori.level / 2 
+        _roll += tori.get_melee_attack_modifier(weapon)
+        _roll += attack_modifiers
+        
+        if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             if weapon == '':
                 _dmg = tori.get_hand_to_hand_dmg_roll()
             else:
@@ -124,26 +130,28 @@ class MeleeResolver(CombatResolver):
         
 class ShootingResolver(CombatResolver):     
     def attack(self, tori, uke, gun):
-        _roll = do_d10_roll(tori.get_shooting_attack_die(gun), tori.calc_missile_to_hit_bonus())
-        _hit = self.attack_agent(_roll, uke)
+        _base_roll = randrange(20) + 1 
+        _roll = _base_roll + tori.level / 2 
+        _roll += tori.get_shooting_attack_modifier()
         
-        if _hit:
+        if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.shot_message(uke)
             _dmg = gun.shooting_dmg_roll()
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
-
-        return _hit
+            return True
+        return False
         
 class ThrowingResolver(CombatResolver):
     def attack(self, tori, uke, item):
-        _roll = do_d10_roll(tori.get_thrown_attack_die(), tori.calc_missile_to_hit_bonus())
-        _hit = self.attack_agent(_roll, uke)
+        _base_roll = randrange(20) + 1 
+        _roll = _base_roll + tori.level / 2 
+        _roll += tori.get_thrown_attack_modifier()
         
-        if _hit:
+        if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.thrown_message(item, uke)
             _dmg = item.dmg_roll(tori)
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
-            
-        return _hit
+            return True
+        return False
 
     

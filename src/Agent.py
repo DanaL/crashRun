@@ -491,8 +491,8 @@ class BaseMonster(BaseAgent, AStarMover):
     def calc_missile_to_hit_bonus(self):
         return self.__ab
     
-    def get_shooting_attack_die(self, gun):
-        return self.level + 1
+    def get_shooting_attack_modifier(self):
+        return 0
         
     def get_cyberspace_damage_roll(self):
         return self.get_hand_to_hand_dmg_roll()

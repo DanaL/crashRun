@@ -292,20 +292,21 @@ class Player(BaseAgent):
         
         return _dmg
         
-    def get_shooting_attack_die(self, weapon):
-        _die_rolls = self.level + self.get_attack_bonuses() + self.skills.get_skill('Guns').get_rank() 
-
-        return _die_rolls
-    
+    def get_shooting_attack_modifier(self):
+        _mod = self.get_attack_modifiers() + self.skills.get_skill('Guns').get_rank() 
+        _mod += self.calc_missile_to_hit_bonus()
+        
+        return _mod
+        
     def get_two_weapon_modifier(self):
         _tw_rank = -3 + self.skills.get_skill('Two Weapon Fighting').get_rank()
         return _tw_rank;
         
-    def get_thrown_attack_die(self):
-        _rolls = self.level + self.get_attack_bonuses()
-        _rolls += self.skills.get_skill('Thrown').get_rank() 
+    def get_thrown_attack_modifier(self):
+        _mod = self.skills.get_skill('Thrown').get_rank() + self.get_attack_modifiers()
+        _mod += self.calc_missile_to_hit_bonus()
         
-        return _rolls
+        return _mod 
         
     def get_meatspace_stats(self):
         return MeatspaceStats(self.curr_hp, self.max_hp, self.light_radius, self.vision_radius)
