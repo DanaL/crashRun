@@ -240,7 +240,7 @@ class BaseAgent(BaseTile):
     def calc_cyberspace_ac(self):
         self.__curr_ac = self.sum_effect_bonuses('cyberspace defense')
     
-    def calc_dmg_bonus(self):
+    def calc_melee_dmg_bonus(self):
         return 0
 
     def calc_missile_to_hit_bouns(self):
@@ -251,9 +251,6 @@ class BaseAgent(BaseTile):
         
     def damaged(self, dm, level, damage, attacker, damage_types=[]):
         _special = set(damage_types).intersection(set(('shock','burn','brain damage', 'toxic waste', 'acid')))
-        if len(_special) == 0:
-            damage -= self.get_curr_ac()
-            if damage < 1 and random() < 0.5: damage = 1
             
         if damage > 0:
             self.add_hp(-damage)
@@ -482,26 +479,18 @@ class BaseMonster(BaseAgent, AStarMover):
         
         return calc_distance(self.row, self.col, pl[0] ,pl[1] )
         
-    def get_attack_bonus(self):
+    def get_melee_attack_modifier(self, weapon):
         return self.__ab
-    
+
+    def get_cyberspace_attack_modifier(self):
+        return self.get_attack_bonus()
+        
     def calc_missile_to_hit_bonus(self):
         return self.__ab
-        
-    def get_attack_die(self):
-        return self.level + 1
     
     def get_shooting_attack_die(self, gun):
         return self.level + 1
         
-    # This works because a monster won't exist in both cyberspace
-    # and meatspace (currently)
-    def get_cyberspace_attack_die(self):
-        return self.get_attack_die()
-        
-    def get_cyberspace_attack_bonus(self):
-        return self.get_attack_bonus()
-    
     def get_cyberspace_damage_roll(self):
         return self.get_hand_to_hand_dmg_roll()
         
@@ -856,7 +845,7 @@ class Shooter(RelentlessPredator):
                     if _angle % 45 == 0 and _distance <= self.range and self.dm.is_clear(_new_r, _new_c):
                         _good_sqs.append((_new_r, _new_c, _distance))
         
-        if len(_good_sqs):
+        if len(_good_sqs) == 0:
             return ()
             
         # By preference, pick a square that's not adjacent to the player

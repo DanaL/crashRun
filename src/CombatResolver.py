@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+from random import randrange
+
 import Items
 from Items import BatteryPowered
 from Items import Weapon
@@ -56,11 +58,11 @@ class CyberspaceCombatResolver(CombatResolver):
 class MeleeResolver(CombatResolver):        
     def __attack_uke(self, tori, uke, weapon, attack_modifiers):
         _dmg_types = []
-        _roll = do_d10_roll(tori.get_attack_die(), 0) + tori.get_attack_bonus() + attack_modifiers
         if isinstance(weapon, Weapon):
-            _dmg_types = weapon.get_damage_types()
-                
-        if self.attack_agent(_roll, uke):
+             _dmg_types = weapon.get_damage_types()
+        _roll = randrange(20) + 1 + tori.level / 2 + tori.get_melee_attack_modifier(weapon)
+          
+        if _roll > uke.calc_ac():
             if weapon == '':
                 _dmg = tori.get_hand_to_hand_dmg_roll()
             else:

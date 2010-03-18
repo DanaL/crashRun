@@ -704,7 +704,7 @@ class DungeonMaster:
                 self.dui.display_message("It doesn't budge.")
                 self.player.energy -= STD_ENERGY_COST  
             else:
-                randio = randrange(0,20) + self.player.calc_dmg_bonus()
+                randio = randrange(0,20) + self.player.calc_melee_dmg_bonus()
                 
                 _noise = Noise(6, self.player, door_r, door_c, 'bashing')
                 self.curr_lvl.monsters_react_to_noise(6, _noise)

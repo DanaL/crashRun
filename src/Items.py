@@ -77,7 +77,7 @@ class BaseItem(BaseTile):
         return self.__stackable
 
     def dmg_roll(self, user):
-        return do_dN(self.d_roll, self.d_dice) + user.calc_dmg_bonus()
+        return do_dN(self.d_roll, self.d_dice) + user.calc_melee_dmg_bonus()
 
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)

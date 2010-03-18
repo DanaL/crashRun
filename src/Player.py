@@ -241,37 +241,30 @@ class Player(BaseAgent):
     def get_curr_xp(self):
         return self.__xp
 
-    def get_attack_bonus(self):
-        return self.__calc_str_to_hit_bonus()
+    def get_attack_modifiers(self):
+        return self.sum_effect_bonuses('aim')
         
-    def get_attack_bonuses(self):
-        _bonus_rolls = 0
-        for _c in self.conditions:
-            if _c[0][0] == 'aim':
-                _bonus_rolls += _c[0][1]
-        return _bonus_rolls
+    def get_melee_attack_modifier(self, weapon):
+        _modifier = self.__calc_str_to_hit_bonus()
+        _modifier += self.get_attack_modifiers()
         
-    def get_attack_die(self):
-        _die_rolls = self.level + self.get_attack_bonuses()
-        _weapon = self.inventory.get_primary_weapon()
+        if weapon == '':
+            _modifier += self.skills.get_skill('Hand-to-Hand').get_rank()
+        elif isinstance(weapon, Weapon):
+            _modifier += self.skills.get_skill('Melee').get_rank()
         
-        if _weapon == '':
-            _die_rolls += self.skills.get_skill('Hand-to-Hand').get_rank()
-        elif isinstance(_weapon, Weapon):
-            _die_rolls += self.skills.get_skill('Melee').get_rank()
-        
-        return _die_rolls
-    
-    def get_cyberspace_attack_die(self):
-        _die_rolls = self.level
-        _die_rolls += self.skills.get_skill('Hand-to-Hand').get_rank()
-        _die_rolls += self.skills.get_skill('Hacking').get_rank()
-        
-        return _die_rolls
-        
+        return _modifier   
+
     def get_cyberspace_attack_bonus(self):
         return self.sum_effect_bonuses('cyberspace attack')
-    
+        
+    def get_cyberspace_attack_modifier(self):
+        _modifier = self.skills.get_skill('Hand-to-Hand').get_rank()
+        _modifier += self.skills.get_skill('Hacking').get_rank()
+        _modifier += self.get_cyberspace_attack_bonus()
+        
+        return _modifier
+        
     def get_cyberspace_damage_roll(self):
         _rank = self.skills.get_skill('Hacking').get_rank() + 1
         _bonus = self.get_cyberspace_attack_bonus()
@@ -292,7 +285,7 @@ class Player(BaseAgent):
     def get_hand_to_hand_dmg_roll(self):
         _rank = self.skills.get_skill('Hand-to-Hand').get_rank()+1
         _dmg = sum([randrange(1,7) for j in range(_rank)], 0) 
-        _dmg += self.calc_dmg_bonus()
+        _dmg += self.calc_melee_dmg_bonus()
         
         return _dmg
         
@@ -424,7 +417,7 @@ class Player(BaseAgent):
     def calc_to_hit_bonus(self):
         return self.__calc_str_to_hit_bonus()
 
-    def calc_dmg_bonus(self):
+    def calc_melee_dmg_bonus(self):
         return self.__calc_str_to_dmg_bonus()
 
     def calc_hp(self):
