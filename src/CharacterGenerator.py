@@ -94,6 +94,9 @@ class CharacterGenerator:
             _header = ['You have $%d remaining.' % (_cash)]
             _choice = self.dui.ask_menued_question(_header, _menu)
             
+            if _choice == '':
+                continue 
+                
             if _choice == 'quit':
                 break
             
