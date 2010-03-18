@@ -270,20 +270,12 @@ class Player(BaseAgent):
         
     def get_cyberspace_damage_roll(self):
         _rank = self.skills.get_skill('Hacking').get_rank() + 1
-        _bonus = self.get_cyberspace_attack_bonus()
-        return sum([randrange(1,7) + _bonus for j in range(_rank)])
-        
-    def get_cyberspace_defense_bonus(self):
-        return self.get_intuition_bonus()
-        
-    def get_cyberspace_defense_die(self):
-        return self.level + self.skills.get_skill('Hacking').get_rank()
+        _roll = sum([randrange(1,7) for j in range(_rank)])
+         
+        return _roll
     
     def get_defense_modifier(self):
         return self.get_coordination_bonus()
-        
-    def get_defense_die(self):
-        return self.level + self.skills.get_skill('Dodge').get_rank()
         
     def get_hand_to_hand_dmg_roll(self):
         _rank = self.skills.get_skill('Hand-to-Hand').get_rank()+1

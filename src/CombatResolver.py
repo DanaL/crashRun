@@ -40,22 +40,25 @@ class CombatResolver(object):
 
 class CyberspaceCombatResolver(CombatResolver):
     def attack(self, tori, uke):
-        attack_die = tori.get_cyberspace_attack_die()
-        attack_bonus = tori.get_cyberspace_attack_bonus()
+        _base_roll = randrange(20) + 1 
+        _roll = _base_roll + tori.level / 2 
+        _roll += tori.get_cyberspace_attack_modifier()
         
-        if self.attack_agent(do_d10_roll(attack_die, attack_bonus), uke):
+        if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.show_hit_message(tori, uke, 'hit')
             _dmg = tori.get_cyberspace_damage_roll()
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
         else:
             self.dm.mr.show_miss_message(tori, uke)
+    
+    def get_total_uke_ac(self, uke):
+        _uke_ac = uke.get_curr_ac()
+        try:
+            _uke_ac += uke.get_intuition_bonus() * 2
+        except AttributeError:
+            pass
             
-    def attack_agent(self,attack_roll, uke):
-        _defense_rolls = uke.get_cyberspace_defense_die()
-        _defense_bonus = uke.get_cyberspace_defense_bonus()
-        _roll = do_d10_roll(_defense_rolls, 0) + _defense_bonus 
-        
-        return attack_roll > _roll
+        return _uke_ac
         
 class MeleeResolver(CombatResolver):        
     def __attack_uke(self, tori, uke, weapon, attack_modifiers):
