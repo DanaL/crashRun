@@ -550,10 +550,10 @@ class ItemFactory:
         # add firearms
         self.__item_db['shotgun'] = ('firearm', 'Shotgun')
         self.__item_db['double-barrelled shotgun'] = ('firearm', 'Double-Barrelled Shotgun')
-        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 4, 2, 0, 12)
-        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 7, 5, 0, 0, 10)
-        self.__item_db['uzi'] = ('handgun', 'Uzi', 6, 4, 0, 0, 10)
-        self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 6, 4, 0, 0, 10)
+        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 2, 2, 0, 12)
+        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 8, 2, 0, 0, 10)
+        self.__item_db['uzi'] = ('handgun', 'Uzi', 4, 3, 0, 0, 10)
+        self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 4, 3, 0, 0, 10)
         
         # add ammunition
         self.__item_db['shotgun shell'] = ('ammunition', 'Shotgun Shell')
@@ -580,14 +580,14 @@ class ItemFactory:
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
-        self.__item_db['truncheon'] = ('weapon','Melee','/','brown','lightbrown',6,2,2,False,0,0,1)
-        self.__item_db['combat knife'] = ('weapon','Melee','|','grey','white',5,2,1,False,0,0,1)
-        self.__item_db['rusty switchblade'] = ('weapon','Melee','|','grey','white',4,2,1,False,0,0,1)
-        self.__item_db['katana'] = ('weapon','Melee','|','grey','white',7,3,1,False,0,0,2)
-        self.__item_db['baseball bat'] = ('weapon','Melee','/','yellow-orange','yellow',7,2,2,False,0,2,2)
+        self.__item_db['truncheon'] = ('weapon','Melee','/','brown','lightbrown',6,1,2,False,0,0,1)
+        self.__item_db['combat knife'] = ('weapon','Melee','|','grey','white',5,1,1,False,0,0,1)
+        self.__item_db['rusty switchblade'] = ('weapon','Melee','|','grey','white',4,1,1,False,0,0,1)
+        self.__item_db['katana'] = ('weapon','Melee','|','grey','white',10,1,1,False,0,0,2)
+        self.__item_db['baseball bat'] = ('weapon','Melee','/','yellow-orange','yellow',8,1,2,False,0,2,2)
         self.__item_db['grenade'] = ('weapon','Thrown','*','darkgrey','grey',1,1,1,True,0,0,1)
-        self.__item_db['push broom'] =  ('weapon','Melee','/','red','brown',6,3,2,False,0,0,2)
-        self.__item_db['throwing knife'] = ('weapon','Thrown','|','grey','white',5,2,1,True,0,0,1)
+        self.__item_db['push broom'] =  ('weapon','Melee','/','red','brown',10,1,2,False,0,0,2)
+        self.__item_db['throwing knife'] = ('weapon','Thrown','|','grey','white',5,1,1,True,0,0,1)
         
         # add the armour
         self.__item_db['combat boots'] = ('armour','boots','darkgrey','darkgrey',1,1,0,[('sneaky',-3,0)])
