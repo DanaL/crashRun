@@ -124,6 +124,8 @@ class Player(BaseAgent):
         self.events = []
         self.software = Wetboard(3,10)
     
+    # get_coordination_bonus
+    
     def add_hp(self, delta):
         BaseAgent.add_hp(self, delta)
         self.dm.dui.update_status_bar()
@@ -204,7 +206,8 @@ class Player(BaseAgent):
         BaseAgent.apply_effect(self, effect, instant)
         if effect[0][0] in ('infrared','light'):
             self.dm.refresh_player_view()
-    
+        self.dm.dui.update_status_bar()
+        
     def check_for_expired_conditions(self):
         if BaseAgent.check_for_expired_conditions(self):
             self.dm.alert_player(self.row, self.col, 'You are coming down a bit.')
@@ -276,7 +279,7 @@ class Player(BaseAgent):
     def get_cyberspace_defense_die(self):
         return self.level + self.skills.get_skill('Hacking').get_rank()
     
-    def get_defense_bonus(self):
+    def get_defense_modifier(self):
         return self.get_coordination_bonus()
         
     def get_defense_die(self):
@@ -312,7 +315,8 @@ class Player(BaseAgent):
         
         if effect[0] == 'dazed' and not self.has_condition('dazed'):
             self.dm.alert_player(self.row, self.col, "You shake off your daze.")
-            
+        self.dm.dui.update_status_bar()
+        
     def remove_effects(self, source):
         BaseAgent.remove_effects(self, source)
         self.dm.refresh_player_view()

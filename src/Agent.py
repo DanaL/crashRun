@@ -210,6 +210,7 @@ class BaseAgent(BaseTile):
             self.stats.change_stat('chutzpah',e[1])
         elif e[0] == 'co-ordination' and hasattr(self,'stats'):
             self.stats.change_stat('co-ordination',e[1])
+            self.calc_ac()
         elif e[0] == 'strength' and hasattr(self,'stats'):
             self.stats.change_stat('strength',e[1])
         elif e[0] == 'heal':
@@ -236,7 +237,8 @@ class BaseAgent(BaseTile):
             
     def calc_ac(self):
         self.__curr_ac = self.__base_ac + self.inventory.get_armour_value() 
-
+        self.__curr_ac += self.get_defense_modifier()
+        
     def calc_cyberspace_ac(self):
         self.__curr_ac = self.sum_effect_bonuses('cyberspace defense')
     
@@ -361,7 +363,8 @@ class BaseAgent(BaseTile):
                 self.light_radius -= effect[1]
             elif effect[0] in ('chutzpah','co-ordination','strength') and hasattr(self,'stats'):
                 self.stats.change_stat(effect[0],-effect[1])
-    
+                self.calc_ac()
+                
     def remove_effects(self, source):
         [self.remove_effect(e, source) for e in source.effects]
                 
@@ -502,7 +505,7 @@ class BaseMonster(BaseAgent, AStarMover):
     def get_cyberspace_defense_die(self):
         return self.get_defense_die()
         
-    def get_defense_bonus(self):
+    def get_defense_modifier(self):
         return 0
     
     def get_defense_die(self):

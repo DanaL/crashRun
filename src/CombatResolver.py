@@ -28,13 +28,6 @@ class CombatResolver(object):
     def __init__(self, dm, dui):
         self.dm = dm
         self.dui = dui
-    
-    def attack_agent(self,attack_roll, uke):
-        _defense_rolls = uke.get_defense_die()
-        _defense_bonus = uke.get_defense_bonus()
-        _roll = do_d10_roll(_defense_rolls, _defense_bonus) 
-        
-        return attack_roll > _roll
         
 class CyberspaceCombatResolver(CombatResolver):
     def attack(self, tori, uke):
@@ -61,8 +54,14 @@ class MeleeResolver(CombatResolver):
         if isinstance(weapon, Weapon):
              _dmg_types = weapon.get_damage_types()
         _roll = randrange(20) + 1 + tori.level / 2 + tori.get_melee_attack_modifier(weapon)
-          
-        if _roll > uke.calc_ac():
+         
+        _uke_ac = uke.get_curr_ac()
+        try:
+            _uke_ac += uke.skills.get_skill("Dodge").get_rank()
+        except AttributeError:
+            pass
+                
+        if _roll > _uke_ac:
             if weapon == '':
                 _dmg = tori.get_hand_to_hand_dmg_roll()
             else:
