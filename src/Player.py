@@ -116,7 +116,7 @@ class Player(BaseAgent):
         self.temp_bonus_hp = 0
         
         self.background = background
-        BaseAgent.__init__(self,12,0,1,2,'@','white','black','white',name,row,col,'')
+        BaseAgent.__init__(self,12,10,1,2,'@','white','black','white',name,row,col,'')
     
         self.__calc_initial_hp()
         self.calc_ac()

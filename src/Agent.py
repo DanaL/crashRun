@@ -646,7 +646,7 @@ class CyberspaceMonster(AltPredator):
         
 class Troll(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(Troll, self).__init__(6, 6, 40, 50, 5, 3, 0, dm, 'T', 'darkgreen', 'black', 
+        super(Troll, self).__init__(6, 23, 40, 50, 5, 3, 0, dm, 'T', 'darkgreen', 'black', 
             'green', 'troll', row, col, 2, 'male', 7)
     
     def insult(self):
@@ -670,7 +670,7 @@ class Troll(CyberspaceMonster):
 
 class NaiveGarbageCollector(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CyberspaceMonster, self).__init__(6, 9, 60, 75, 7, 3, 2, dm, 'g', 'white', 
+        super(CyberspaceMonster, self).__init__(6, 26, 60, 75, 7, 3, 2, dm, 'g', 'white', 
             'black', 'white', 'naive garbage collector', row, col, 2, 'male', 10)
     
     def perform_action(self):
@@ -681,7 +681,7 @@ class NaiveGarbageCollector(CyberspaceMonster):
         
 class CeilingCat(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CeilingCat, self).__init__(8, 8, 30, 40, 5, 3, 2, dm, 'f', 'red', 'black', 'red',
+        super(CeilingCat, self).__init__(8, 24, 30, 40, 5, 3, 2, dm, 'f', 'red', 'black', 'red',
             'ceiling cat', row, col, 2, 'male', 8)
         self.revealed = False
         
@@ -709,19 +709,19 @@ class SecurityControlProgram(CyberspaceMonster):
         _name = 'security control program ver ' + str(level) + '.'
        
         if level < 3:
-            _ac = 3
+            _ac = 21
             _hpl, _hph = 15, 20
             _dr, _dd = 2, 5
         elif level < 6:
-            _ac = 4
+            _ac = 22
             _hpl, _hph = 25, 30
             _dr, _dd = 2, 6
         elif level < 9:
-            _ac = 5
+            _ac = 23
             _hpl, _hph = 35, 40
             _dr, _dd = 3, 5
         else:
-            _ac = 6
+            _ac = 24
             _hpl, _hph = 45, 50
             _dr, _dd = 3, 6
         
@@ -742,7 +742,7 @@ class SecurityControlProgram(CyberspaceMonster):
         
 class GridBug(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 2, 3, 10, 15, 3, 2, 2, dm, 'x', 'plum', 'black', 
+        CyberspaceMonster.__init__(self, 2, 20, 10, 15, 3, 2, 2, dm, 'x', 'plum', 'black', 
             'orchid', 'grid bug', row, col, 1, 'male', 2)
         self.base_energy = 18
         
@@ -763,7 +763,7 @@ class GridBug(CyberspaceMonster):
 
 class BelligerentProcess(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 6, 6, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
+        CyberspaceMonster.__init__(self, 6, 23, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
             'white', 'belligerent process', row, col, 1, 'male', 3)
         
     def fork(self):
@@ -875,7 +875,7 @@ class Shooter(RelentlessPredator):
         
 class Cyborg(Shooter):
     def __init__(self, dm, row, col):
-        Shooter.__init__(self, vision_radius=5, ac=10, hp_low=30, hp_high=40, dmg_dice=6, dmg_rolls=2, ab=2,
+        Shooter.__init__(self, vision_radius=5, ac=24, hp_low=30, hp_high=40, dmg_dice=6, dmg_rolls=2, ab=2,
             dm=dm,ch='@', fg='darkblue', bg='black', lit='blue', name='Cyborg', row=row,
             col=col, xp_value=50, gender='male', level=10)
         self.weapon = ''
@@ -963,7 +963,7 @@ class Cyborg(Shooter):
             
 class ED209(Shooter):
     def __init__(self, dm, row, col):
-        Shooter.__init__(self, vision_radius=5, ac=10, hp_low=30, hp_high=40, dmg_dice=9, dmg_rolls=3, ab=2,
+        Shooter.__init__(self, vision_radius=5, ac=25, hp_low=30, hp_high=40, dmg_dice=9, dmg_rolls=3, ab=2,
             dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
             col=col, xp_value=50, gender='male', level=10)
         self.weapon = Items.MachineGun('ED-209 Canon', 7, 4, 0, 0, 0)
@@ -983,7 +983,7 @@ class ED209(Shooter):
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):
         _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated programmer'))
-        RelentlessPredator.__init__(self, vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
+        RelentlessPredator.__init__(self, vision_radius=8, ac=21, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
             ab=0, dm=dm, ch='z', fg='darkblue', bg='black', lit='blue',
             name=_name, row=row, col=col, xp_value=20, gender='male',
             level=6)
@@ -1007,7 +1007,7 @@ class ZombieScientist(RelentlessPredator):
 
 class ZombieMathematician(RelentlessPredator):
     def __init__(self, dm, row, col):
-        RelentlessPredator.__init__(self, vision_radius=8, ac=4, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
+        RelentlessPredator.__init__(self, vision_radius=8, ac=21, hp_low=20, hp_high=50, dmg_dice=7, dmg_rolls=3,
             ab=0, dm=dm, ch='z', fg='darkgrey', bg='black', lit='grey',
             name='reanimated mathematician', row=row, col=col, xp_value=24, gender='male',
             level=7)
@@ -1065,7 +1065,7 @@ class BasicBot(RelentlessPredator):
 
 class SecurityBot(BasicBot):
     def __init__(self, dm, row, col):
-        RelentlessPredator.__init__(self, vision_radius=10, ac=6, hp_low=20, hp_high=30, dmg_dice=7, dmg_rolls=3, ab=2,
+        RelentlessPredator.__init__(self, vision_radius=10, ac=24, hp_low=20, hp_high=30, dmg_dice=7, dmg_rolls=3, ab=2,
             dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
             row=row, col=col, xp_value=20, gender='male', level=6)    
             
@@ -1130,7 +1130,7 @@ class CleanerBot(BasicBot):
 
 class DocBot(CleanerBot):
     def __init__(self, dm, row, col):
-        CleanerBot.__init__(self, vision_radius=6, ac=4, hp_low=20, hp_high=30, dmg_dice=6, 
+        CleanerBot.__init__(self, vision_radius=6, ac=24, hp_low=20, hp_high=30, dmg_dice=6, 
             dmg_rolls=5, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
     
@@ -1160,7 +1160,7 @@ class DocBot(CleanerBot):
 # Robot who repairs other robots
 class RepairBot(CleanerBot):
     def __init__(self,dm,row,col):
-        CleanerBot.__init__(self, vision_radius=6, ac=1, hp_low=15, hp_high=25, dmg_dice=4, 
+        CleanerBot.__init__(self, vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=4, 
             dmg_rolls=3, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
@@ -1211,7 +1211,7 @@ class RepairBot(CleanerBot):
         
 class Roomba(CleanerBot):
     def __init__(self, dm, row, col):
-        CleanerBot.__init__(self, vision_radius=5, ac=4, hp_low=15, hp_high=25, dmg_dice=3, 
+        CleanerBot.__init__(self, vision_radius=5, ac=22, hp_low=15, hp_high=25, dmg_dice=3, 
             dmg_rolls=1, ab=2, dm=dm, ch='o', fg='darkgrey', bg='black', lit='grey',
             name='roomba', row=row, col=col, xp_value=20, gender='male', level=5)
         self.attitude = 'indifferent'
@@ -1248,7 +1248,7 @@ class Roomba(CleanerBot):
         
 class Incinerator(CleanerBot):
     def __init__(self, dm, row, col):
-        BaseMonster.__init__(self, vision_radius=5, ac=6, hp_low=10, hp_high=20, dmg_dice=2, 
+        BaseMonster.__init__(self, vision_radius=5, ac=23, hp_low=10, hp_high=20, dmg_dice=2, 
             dmg_rolls=5, ab=2, dm=dm, ch='i', fg='red', bg='black', lit='red', 
             name='incinerator', row=row, col=col, xp_value=25, gender='male', level=5)
         self.attitude = 'indifferent'
@@ -1283,7 +1283,7 @@ class Incinerator(CleanerBot):
         
 class SurveillanceDrone(CleanerBot):
     def __init__(self, dm, row, col):
-        BaseMonster.__init__(self, vision_radius=5, ac=4, hp_low=2, hp_high=10, dmg_dice=2, 
+        BaseMonster.__init__(self, vision_radius=5, ac=21, hp_low=2, hp_high=10, dmg_dice=2, 
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='blue', bg='black', lit='blue', 
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
         
@@ -1301,7 +1301,7 @@ class Unique(object):
 # Unique monsters
 class TemporarySquirrel(AltPredator, Unique):
     def __init__(self, dm, row, col):
-        AltPredator.__init__(self, vision_radius=3, ac=1, hp_low=1, hp_high=1, dmg_dice=2, 
+        AltPredator.__init__(self, vision_radius=3, ac=20, hp_low=1, hp_high=1, dmg_dice=2, 
             dmg_rolls=1, ab=0, dm=dm, ch='r', fg='yellow' , bg='black', lit='yellow', 
             name='Temporary Squirrel', row=row, col=col, xp_value=1, gender='male', level=1)
         
@@ -1314,7 +1314,7 @@ class TemporarySquirrel(AltPredator, Unique):
         
 class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
     def __init__(self, dm, row, col):
-        AltPredator.__init__(self, vision_radius=8, ac=5, hp_low=30, hp_high=40, dmg_dice=5, 
+        AltPredator.__init__(self, vision_radius=8, ac=22, hp_low=30, hp_high=40, dmg_dice=5, 
             dmg_rolls=5, ab=0, dm=dm, ch='@', fg='yellow', bg='black', lit='yellow', 
             name='Experimental Hobo Infiltration Droid 41K', row=row, col=col, xp_value=50, 
             gender='male', level=8)
@@ -1334,7 +1334,7 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
            
 class MoreauBot6000(CleanerBot, Unique):
     def __init__(self, dm, row, col):
-        CleanerBot.__init__(self, vision_radius=8, ac=6, hp_low=30, hp_high=40, dmg_dice=6, 
+        CleanerBot.__init__(self, vision_radius=8, ac=25, hp_low=30, hp_high=40, dmg_dice=6, 
                   dmg_rolls=5, ab=2, dm=dm, ch='I', fg='yellow-orange', bg='black', 
                   lit='yellow-orange', name='MoreauBot 6000', row=row, col=col, xp_value=40,
                   gender='male', level=8)
@@ -1378,7 +1378,7 @@ class MoreauBot6000(CleanerBot, Unique):
         
 class Roomba3000(Roomba, Unique):
     def __init__(self, dm, row, col):
-        RelentlessPredator.__init__(self, vision_radius=8, ac=8, hp_low=40, hp_high=50, dmg_dice=6, 
+        RelentlessPredator.__init__(self, vision_radius=8, ac=26, hp_low=40, hp_high=50, dmg_dice=6, 
             dmg_rolls=5, ab=3, dm=dm, ch='o', fg='grey', bg='black', lit='white', 
             name='Roomba 3000', row=row, col=col, xp_value=60, gender='male', level=12)
         self.can_steal_readied = True
