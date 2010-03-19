@@ -1613,7 +1613,7 @@ class DungeonMaster:
             self.update_sqr(self.curr_lvl, loc.r, loc.c)
             
         _occ = self.curr_lvl.dungeon_loc[loc.r][loc.c].occupant
-        if hasattr(_occ,'revealed') and not _occ.revealed:
+        if hasattr(_occ, 'revealed') and not _occ.revealed:
             _occ.revealed = True
             self.alert_player(_occ.row, _occ.col, "You see " + _occ.get_name(2) + ".")
             self.update_sqr(self.curr_lvl, _occ.row, _occ.col)

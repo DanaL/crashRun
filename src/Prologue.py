@@ -48,12 +48,38 @@ class Prologue(GameLevel):
             _m = MonsterFactory.get_monster_by_name(self.dm,'rabid dog', 0, 0)
         GameLevel.add_monster(self, _m)
         
+    def set_start_loc_for_player(self):
+        _row = 15
+        _col = 4
+        
+        if self.dungeon_loc[_row][_col].occupant == '':
+            self.player_start_loc = (_row, _col)
+        else:
+            # The game placed a monster where we prefer to start the player.
+            # So put him somewhere else.
+            for r in (-1, 0, 1):
+                for c in (-1, 0, 1):
+                    if self.is_clear(_row + r, _col + c):
+                        self.player_start_loc = (_row+r, _col+c)
+                        return
+                        
+            # If we get to this point, we're in a totally improbable configuraiton where
+            # the usual starting location and all adjacent squares are surrounded.  So just
+            # pick random ones until we find a clear loc
+            while True:
+                _row = randrange(1, self.lvl_length - 1)
+                _col = randrange(1, self.lvl_width - 1)
+                if self.is_clear(_row, _col):
+                    self.player_start_loc = (_row, _col)
+                    return
+            
     def generate_level(self):
-        self.player_start_loc = (15,4)
         self.map = self.__generate_map()
         for x in range(1,11):
             self.add_monster()
-        
+
+        self.set_start_loc_for_player()
+            
     def __generate_map(self):
         _map = []
         
