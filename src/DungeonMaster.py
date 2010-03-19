@@ -1390,7 +1390,7 @@ class DungeonMaster:
             elif item.get_category() == 'Ammunition':
                 _ch = self.dui.pick_inventory_item('Reload which gun?')
                 _gun = self.player.inventory.get_item(_ch)                
-                self.add_ammo_to_gun(_gun, i)
+                self.add_ammo_to_gun(self.player, _gun, i)
             else:
                 self.dui.display_message('Huh?  Use it for what?')
     
