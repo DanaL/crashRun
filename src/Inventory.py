@@ -233,7 +233,7 @@ class Inventory:
                 
     # count == 0 means ALL of the items in the stack
     # Assumes for the moment that Armour cannot be stacked
-    def remove_item(self, slot, count=0):
+    def remove_item(self, slot, count = 0):
         try:
             if self.__inv[slot] == '':
                 return ''
@@ -404,6 +404,14 @@ class Inventory:
                 menu.append( (letter,name,letter,letter) )
 
         return menu
+    
+    def contains_item(self, item):
+        for j in range(0,26):
+            _letter = chr(self.lc+j)
+            if self.__inv[_letter] != '' and self.__inv[_letter][0] == item:
+                return True
+                
+        return False
         
 class Wetboard(object):
     def __init__(self, process_ram, flash_ram):

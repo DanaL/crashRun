@@ -1187,19 +1187,24 @@ class DungeonMaster:
         
     def player_reload_firearm(self):
         try:
-            ch = self.dui.pick_inventory_item('Reload which item (Enter to repeat last)?')
-            item = self.player.inventory.get_item(ch)
+            _p = self.player
+            _inv = _p.inventory
+            _ch = self.dui.pick_inventory_item('Reload which item (Enter to repeat last)?')
+            _item = _inv.get_item(_ch)
 
-            if item == '':
-                if hasattr(self.player,'reload_memory'):
-                    self.add_ammo_to_gun(self.player, self.player.reload_memory[0], self.player.reload_memory[1])
+            if _item == '':
+                if hasattr(_p, 'reload_memory'):
+                    if _inv.contains_item(_p.reload_memory[0]):
+                        self.add_ammo_to_gun(_p, _p.reload_memory[0], _p.reload_memory[1])
+                    else:
+                        self.dui.display_message('You no longer have that item.')
                 else:
                     self.dui.display_message('Huh?')
-            elif item.get_category() != 'Firearm':
+            elif _item.get_category() != 'Firearm':
                 self.dui.display_message("That isn't a firearm.")
             else:
-                ch = self.dui.pick_inventory_item('Reload with what?')
-                self.add_ammo_to_gun(self.player, item, ch)
+                _ch = self.dui.pick_inventory_item('Reload with what?')
+                self.add_ammo_to_gun(_p, _item, _ch)
         except NonePicked:
                 self.dui.clear_msg_line()
 
