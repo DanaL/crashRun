@@ -239,8 +239,8 @@ class BaseAgent(BaseTile):
         self.__curr_ac = self.__base_ac + self.inventory.get_armour_value() 
         self.__curr_ac += self.get_defense_modifier()
         
-    def calc_cyberspace_ac(self):
-        self.__curr_ac = self.sum_effect_bonuses('cyberspace defense')
+    def calc_cyberspace_ac(self, modifier = 0):
+        self.__curr_ac = self.sum_effect_bonuses('cyberspace defense') + modifier
     
     def calc_melee_dmg_bonus(self):
         return 0
@@ -486,7 +486,7 @@ class BaseMonster(BaseAgent, AStarMover):
         return self.__ab
 
     def get_cyberspace_attack_modifier(self):
-        return self.get_attack_bonus()
+        return self.__ab
         
     def calc_missile_to_hit_bonus(self):
         return self.__ab
@@ -742,7 +742,7 @@ class SecurityControlProgram(CyberspaceMonster):
         
 class GridBug(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 2, 18, 10, 15, 3, 2, 2, dm, 'x', 'plum', 'black', 
+        CyberspaceMonster.__init__(self, 2, 14, 5, 10, 3, 2, 2, dm, 'x', 'plum', 'black', 
             'orchid', 'grid bug', row, col, 1, 'male', 2)
         self.base_energy = 18
         
@@ -763,7 +763,7 @@ class GridBug(CyberspaceMonster):
 
 class BelligerentProcess(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        CyberspaceMonster.__init__(self, 6, 21, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
+        CyberspaceMonster.__init__(self, 6, 14, 10, 15, 4,2, 1, dm, 'k' , 'grey', 'black',
             'white', 'belligerent process', row, col, 1, 'male', 3)
         
     def fork(self):
@@ -1094,7 +1094,7 @@ class PredatorDrone(BasicBot):
         if self.is_player_visible():
             d = self.distance_from_player(_pl)
             if d > 1 and d < 5 and self.missile_count > 0:
-                self.dm.monster_fires_missile(self, _pl[0], _pl[1], 10, 3, 1)
+                self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
                 self.missile_count -= 1
                 self.energy -= STD_ENERGY_COST
                 return

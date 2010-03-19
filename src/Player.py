@@ -129,6 +129,9 @@ class Player(BaseAgent):
     def add_hp(self, delta):
         BaseAgent.add_hp(self, delta)
         self.dm.dui.update_status_bar()
+    
+    def calc_cyberspace_ac(self):
+        BaseAgent.calc_cyberspace_ac(self, 10)
         
     def damaged(self, dm, level, damage, attacker, attack_type='melee'):    
         _dmg = super(Player, self).damaged(dm, level, damage, attacker, attack_type)

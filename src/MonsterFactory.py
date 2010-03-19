@@ -234,7 +234,7 @@ def _roomba(dm, row, col):
     return Roomba(dm=dm, row=row, col=col)
 
 def _scriptKiddie(dm, row, col):
-    _sk = CyberspaceMonster(8, 17, 20, 25, 4, 3, 1, dm, '@', 'darkblue', 'black', 'blue',
+    _sk = CyberspaceMonster(8, 15, 15, 20, 4, 3, 1, dm, '@', 'darkblue', 'black', 'blue',
             'script kiddie', row, col, 1, 'male', 5)
     return _sk
     
@@ -268,7 +268,7 @@ def _turkeyVulture(dm,row,col):
     
 def _twoBitHacker(dm, row, col):
     _name = 'two-bit %s hacker' % (choice(['American','Chinese','Canadian','Estonian','German','Nigerian','Russian']))
-    _h = CyberspaceMonster(vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=3, dmg_rolls=3, 
+    _h = CyberspaceMonster(vision_radius=6, ac=16, hp_low=15, hp_high=25, dmg_dice=3, dmg_rolls=3, 
         ab=0, dm=dm, ch='@', fg='darkgreen', bg='black', lit='darkgreen', name= _name, 
         row=row, col=col, xp_value=1,gender='male',level=5)
     
