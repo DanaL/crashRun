@@ -1275,7 +1275,7 @@ class DungeonMaster:
             return
              
         if not isinstance(_picked, ItemStack):
-            if self.add_ammo_to_shotgun(gun, _picked):
+            if self.add_ammo_to_shotgun(agent, gun, _picked):
                 agent.inventory.clear_slot(pick)
         else:
             while len(_picked) > 0 and gun.current_ammo < gun.max_ammo:
