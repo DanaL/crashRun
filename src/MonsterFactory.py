@@ -55,7 +55,7 @@ def _ceilingCat(dm, row, col):
     return CeilingCat(dm=dm, row=row, col=col)
        
 def _cowboy(dm, row, col):
-    return CyberspaceMonster(vision_radius=8, ac=22, hp_low=35, hp_high=55, dmg_dice=5, dmg_rolls=3, 
+    return CyberspaceMonster(vision_radius=8, ac=18, hp_low=30, hp_high=50, dmg_dice=5, dmg_rolls=2, 
         ab=1, dm=dm, ch='@', fg='red', bg='black', lit='red', name='console cowboy', 
         row=row, col=col, xp_value=2, gender='male', level=9)
     
@@ -136,7 +136,7 @@ def _junkie(dm,row,col):
     return junkie
 
 def _lolcat(dm, row, col):
-    return CyberspaceMonster(8, 22, 30, 40, 6, 3, 0, dm, 'f', 'yellow', 'black', 'yellow',
+    return CyberspaceMonster(8, 20, 25, 35, 6, 2, 0, dm, 'f', 'yellow', 'black', 'yellow',
             'lolcat', row, col, 2, 'male', 8)
 
 def _ed209(dm, row, col):

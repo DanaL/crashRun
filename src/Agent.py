@@ -681,7 +681,7 @@ class NaiveGarbageCollector(CyberspaceMonster):
         
 class CeilingCat(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CeilingCat, self).__init__(8, 21, 20, 30, 5, 2, 2, dm, 'f', 'red', 'black', 'red',
+        super(CeilingCat, self).__init__(8, 18, 20, 30, 5, 2, 2, dm, 'f', 'red', 'black', 'red',
             'ceiling cat', row, col, 2, 'male', 8)
         self.revealed = False
         
