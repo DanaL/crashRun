@@ -1,4 +1,4 @@
-# Copyright 2008 by Dana Larose
+# Copyright 2010 by Dana Larose
 
 # This file is part of crashRun.
 
