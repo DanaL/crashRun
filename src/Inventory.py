@@ -184,8 +184,8 @@ class Inventory:
 
     def is_draining(self, _item):
         if not isinstance(_item, BatteryPowered): return False
-        if isinstance(_item, WithOffSwitch) and _item.on and _item.charge > 0:
-            return True
+        if isinstance(_item, WithOffSwitch):
+            return True if _item.on and _item.charge > 0 else False
         return self.is_readied(_item) and _item.passive and _item.charge > 0
 
     def is_slot_a_stack(self, slot):
