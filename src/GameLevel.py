@@ -384,6 +384,13 @@ class GameLevel:
         while True: 
             try_r = randrange(0,self.lvl_length)
             try_c = randrange(0,self.lvl_width)
+            _sqr = self.map[try_r][try_c]
+
+            # This'll prevent a monster from being generated where the player will
+            # appear when first entering the level
+            if _sqr.get_type() in (UP_STAIRS, DOWN_STAIRS):
+                continue
+                
             if self.is_clear(try_r,try_c):
                 r = try_r
                 c = try_c
