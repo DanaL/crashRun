@@ -151,8 +151,8 @@ class MiniBoss1Level(GameLevel):
     def add_monster(self):
         _monster = self.__get_monster()
         GameLevel.add_monster(self, _monster)
-        if _monster.get_name(True) == 'pigoon':
-                self.add_pack(_monster.get_name(True), 2, 4, _monster.row, _monster.col)    
+        if _monster.get_name(True).startswith('pigoon'):
+            self.add_pack('pigoon', 2, 4, _monster.row, _monster.col)    
                 
     def __get_monster(self):
         _rnd =  randrange(0,23)
