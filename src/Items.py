@@ -294,13 +294,14 @@ class Medkit(Pharmaceutical):
     def calculate_potency(self, agent, max_potency):
         _die = 1
         if hasattr(agent, 'skills'):
-            _die += agent.skills.get_skill('First Aid').get_rank()
+            _die += agent.skills.get_skill('First Aid').get_rank() 
 
         _roll = do_d10_roll(_die, 0)
         _difficulty = do_d10_roll(4, 0)
         _potency = int((float(_roll) / float(_difficulty)) * max_potency) + 1
         if _potency > max_potency: _potency = max_potency
-
+        if _potency < 5: _potency = 5
+        
         return _potency
                 
 class Weapon(BaseItem):

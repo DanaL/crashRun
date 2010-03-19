@@ -670,7 +670,7 @@ class Troll(CyberspaceMonster):
 
 class NaiveGarbageCollector(CyberspaceMonster):
     def __init__(self, dm, row, col):
-        super(CyberspaceMonster, self).__init__(6, 23, 30, 45, 5, 2, 2, dm, 'g', 'white', 
+        super(CyberspaceMonster, self).__init__(6, 19, 30, 40, 5, 2, 2, dm, 'g', 'white', 
             'black', 'white', 'naive garbage collector', row, col, 2, 'male', 10)
     
     def perform_action(self):
