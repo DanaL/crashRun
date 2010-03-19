@@ -210,7 +210,7 @@ class MeatspaceCC(CommandContext):
             return
         
         _loc = lvl.dungeon_loc[row][col]
-        if _loc# Copyright 2010 by Dana Larose or lvl.size_of_item_stack(row, col) > 0:
+        if _loc.occupant != '' or lvl.size_of_item_stack(row, col) > 0:
             self.dui.display_message('There is something in the way!')
         elif sqr.broken:
             self.dui.display_message('The door is broken.')

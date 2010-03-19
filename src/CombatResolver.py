@@ -136,6 +136,7 @@ class ShootingResolver(CombatResolver):
         _base_roll = randrange(20) + 1 
         _roll = _base_roll + tori.level / 2 
         _roll += tori.get_shooting_attack_modifier()
+        _roll += gun.to_hit_bonus
         
         if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.shot_message(uke)

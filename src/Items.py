@@ -373,8 +373,8 @@ class Firearm(BaseItem):
     def __init__(self, name, ch, fg, lt, dd, dr, w, t, thb, tdb, stackable,
             max_ammo, i=0):
         self.__type = t
-        self.__to_hit_bonus = thb
-        self.__to_dmg_bonus = tdb
+        self.to_hit_bonus = thb
+        self.to_dmg_bonus = tdb
         self.max_ammo = max_ammo
         self.current_ammo = 0
         self.shooting_damage = dd
@@ -405,8 +405,8 @@ class Firearm(BaseItem):
             self.current_ammo -= 1
 
     def shooting_dmg_roll(self):
-        _rolls = [randrange(2, self.shooting_damage+1) + self.__to_dmg_bonus for j in range(self.shooting_roll)]
-        return sum(_rolls, 0)
+        _rolls = [randrange(2, self.shooting_damage+1) for j in range(self.shooting_roll)] 
+        return sum(_rolls, 0) + self.to_dmg_bonus
 
 # Mainly just a transient class to hold the bullet info as it flies through the air
 class Bullet(BaseTile):
@@ -415,7 +415,7 @@ class Bullet(BaseTile):
 
 class Shotgun(Firearm):
     def __init__(self, loaded, i=0):
-        Firearm.__init__(self, 'Shotgun', '-', 'grey', 'white', 6, 4, 5, 0, 0, 
+        Firearm.__init__(self, 'Shotgun', '-', 'grey', 'white', 6, 4, 5, 0, 4, 
             0, 0, 1, i)
         self.hands_required = 2
         self.ammo_type = ShotgunShell
