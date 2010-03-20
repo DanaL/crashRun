@@ -260,10 +260,14 @@ class ProvingGroundsLevel(GameLevel):
             place_item(building, self, _item)
             
     def populate_building(self, building):
-        #self.make_ambush_building(building)
-        #self.make_barracks(building)
-        self.make_repair_shop(building)
-        
+        _roll = randrange(5)
+        if _roll < 2:
+            self.make_repair_shop(building)
+        elif _roll < 4:
+            self.make_barracks(building)
+        else:
+            self.make_ambush_building(building)
+
     def add_buildings(self):
         _buildings = []
 
