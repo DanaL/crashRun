@@ -1224,6 +1224,9 @@ class DungeonMaster:
         elif isinstance(gun, Items.HandGun):
             _fm = "That won't fit!"
             self.load_automatic_gun(agent, gun, ammo_pick, _fm)
+        else:
+            self.dui.display_message("Those two things don't seem to play nice together.")
+            
         agent.energy -= STD_ENERGY_COST
         
     def load_automatic_gun(self, agent, gun, pick, fail_msg):
