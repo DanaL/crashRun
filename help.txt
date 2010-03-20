@@ -17,12 +17,14 @@ Corresponding to the cardinal points:
               /     |    \
            SW (n)  S (k) SE (m)
 
-Other commands:
+Other commands (the keys listed are the game's defaults):
 
 A - use Ability - If you had a special ability, this is how you would use it.
 B - Bash - Bash into something.  Sometimes opens doors.
 a - Action - Use a computer terminal, open/close a door. May required a 
              direction. (Use > to access a computer terminal, if necessary)
+c - Configure Weapons - Save what weapons you are currently wielding for easy 
+                        switching. (You have up to 9 slots)
 d - Drop - Drop item from inventory.  
 f - Fire - Shoot a readied firearm.
 H - Hack - Hack an object in cyberspace (use to disarm logic bombs).
@@ -32,12 +34,13 @@ P - Practice - improve your skills if you have points to spend
 Q - Quit - Quit game.  Give up your mission.  Coward.
 r - Reload - Reload firearm.
 S - Save - Save game and exit.
-s - Search - Search the are surrounding you for hidden things.
+s - Search - Search the area surrounding you for hidden things.
 t - Throw - Throw an object.
 R - Remove - Remove something you are wearing.
 U - Use - Use an item or software in your inventory.
 V - View Hall of Fame - Display high score list
-w - Wield - Select what you'll smack enemies with.
+w - Wield - Select what you'll smack enemies with. 
+            (To use a saved config, hit the # of the slot to use.)
 W - Wear - Put on clothes, armour or accessories.
 E - Examine - Look at the squares on the map.
 x - Swap - Swap weapons between your primary and secondary hands.
@@ -77,7 +80,8 @@ Terrain:
 ~ - Water
 > - Elevator down
 < - Elevator up
-^ - A trap
+^ - A trap (if you've spotted it)
+{ - A pool of some sort
 
 Items:
 | - Blade of some kind
