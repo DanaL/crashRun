@@ -29,21 +29,21 @@ def place_item(room, level, item):
     while True:
         _floor = choice(room)
         _loc = level.dungeon_loc[_floor[0]][_floor[1]]
+        if not level.map[_floor[0]][_floor[1]].is_passable():
+            continue
         if level.size_of_item_stack(_floor[0], _floor[1]) == 0:
             level.add_item_to_sqr(_floor[0], _floor[1], item)
             break
             
 def place_monster(room, level, monster):
-    k = randrange(len(room))
-    _row = room[k][0]
-    _col = room[k][1]
-    del room[k]
-    
-    if level.is_clear(_row, _col):
-        monster.row = _row
-        monster.col = _col
-        level.add_monster_to_dungeon(monster, _row, _col)
-
+    while True:
+        _sqr = choice(room)
+        if level.is_clear(_sqr[0], _sqr[1]):
+            monster.row = _sqr[0]
+            monster.col = _sqr[1]
+            level.add_monster_to_dungeon(monster, _sqr[0], _sqr[1])
+            break
+            
 def place_terminal(room, level):
     _t = Terminal()
     _floor = choice(room)

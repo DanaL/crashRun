@@ -58,7 +58,37 @@ def _cowboy(dm, row, col):
     return CyberspaceMonster(vision_radius=8, ac=18, hp_low=30, hp_high=50, dmg_dice=5, dmg_rolls=2, 
         ab=1, dm=dm, ch='@', fg='red', bg='black', lit='red', name='console cowboy', 
         row=row, col=col, xp_value=2, gender='male', level=9)
+
+def _cyborg(dm, row, col):
+    _cy = Cyborg(ac=19, hp_low=25, hp_high=35, dmg_dice=6, dmg_rolls=1, ab=3, dm=dm, fg='darkblue', bg='black', 
+            lit='blue', name='cyborg soldier', row=row, col=col, xp_value=50, level=10)
+
+    _if = Items.ItemFactory()
+    _cy.inventory.add_item(_if.gen_item('p90 assault rifle'))
+    _cy.inventory.add_item(_if.get_stack('machine gun clip', randrange(1, 5)))
     
+    if randrange(4) == 0:
+        _cy.inventory.add_item(_if.gen_item('combat knife'))
+    _cy.select_weapon()
+    
+    return _cy
+
+def _cyborgSergeant(dm, row, col):
+    _cy = Cyborg(ac=20, hp_low=35, hp_high=45, dmg_dice=6, dmg_rolls=1, ab=5, dm=dm, fg='darkgreen', bg='black', 
+            lit='darkgreen', name='cyborg sergeant', row=row, col=col, xp_value=55, level=12)
+
+    _if = Items.ItemFactory()
+    _cy.inventory.add_item(_if.gen_item('p90 assault rifle'))
+    _cy.inventory.add_item(_if.get_stack('machine gun clip', randrange(1, 5)))
+    _cy.inventory.add_item(_if.gen_item('m1911a1'))
+    _cy.inventory.add_item(_if.get_stack('9mm clip', randrange(1, 5)))
+    
+    if randrange(4) == 0:
+        _cy.inventory.add_item(_if.gen_item('combat knife'))
+    _cy.select_weapon()
+    
+    return _cy
+          
 def _damagedSecurityBot(dm,row,col):
     _if = Items.ItemFactory()
     _bot = BasicBot(vision_radius=6, ac=15, hp_low=10, hp_high=16, dmg_dice=5, dmg_rolls=2, ab=2, 
@@ -92,6 +122,12 @@ def _dusthead(dm, row, col):
             _dusthead.inventory.add_item(_if.gen_item('amphetamine'))
     return _dusthead
 
+
+def _ed209(dm, row, col):
+    _ed = ED209(dm, row, col)
+    
+    return _ed
+    
 def _enhancedMole(dm,row,col):
     return AltPredator(vision_radius=8, ac=18, hp_low=15, hp_high=25, dmg_dice=4, dmg_rolls=2, ab=1,
             dm=dm, ch='m', fg='brown', bg='black', lit='lightbrown', name='enhanced mole',
@@ -109,6 +145,11 @@ def _giantBat(dm,row,col):
 
 def _gridBug(dm, row, col):
     return GridBug(dm, row, col)
+
+def _gunTurret(dm, row, col):
+    _gt = GunTurret(dm, row, col)
+    
+    return _gt
     
 def _incinerator(dm,row,col):
     return Incinerator(dm=dm, row=row, col=col)
@@ -138,11 +179,6 @@ def _junkie(dm,row,col):
 def _lolcat(dm, row, col):
     return CyberspaceMonster(8, 20, 25, 35, 6, 2, 0, dm, 'f', 'yellow', 'black', 'yellow',
             'lolcat', row, col, 2, 'male', 8)
-
-def _ed209(dm, row, col):
-    _ed = ED209(dm, row, col)
-    
-    return _ed
     
 def _mq1predator(dm, row, col):
     _mq1 = PredatorDrone(vision_radius=8, ac=20, hp_low=15, hp_high=25, dmg_dice=4, dmg_rolls=3,
@@ -295,17 +331,6 @@ def _zombieScientist(dm, row, col):
     _zs.conditions.append((('shock immune',0,0), _zs))
     
     return _zs
-
-def _cyborg(dm, row, col):
-    _cy = Cyborg(dm, row, col)
-    _if = Items.ItemFactory()
-    _cy.inventory.add_item(_if.gen_item('shotgun'))
-    _cy.inventory.add_item(_if.get_stack('shotgun shell', randrange(10,21)))
-    _cy.inventory.add_item(_if.gen_item('p90 assault rifle'))
-    _cy.inventory.add_item(_if.gen_item('katana'))
-    _cy.select_weapon()
-    
-    return _cy
     
 def get_monster_by_name(dm, name, row, col):
     return _monster_dict[name](dm,row,col)
@@ -319,6 +344,8 @@ _monster_dict['beastman'] = _beastMan
 _monster_dict['belligerent process'] = _belligerentProcess
 _monster_dict['ceiling cat'] = _ceilingCat
 _monster_dict['console cowboy'] = _cowboy
+_monster_dict['cyborg soldier'] = _cyborg
+_monster_dict['cyborg sergeant'] = _cyborgSergeant
 _monster_dict['damaged security bot'] = _damagedSecurityBot
 _monster_dict['docbot'] = _docBot
 _monster_dict['dust head'] = _dusthead
@@ -327,6 +354,7 @@ _monster_dict['enhanced mole'] = _enhancedMole
 _monster_dict['extra large cockroach'] = _extraLargeCockroach
 _monster_dict['giant bat'] = _giantBat
 _monster_dict['grid bug'] = _gridBug
+_monster_dict['gun turret'] = _gunTurret
 _monster_dict['incinerator'] = _incinerator
 _monster_dict['junkie'] = _junkie
 _monster_dict['lolcat'] = _lolcat
@@ -354,6 +382,4 @@ _monster_dict['wolvog'] = _wolvog
 _monster_dict['reanimated scientist'] = _zombieScientist
 _monster_dict['reanimated mailroom clerk'] = _reanimatedMailroomClerk
 _monster_dict['reanimated mathematician'] = _zombieMathematician
-
-_monster_dict['cyborg'] = _cyborg
 

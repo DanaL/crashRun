@@ -40,9 +40,6 @@ class MiniBoss1Level(GameLevel):
     def __init__(self, dm, level_num, length, width):
         GameLevel.__init__(self, dm, level_num, length, width, 'mini-boss 1')    
         
-    def add_monster(self):
-        pass
-        
     def __vet_door(self, _dir, r, c):
         if _dir == 'w':
             if c < 2: return False

@@ -20,7 +20,11 @@ from random import randrange
 
 from ca_cave import CA_CaveFactory
 from GameLevel import GameLevel
+import Items
+from Items import ItemFactory
 import MonsterFactory
+from Rooms import place_item
+from Rooms import place_monster
 from Terrain import SpecialFloor
 from Terrain import TerrainFactory
 from Terrain import ACID_POOL
@@ -39,6 +43,9 @@ class ProvingGroundsLevel(GameLevel):
         self.map = []
         self.generate_map()
         
+        for j in range(randrange(5, 16)):
+            self.add_monster()
+            
     def generate_map(self):
         self.tf = TerrainFactory()
         
@@ -102,7 +109,6 @@ class ProvingGroundsLevel(GameLevel):
         while True:
             _row = randrange(2, self.lvl_length - 2)
             _col = randrange(2, self.lvl_width - 2)
-            print _row, _col
             if self.map[_row][_col].get_type() == FLOOR:
                 break
                 
@@ -118,7 +124,7 @@ class ProvingGroundsLevel(GameLevel):
         for j in range(randrange(1,4)):
             self.add_pool(ACID_POOL)
 
-    def get_square_building(self):
+    def get_rectangular_building(self):
         _sqrs = []
         _start_r = randrange(5, self.lvl_length - 10)
         _start_c = randrange(15, self.lvl_width - 15)
@@ -178,17 +184,122 @@ class ProvingGroundsLevel(GameLevel):
             
         return False
                 
+    def make_ambush_building(self, building):
+        _top_wall = self.lvl_length
+        _bottom_wall = 0
+        _left_wall = self.lvl_width
+        _right_wall = 0
+        
+        for _sqr in building:
+            if _sqr[0] < _top_wall:
+                _top_wall = _sqr[0]
+            if _sqr[0] > _bottom_wall:
+                _bottom_wall = _sqr[0]
+            if _sqr[1] < _left_wall:
+                _left_wall = _sqr[1]
+            if _sqr[1] > _right_wall:
+                _right_wall = _sqr[1]
+            if _sqr[2].get_type() == DOOR:
+                _door = (_sqr[0], _sqr[1])
+            
+        _gt = MonsterFactory.get_monster_by_name(self.dm, "gun turret", 0, 0)
+        # We want to make the gun turret either straight across from the 
+        # door or at right angles.
+        if _door[0] == _top_wall:
+            self.add_monster_to_dungeon(_gt, _bottom_wall - 1, _door[1])
+        elif _door[0] == _bottom_wall:
+            self.add_monster_to_dungeon(_gt, _top_wall + 1, _door[1])
+        elif _door[1] == _left_wall:
+            self.add_monster_to_dungeon(_gt, _door[0], _right_wall - 1)
+        elif _door[1] == _right_wall:
+            self.add_monster_to_dungeon(_gt, _door[0], _left_wall + 1)
+    
+    def make_barracks(self, building):
+        for j in range(randrange(2,4)):
+            _cy = MonsterFactory.get_monster_by_name(self.dm, "cyborg soldier", 0, 0)
+            place_monster(building, self, _cy)
+        
+        _if = ItemFactory()
+        _box = Items.Box('footlocker')
+        for j in range(randrange(3)):
+            _roll = randrange(6)
+            if _roll == 0:
+                _box.add_item(_if.get_stack('shotgun shell', 6, True))
+            elif _roll == 1:
+                _box.add_item(_if.get_stack('grenade', 4, True))
+            elif _roll == 2:
+                _box.add_item(_if.get_stack('stimpak', 3, True))
+            elif _roll == 3:
+                _box.add_item(_if.get_stack('machine gun clip', 3, True))
+            elif _roll == 4:
+                _box.add_item(_if.get_stack('9mm clip', 3, True))
+            else:
+                _box.add_item(_if.get_stack('medkit', 3, True))
+        place_item(building, self, _box)
+    
+    def make_repair_shop(self, building):
+        _doc = MonsterFactory.get_monster_by_name(self.dm, "repair bot", 0, 0)
+        place_monster(building, self, _doc)
+        
+        for j in range(randrange(2)):
+            _ed = MonsterFactory.get_monster_by_name(self.dm, "ed-209", 0, 0)
+            place_monster(building, self, _ed)
+        for j in range(randrange(1,4)):
+            _sb = MonsterFactory.get_monster_by_name(self.dm, "security bot", 0, 0)
+            place_monster(building, self, _sb)
+        
+        _if = ItemFactory()
+        for j in range(randrange(1,4)):
+            _roll = randrange(10)
+            if _roll < 7:
+                _item = _if.get_stack('battery', 3, True)
+            elif _roll < 9:
+                _item = _if.gen_item('targeting wizard')
+            else:
+                _item = _if.gen_item('icannon')
+            place_item(building, self, _item)
+            
+    def populate_building(self, building):
+        #self.make_ambush_building(building)
+        #self.make_barracks(building)
+        self.make_repair_shop(building)
+        
     def add_buildings(self):
         _buildings = []
 
         for j in range(randrange(3,7)):
-            _building = self.get_square_building()
+            _building = self.get_rectangular_building()
             if not self.will_overlap(_buildings, _building):
                 _buildings.append(_building)
+
         for _b in _buildings:
             for _s in _b:
                 self.map[_s[0]][_s[1]] = _s[2]
-
+            self.populate_building(_b)
+            
+    def __get_monster(self):
+        _rnd =  randrange(0, 16)
+        if _rnd in range(0, 2):
+            _name = 'reanimated unionized maintenance worker'
+        elif _rnd in range(2, 4):
+            _name = 'wolvog'
+        elif _rnd in range(4, 6):
+            _name = 'security bot'
+        elif _rnd in range(5, 6):
+            _name = 'mq1 predator'        
+        elif _rnd in range(6,7):
+            _name = 'ninja'
+        elif _rnd in range(7,9):
+            _name = 'beastman'
+        elif _rnd in range(9, 12):
+            _name = 'cyborg soldier'
+        elif _rnd in range(12, 14):
+            _name = 'cyborg sergeant'
+        else:
+            _name = 'ed-209'
+            
+        return MonsterFactory.get_monster_by_name(self.dm, _name, 0, 0)
+            
     def add_monster(self):
-        pass
-
+        _monster = self.__get_monster()
+        GameLevel.add_monster(self, _monster)

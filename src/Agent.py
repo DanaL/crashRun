@@ -492,7 +492,7 @@ class BaseMonster(BaseAgent, AStarMover):
         return self.__ab
     
     def get_shooting_attack_modifier(self):
-        return 0
+        return self.__ab
         
     def get_cyberspace_damage_roll(self):
         return self.get_hand_to_hand_dmg_roll()
@@ -874,10 +874,11 @@ class Shooter(RelentlessPredator):
         self.weapon.fire()
         
 class Cyborg(Shooter):
-    def __init__(self, dm, row, col):
-        Shooter.__init__(self, vision_radius=5, ac=21, hp_low=25, hp_high=35, dmg_dice=6, dmg_rolls=1, ab=2,
-            dm=dm,ch='@', fg='darkblue', bg='black', lit='blue', name='Cyborg', row=row,
-            col=col, xp_value=50, gender='male', level=10)
+    def __init__(self, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, dm, fg, bg, lit, name, row, col, 
+                            xp_value, level):
+        Shooter.__init__(self, vision_radius=5, ac=ac, hp_low=hp_low, hp_high=hp_high, dmg_dice=dmg_dice, 
+                            dmg_rolls=dmg_rolls, ab=ab, dm=dm, ch='@', fg=fg, bg=bg, lit=lit, name=name, row=row, 
+                            col=col, xp_value=xp_value, gender='male', level=level)
         self.weapon = ''
         self.attitude = 'hostile'
         self.range = 5
@@ -963,7 +964,7 @@ class Cyborg(Shooter):
             
 class ED209(Shooter):
     def __init__(self, dm, row, col):
-        Shooter.__init__(self, vision_radius=5, ac=22, hp_low=30, hp_high=40, dmg_dice=4, dmg_rolls=3, ab=2,
+        Shooter.__init__(self, vision_radius=5, ac=20, hp_low=30, hp_high=40, dmg_dice=4, dmg_rolls=3, ab=2,
             dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
             col=col, xp_value=50, gender='male', level=10)
         self.weapon = Items.MachineGun('ED-209 Canon', 4, 3, 0, 0, 0)
@@ -971,7 +972,7 @@ class ED209(Shooter):
         self.range = 5
         
     def perform_action(self):
-        if randrange(5) == 0:
+        if randrange(4) == 0:
             if randrange(2) == 0:
                 self.dm.alert_player(self.row, self.col, "Drop your weapon!")
             else:
@@ -979,6 +980,26 @@ class ED209(Shooter):
         
         self.weapon.current_ammo = 1 # The ED-209 never runs out of ammo
         Shooter.perform_action(self)
+
+class GunTurret(Shooter):
+    def __init__(self, dm, row, col):
+        Shooter.__init__(self, vision_radius=5, ac=20, hp_low=35, hp_high=45, dmg_dice=4, dmg_rolls=3, ab=3,
+            dm=dm,ch='t', fg='grey', bg='black', lit='white', name='Gun Turret', row=row,
+            col=col, xp_value=40, gender='male', level=14)
+        self.weapon = Items.MachineGun('ED-209 Canon', 4, 3, 0, 0, 0)
+        self.attitude = 'hostile'
+        self.range = 8
+    
+    def perform_action(self):
+        _player_loc = self.dm.get_player_loc()
+        _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
+        _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
+
+        if _angle % 45 == 0 and _distance <= self.range and self.is_player_visible():
+            self.weapon.current_ammo = 1 # Gun turret never runs out of ammo
+            self.shoot_at_player(_player_loc)
+        
+        self.energy -= STD_ENERGY_COST
         
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):

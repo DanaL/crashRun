@@ -1057,7 +1057,8 @@ class DungeonMaster:
         else:
             ch = '\\'
 
-        bullet = Items.Bullet(ch)
+        _bullet_colour = "pink" if gun.get_type() == "beam" else "white"
+        bullet = Items.Bullet(ch, _bullet_colour)
         bullet_row = start_r
         bullet_col = start_c
 
@@ -1821,7 +1822,7 @@ class DungeonMaster:
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
         
-        bullet = Items.Bullet('*')
+        bullet = Items.Bullet('*', 'white')
 
         # As a hack, I'm using the shadowcaster to calculate the area of effect.  Explosions
         # should fill a volume, of course, maybe I'll change that in some future version

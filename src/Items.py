@@ -408,11 +408,14 @@ class Firearm(BaseItem):
     def shooting_dmg_roll(self):
         _rolls = [randrange(2, self.shooting_damage+1) for j in range(self.shooting_roll)] 
         return sum(_rolls, 0) + self.to_dmg_bonus
-
+    
+    def get_type(self):
+        return self.__type
+        
 # Mainly just a transient class to hold the bullet info as it flies through the air
 class Bullet(BaseTile):
-    def __init__(self,ch):
-        BaseTile.__init__(self, ch, 'white', 'black', 'white', 'bullet')
+    def __init__(self, ch, colour):
+        BaseTile.__init__(self, ch, colour, 'black', colour, 'bullet')
 
 class Shotgun(Firearm):
     def __init__(self, loaded, i=0):
@@ -467,7 +470,19 @@ class HandGun(Firearm):
  
     def get_firing_message(self):
         return 'Blam!'
-                      
+
+class iCannon(Firearm):
+    def __init__(self, i):
+        Firearm.__init__(self, name="iCannon", ch='-', fg='white', lt='white', dd=4, dr=10, w=1, t="beam", 
+            thb=5, tdb=0, stackable=0, max_ammo=3, i=i)
+        self.current_ammo = self.max_ammo
+        
+    def reload(self, ammo):
+        raise IncompatibleAmmo()
+        
+    def get_firing_message(self):
+        return 'Pewpewpew!'
+        
 class Armour(BaseItem):
     def __init__(self, name, area, fg, lt, w, acm, acb, i=0):
         self.__ac_modifier = acm
@@ -555,6 +570,7 @@ class ItemFactory:
         self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 8, 2, 0, 0, 10)
         self.__item_db['uzi'] = ('handgun', 'Uzi', 4, 3, 0, 0, 10)
         self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 4, 3, 0, 0, 10)
+        self.__item_db['icannon'] = ('beam weapon', 'iCannon', 0, 0, 0, 0, 0)
         
         # add ammunition
         self.__item_db['shotgun shell'] = ('ammunition', 'Shotgun Shell')
@@ -643,6 +659,9 @@ class ItemFactory:
             _hg = HandGun(it[1], it[2], it[3], it[4], it[5], it[6], 0)
             _hg.current_ammo = randrange(_hg.max_ammo + 1)
             return _hg
+        elif it[0] == 'beam weapon':
+            if it[1] == 'iCannon':
+                return iCannon(i)
         elif it[0] == 'ammunition':
             if it[1] == 'Shotgun Shell':
                 return ShotgunShell()

@@ -245,7 +245,11 @@ class DungeonUI(object):
         pygame.display.flip()
 
     def display_message(self, msg, pause_for_more=False):
-        message = msg[0].capitalize() + msg[1:]
+        if not msg.startswith('iCannon'):
+            # what I won't do for a joke...
+            message = msg[0].capitalize() + msg[1:]
+        else:
+            message = msg
         self.__message_memory.append(message)
         self.__write_message(message + ' ', pause_for_more)
             
