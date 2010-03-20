@@ -46,21 +46,24 @@ Some Notes About Version 0.4.0
 version of the game. Bugs and crashes likely abound and 
 there is a paucity of items and monsters in the game. 
 
-- this version introduces an expanded version of cyberpsace.
-Cyberspace is presented as a maze for you to explore, with its
-own perils.  You can find subnet nodes that'll provide you with
-new skills, as well as access to elevator and camera security.
-You can exit cyberspace at the exit nodes, and in a pinch you
-can always sever your connection with the 'X' command.  But be
-aware that severing your connection can cause neural trauma.
-A percentage of the damage you suffer in the wired will be 
-reflected in the real world.
+- 0.4.0 allows you the option of going on a shopping trip
+before your adventure begins, if you want to customize your
+equipment. (You can also begin with a standard set of 
+equipment)
 
-- monsters are generated alert, active and out to get you,
-so when you enter a new level, the game tends to swarm you
-a bit. I would like stealth to be more of a viable option
-in crashRun, so future versions will likely feature 
-inactive, but more dangerous monsters.
+- You know have primary and secondary hands for wielding 
+weapons. You can swap between primary and secondary and
+if you are wielding two melee weapons you'll automatically
+engage in two weapon combat. If you are wielding a firearm
+in your secondary hand, you won't use it in melee.  The fire
+weapon command will automatically select a wielded firearm.
+Finally, you can save weapon configurations for easy swapping.
+
+- Some monsters are generated inactive and if your stealth
+checks are successful you may be able to sneak up on them.
+Attacking an inactive monster has an increased chance to hit
+and deals double damage.  Loud noises may wake up inactive
+monsters.
 
 - the game isn't complete! The levels of the Penksy 
 Complex which have been implemented so far amount to (I'd
@@ -100,7 +103,8 @@ Quartz."
 
 This is a PyGame warning, not a crashRun warning; it 
 doesn't affect gameplay and hopefully the PyGame gang will
-fix it sometime soon.
+fix it sometime soon.  You may also upgrade the version of
+SDL installed on your system which will make it go away.
 
 I intend, once crashRun is closer to a 1.0 release, to look
 for alternatives that wouldn't require users to have Python
@@ -138,7 +142,7 @@ Typing '?' will bring up the help file, which lists the
 various commands. You'll probably want to load your
 shotgun using the 'r' reload command.
 
-'x' will let you look at the squares on the screen, which
+'E' will let you look at the squares on the screen, which
 might be useful.
 
 Movement can be done with either the numeric keybad 
@@ -149,11 +153,11 @@ When you encounter monsters, you can attack them in melee
 in the usual roguelike way, by bumping into them, or you
 can fire your shotfun ('f' to fire).
 
-'i' will show your inventory and 'I' will display your 
+'i' will show your inventory and '@' will display your 
 character's information.
 
-If you happen across a computer terminal, you can jack in
-using 'J'.
+The action command ('a') allows you to interact with
+features on the map such as doors and computer terminals.
 
 -----------------------------------------------------------
 License
@@ -186,7 +190,7 @@ http://crashrun.org
 
 In addition, I've occasionally kept a development blog up 
 to date:
-http://crashrun.livejournal.com/
+http://crashrun.blogspot.com/
 
 If you have any questions, or need to report a bug, you can
 also reach me at: dana@pixelenvy.ca
