@@ -118,7 +118,10 @@ class Inventory:
 
     def add_item(self,item,readied=0):              
         if self.__next_slot == '':
-            raise InventorySlotsFull
+            try:
+                self.__check_for_stack(item)
+            except NoStackFound:
+                raise InventorySlotsFull
         else:
             # You know, it might be just easier to store items in the dictionary and check
             # the item's category when needed, rather than a tuple
