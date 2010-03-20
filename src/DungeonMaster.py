@@ -310,7 +310,9 @@ class DungeonMaster:
         self.player.row = _nearest_clear[0]
         self.player.col = _nearest_clear[1]
 
-        self.dui.display_message('You are displaced by ' + monster.get_name(), True)
+        _mr = MessageResolver(self, self.dui)
+        _name = _mr.resolve_name(monster)
+        self.dui.display_message('You are displaced by ' + _name, True)
 
     # loading the level object is basically duplicated with the __loadSavedGame() method
     # should be factored out
