@@ -21,6 +21,7 @@ VERSION: 0.4.0
 'w': WIELD_WEAPON
 'W': WEAR_ARMOUR
 'x': SWAP_WEAPONS
+'c': SAVE_WPN_CONFIG
 
 # Dungeon interaction commands
 'a': ACTION

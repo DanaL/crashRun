@@ -123,8 +123,7 @@ class Player(BaseAgent):
         self.__calc_next_level()
         self.events = []
         self.software = Wetboard(3,10)
-    
-    # get_coordination_bonus
+        self.weapon_configs = {}
     
     def add_hp(self, delta):
         BaseAgent.add_hp(self, delta)

@@ -295,6 +295,18 @@ class Inventory:
         else:
             self.__primary_weapon = ''
 
+    def ready_secondary_weapon(self, slot):
+        if slot != '-':
+            _item = self.__inv[slot]
+            # check for the oddball case where the player tries to wield a piece of armour he is wearing.
+            if _item[1] == 'Armour' and self.__readied_armour[_item[0].get_area()] == _item:
+                raise CannotWieldSomethingYouAreWearing
+            
+            self.unready_item(slot)
+            self.__secondary_weapon = _item
+        else:
+            self.__secondary_weapon = ''
+            
     # Doesn't check to see if passed slot is armour, caller must verify this
     def unready_armour(self, slot):
         if self.__readied_armour[ self.__inv[slot][0].get_area() ] == self.__inv[slot]:
@@ -409,12 +421,19 @@ class Inventory:
         return menu
     
     def contains_item(self, item):
-        for j in range(0,26):
+        for j in range(0, 26):
             _letter = chr(self.lc+j)
             if self.__inv[_letter] != '' and self.__inv[_letter][0] == item:
                 return True
                 
         return False
+    
+    def get_slot_for_item(self, item):
+        for j in range(0, 26):
+            _letter = chr(self.lc+j)
+            if self.__inv[_letter] != '' and self.__inv[_letter][0] == item:
+                return _letter
+        return ''
         
 class Wetboard(object):
     def __init__(self, process_ram, flash_ram):

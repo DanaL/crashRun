@@ -382,6 +382,8 @@ class DungeonUI(object):
             self.cc.debug_command(self.query_user('Debug command: '))
         elif cmd == 'SWAP_WEAPONS':
             self.cc.swap_weapons()
+        elif cmd == 'SAVE_WPN_CONFIG':
+            self.cc.save_weapon_config()
             
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
@@ -528,7 +530,7 @@ class DungeonUI(object):
                 raise NonePicked
 
     # need to add check for user typing too much in
-    def query_user(self,question):
+    def query_user(self, question):
         answer = ''
         ch = (255,'&')
 
@@ -544,17 +546,27 @@ class DungeonUI(object):
             self.__write_message(question + ' ' + answer + ' ', False)
             ch = self.wait_for_key_input(True)
 
-    def query_yes_no(self,question):
-        answer = ''
+    def query_for_answer_in_set(self, question, answers, allow_esc):
+        if allow_esc:
+            answers.append(CHR_ESC)
+            
+        while True:
+            self.clear_msg_line()
+            self.__write_message(question, False)
+            _answer = self.wait_for_key_input()
+            if _answer in answers:
+                break
+
         self.clear_msg_line()
-        self.__write_message(question + '? (y/n) ', False)
-
-        while answer not in ['y','n']:
-            answer = self.wait_for_key_input()
-
-        self.clear_msg_line()
-
-        return answer
+        
+        if _answer == CHR_ESC:
+            _answer = ''
+            
+        return _answer
+            
+    def query_yes_no(self, question):
+        _q = question + '? (y/n) '
+        return self.query_for_answer_in_set(_q, ['y', 'n'], False)
 
     def redraw_screen(self):
         if self.map_r != '' and self.map_c != '':

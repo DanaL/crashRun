@@ -419,6 +419,31 @@ class MeatspaceCC(CommandContext):
         except EmptyInventory:
             pass
             
+    def save_weapon_config(self):
+        _msg = 'Save config in which slot? (1-9)'
+        _answers = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        _result = self.dui.query_for_answer_in_set(_msg, _answers, True)
+        
+        if _result == '':
+            self.dui.display_message('Never mind.')
+        else:
+            _inv = self.dm.player.inventory
+            _slot = int(_result)
+            _primary = _inv.get_primary_weapon()
+            if _primary != '':
+                _pslot = _inv.get_slot_for_item(_primary)
+            else:
+                _pslot = '-'
+            _sec = _inv.get_secondary_weapon()   
+            if _sec != '':
+                _sslot = _inv.get_slot_for_item(_sec)
+            else:
+                _sslot = '-' 
+            
+            _config = (_primary, _pslot, _sec, _sslot)
+            self.dm.player.weapon_configs[_slot] = _config
+            self.dui.display_message('Weapon config saved in slot %d.' % (_slot))
+            
     def swap_weapons(self):
         _inv = self.dm.player.inventory
         _primary = _inv.get_primary_weapon()
@@ -436,7 +461,32 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message('The %s is in your primary hand.' % (_primary.get_full_name()))
             
         self.dm.player.energy -= STD_ENERGY_COST
-        
+    
+    def use_weapon_config(self, slot):
+        _player = self.dm.player
+        _inv = _player.inventory
+        if slot in _player.weapon_configs:
+            _config = _player.weapon_configs[slot]
+            _prim = _config[0]
+            _sec = _config[2]
+            
+            if _prim != '' and not _inv.contains_item(_prim):
+                self.dui.display_message('That configuration appears to no longer be valid.')
+                return
+            if _sec != '' and not _inv.contains_item(_sec):
+                self.dui.display_message('That configuration appears to no longer be valid.')
+                return
+ 
+            try:
+                _inv.ready_weapon(_config[1])
+                _inv.ready_secondary_weapon(_config[3])
+                self.dui.display_message("You switch weapon configurations.")
+                self.dm.player.energy -= STD_ENERGY_COST
+            except CannotWieldSomethingYouAreWearing:
+                self.dui.display_message("You can't wield something you are wearing.")
+        else:
+            self.dui.display_message('You have no config saved in that slot.')
+            
     # At the moment, I have no weapons in the game which, when
     # wielded, provide effects or conditions, but when I do, I'll
     # have to check for them.  Also, will need to remove effects
@@ -444,6 +494,10 @@ class MeatspaceCC(CommandContext):
     def wield_weapon(self):
         try:
             ch = self.dui.pick_inventory_item('Ready which weapon?')
+            if ch in ('1', '2', '3', '4', '5', '6', '7', '8', '9'):
+                self.use_weapon_config(int(ch))
+                return
+                
             item = self.dm.player.inventory.get_item(ch)
             
             if ch == '-' or item != '':
@@ -569,6 +623,9 @@ class CyberspaceCC(CommandContext):
         self.not_in_cyberspace()
         
     def swap_weapons(self):
+        self.not_in_cyberspace()
+    
+    def save_weapon_config(self):
         self.not_in_cyberspace()
         
         
