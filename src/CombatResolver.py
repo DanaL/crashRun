@@ -36,6 +36,8 @@ class CombatResolver(object):
             _uke_ac += int(round(uke.skills.get_skill("Dancing").get_rank() / 2))
         except AttributeError:
             pass
+        except KeyError:
+            pass
             
         return _uke_ac
 

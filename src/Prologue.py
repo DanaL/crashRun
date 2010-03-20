@@ -121,8 +121,13 @@ class Prologue(GameLevel):
         
         for r in range(0, 20):
             for c in range(0, 30):
-                _map[10+r][self.lvl_width-31+c] = _tower.get_cell(r,c)
-        
+                _row = 10 + r
+                _col = self.lvl_width- 31 + c
+                _map[_row][_col] = _tower.get_cell(r,c)
+                if _map[_row][_col].get_type() == DOOR and random() > 0.6:
+                    _map[_row][_col].broken = True
+                    _map[_row][_col].open()
+                
         # beat up the tower a bit
         for x in range(randrange(100, 200)):
             r = 10 + randrange(0,20)
