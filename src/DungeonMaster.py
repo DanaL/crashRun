@@ -933,6 +933,7 @@ class DungeonMaster:
             
             _name = stack[_item].get_full_name()
             _msg = get_correct_article(_name) + ' ' + _name
+            _msg = _msg.strip()
             _menu.append((chr(_start+_curr_choice), _msg, _item, 0))
             _curr_choice += 1
 

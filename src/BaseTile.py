@@ -33,4 +33,6 @@ class BaseTile(object):
             return 'the ' + self.name
         elif article == 1:
             return self.name
-        return get_correct_article(self.name) + ' ' + self.name        
+            
+        _name = get_correct_article(self.name) + ' ' + self.name
+        return _name.strip()       
