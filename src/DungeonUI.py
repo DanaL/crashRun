@@ -777,16 +777,19 @@ class DungeonUI(object):
         msg.append('  Level:  ' + `_player.level`)
         msg.append(' ')
         msg.append(_player.background)
-        msg.append(' ')
-        self.write_screen(msg, True)
-        
-        msg = ['You are trained in the following skills:']
+        while len(msg) < 22:
+            msg.append(' ')
+       
+        msg.append('You are trained in the following skills:')
         for category in _player.skills.get_categories():
             msg.append(category + ':')
             [msg.append('   ' + skill.get_name() + ' - ' + skill.get_rank_name()) for skill in _player.skills.get_category(category)]
-        self.write_screen(msg, True)
+            
+        while len(msg) < 45:
+            msg.append(' ')
+        msg += self.cc.get_software_list(False)
         
-        self.cc.display_software()
+        self.write_screen(msg, True, True)
         
         self.redraw_screen()
         
@@ -803,7 +806,7 @@ class DungeonUI(object):
     def __show_help(self):
         f = open('help.txt','r')
         lines = [line.rstrip() for line in f.readlines()]
-        self.write_screen(lines, True)
+        self.write_screen(lines, True, True)
         self.redraw_screen()
         
     def translate_dir(self, cmd):
