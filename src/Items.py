@@ -566,10 +566,10 @@ class ItemFactory:
         # add firearms
         self.__item_db['shotgun'] = ('firearm', 'Shotgun')
         self.__item_db['double-barrelled shotgun'] = ('firearm', 'Double-Barrelled Shotgun')
-        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 2, 2, 0, 12)
-        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 8, 2, 0, 0, 10)
-        self.__item_db['uzi'] = ('handgun', 'Uzi', 4, 3, 0, 0, 10)
-        self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 4, 3, 0, 0, 10)
+        self.__item_db['p90 assault rifle'] = ('machine gun', 'P90 assault rifle', 7, 2, 4, 0, 12)
+        self.__item_db['m16 assault rifle'] = ('machine gun', 'M16 assault rifle', 8, 2, 3, 0, 10)
+        self.__item_db['uzi'] = ('handgun', 'Uzi', 4, 3, 3, 0, 10)
+        self.__item_db['m1911a1'] = ('handgun', 'M1911A1', 4, 3, 3, 0, 10)
         self.__item_db['icannon'] = ('beam weapon', 'iCannon', 0, 0, 0, 0, 0)
         
         # add ammunition
