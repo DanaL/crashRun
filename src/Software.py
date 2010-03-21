@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-import md5
 from copy import deepcopy
 from random import choice
 from random import randrange
@@ -43,8 +42,6 @@ class Software(BaseItem):
         self.effects = []
         self.executing = False
         self.category  = category
-        
-        self.set_encrypted_name()
     
     def execute(self, dm, agent):
         self.decrypted = True
@@ -52,18 +49,7 @@ class Software(BaseItem):
         agent.apply_effects_from_equipment()
         
     def get_name(self, article=False):
-        if self.decrypted:
-            return self.name
-        else:
-            return 'data file (' + self.encrypted_name + ')'
-                
-    def set_encrypted_name(self):
-        _str = "".join([chr(97+randrange(26)) for j in range(5)])
-        _m = md5.new()
-        _m.update(_str)
-        _e = _m.hexdigest()
-        
-        self.encrypted_name = _e[0:8] + ' ' + _e[8:16] + ' ' + _e[16:24] + ' ' + _e[24:]
+        return self.name
 
     def terminate(self, dm, agent):
         self.executing = False
