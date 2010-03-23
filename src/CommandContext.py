@@ -251,7 +251,8 @@ class MeatspaceCC(CommandContext):
                 
                     _sqrs += self.get_boxes(_lvl, row, col)
                 elif _type == DOOR or _type == SPECIAL_DOOR:
-                    _sqrs.append((_sqr, (row+r, col+c)))
+                    if not _sqr.broken:
+                        _sqrs.append((_sqr, (row+r, col+c)))
                                         
         return _sqrs[0] if len(_sqrs) == 1 else None
 
