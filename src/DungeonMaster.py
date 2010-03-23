@@ -821,14 +821,17 @@ class DungeonMaster:
         self.update_sqr(self.curr_lvl, r, c)
         self.refresh_player_view()
         
-    def pick_lock(self,door, pick):
+    def pick_lock(self, door, pick):
         skill = self.player.skills.get_skill('Lock Picking')        
         lockpickRoll = do_d10_roll(skill.get_rank(), self.player.get_intuition_bonus())   
         lockRoll = do_d10_roll(door.lock_difficulty,0)
 
         if lockpickRoll > lockRoll:
             door.locked = not door.locked
-            self.dui.display_message('Click.')
+            if not door.locked:
+                self.dui.display_message('Click.')
+            else:
+                self.dui.display_message('You lock the door.')
         else:
             self.dui.display_message('You can\'t figure the stupid lock out.')
         self.player.energy -= STD_ENERGY_COST
