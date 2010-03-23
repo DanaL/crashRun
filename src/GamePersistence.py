@@ -19,12 +19,28 @@ from cPickle import Pickler
 from cPickle import Unpickler
 import datetime
 from os import listdir
+from os import path
 from os import remove
 import tarfile
 
 class NoSaveFileFound:
     pass
 
+def get_preferences():
+    if not path.exists('prefs.txt'):
+        _prefs = {"auto unlock doors" : True, "bump to open doors" : False}
+        _file = file("prefs.txt", "w")
+        for _key in _prefs:
+            _file.write("%s : %s\n" % (_key, str(_prefs[_key])))
+    else:
+        _prefs = {}
+        _file = file("prefs.txt", "r")
+        for _line in _file.readlines():
+            _parts = _line.split(":")
+            _prefs[_parts[0].strip()] = _parts[1].strip().lower() == "true"
+    
+    return _prefs
+    
 def get_level_from_save_obj(level, obj):
     _map = obj[0]
     _locations = obj[1]

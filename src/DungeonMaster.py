@@ -43,6 +43,7 @@ from GameLevel import GameLevel
 from GameLevel import Noise
 from GamePersistence import clean_up_files
 from GamePersistence import get_level_from_save_obj
+from GamePersistence import get_preferences
 from GamePersistence import get_save_file_name
 from GamePersistence import load_level
 from GamePersistence import load_saved_game
@@ -398,6 +399,8 @@ class DungeonMaster:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'))
                 
     def start_game(self, dui):
+        self.prefs = get_preferences()
+
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
         msg = ['Welcome to crashRun!','  Copyright 2010 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
@@ -809,9 +812,12 @@ class DungeonMaster:
             self.curr_lvl.check_special_door(tile)
                      
         if tile.is_locked():
-            ch = self.dui.query_yes_no('The door is locked.  Attempt to unlock')
-            if ch == 'y':
+            if self.prefs["auto unlock doors"]:
                 self.__attempt_to_unlock_door(tile)
+            else:    
+                ch = self.dui.query_yes_no('The door is locked.  Attempt to unlock')
+                if ch == 'y':
+                    self.__attempt_to_unlock_door(tile)
             self.player.energy -= STD_ENERGY_COST # player uses a turn because he has to try the door to see if it is locked
         else:
             tile.open()
@@ -829,37 +835,33 @@ class DungeonMaster:
         if lockpickRoll > lockRoll:
             door.locked = not door.locked
             if not door.locked:
-                self.dui.display_message('Click.')
+                self.dui.display_message('Click. You unlock the door.')
             else:
                 self.dui.display_message('You lock the door.')
         else:
             self.dui.display_message('You can\'t figure the stupid lock out.')
         self.player.energy -= STD_ENERGY_COST
         
-    def __attempt_to_unlock_door(self,door):
-        try:
-            self.dui.clear_msg_line()
-            ch = self.dui.pick_inventory_item('Use what?')
-        except NonePicked:
-            self.dui.display_message('Never mind.')
-            self.dui.clear_msg_line()
-            return
+    def __attempt_to_unlock_door(self, door):
+        if self.prefs["auto unlock doors"]:
+            _picks = self.player.inventory.find_items_by_name("lockpick")
+            if len(_picks) == 0:
+                self.dui.display_message("You don't have a lockpick...")
+                return
+            _pick = _picks[0]
+        else:
+            try:
+                self.dui.clear_msg_line()
+                _ch = self.dui.pick_inventory_item('Use what?')
+                _pick = self.player.inventory.get_item(_ch)
+            except NonePicked:
+                self.dui.display_message('Never mind.')
+                self.dui.clear_msg_line()
+                return
             
-        pick = self.player.inventory.get_item(ch)
-        if pick != '':
-            if pick.get_name(1) == 'lockpick':
-                self.pick_lock(door, pick)
-            elif isinstance(pick, Items.Chainsaw):
-                if pick.charge > 0:
-                    _noise = Noise(7, self.player, self.player.row, self.player.col, 'chainsaw')
-                    self.curr_lvl.monsters_react_to_noise(5, _noise)
-                    door.smash()
-                    self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
-                    pick.charge -= 1
-                    if pick.charge == 0: self.items_discharged(self.player, [pick])
-                    self.player.energy -= STD_ENERGY_COST
-                else:
-                    self.dui.display_message("It hasn't got the juice.")
+        if _pick != '':
+            if _pick.get_name(1) == 'lockpick':
+                self.pick_lock(door, _pick)
             else:
                 self.dui.clear_msg_line()
                 self.dui.display_message('You aren\'t making any sense.')

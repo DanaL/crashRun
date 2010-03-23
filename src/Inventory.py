@@ -420,6 +420,15 @@ class Inventory:
 
         return menu
     
+    def find_items_by_name(self, name):
+        _items = []
+        for j in range(0, 26):
+            _letter = chr(self.lc+j)
+            if self.__inv[_letter] != '' and self.__inv[_letter][0].get_name(1) == name:
+                _items.append(self.__inv[_letter][0])
+        
+        return _items
+        
     def contains_item(self, item):
         for j in range(0, 26):
             _letter = chr(self.lc+j)
