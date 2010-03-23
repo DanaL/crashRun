@@ -1380,6 +1380,8 @@ class DungeonMaster:
                 self.player.energy -= STD_ENERGY_COST
             elif isinstance(item, Items.WithOffSwitch):
                 self.player_uses_item_with_power_switch(item)
+            elif isinstance(item, Items.Chainsaw):
+                self.player_uses_chainsaw(item, i)
             elif item.get_category() == 'Tool': 
                 _tool = self.player.inventory.remove_item(i,1)
                 if _tool.get_name(1) == 'flare':
@@ -1388,9 +1390,7 @@ class DungeonMaster:
                     self.__player_uses_battery(_tool)
                 elif _tool.get_name(1) == 'lockpick':
                     self.player_uses_lockpick(_tool)
-                    self.player.inventory.add_item(_tool)
                 else:
-                    self.player.inventory.add_item(_tool)
                     self.dui.display_message('Huh?  Use it for what?')
             elif item.get_name() == 'the wristwatch':
                 self.__show_time()
@@ -1406,7 +1406,49 @@ class DungeonMaster:
             else:
                 self.dui.display_message('Huh?  Use it for what?')
     
-    def player_uses_lockpick(self, lockpick):
+    def player_uses_chainsaw(self, chainsaw, ch):
+        _dir = self.dui.get_direction()
+        if _dir == '':
+            self.dui.display_message('Never mind.')
+            return
+        
+        _dt = self.convert_to_dir_tuple(self.player, _dir)
+        if _dt != '':
+            if self.player.inventory.get_primary_weapon() != chainsaw:
+                self.player.inventory.ready_weapon(ch)
+            
+            if chainsaw.charge == 0:
+                self.dui.display_message('Your chainsaw is out of juice.')
+            else:
+                _noise = Noise(7, self.player, self.player.row, self.player.col, 'chainsaw')
+                self.curr_lvl.monsters_react_to_noise(5, _noise)
+                self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
+                
+                _row = self.player.row + _dt[0]
+                _col = self.player.col + _dt[1]
+                _loc = self.curr_lvl.dungeon_loc[_row][_col]
+                _sqr = self.curr_lvl.map[_row][_col]
+                if _dt == (0,0):
+                    self.dui.display_message("You wave the chainsaw around in the air.")
+                elif _loc.occupant != '' and isinstance(_loc.occupant, BaseAgent):
+                    self.curr_lvl.melee.attack(self.player, _loc.occupant)  
+                elif _sqr.get_type() in (Terrain.WALL, Terrain.PERM_WALL):
+                    self.dui.display_message("That's probably not good for your chainsaw.")
+                elif _sqr.get_type() in (Terrain.STEEL_DOOR, Terrain.SPECIAL_DOOR):
+                    self.dui.display_message("You make a lot of sparks but not much else happens.")
+                elif _sqr.get_type() == Terrain.DOOR and not _sqr.is_open():
+                    _sqr.smash()
+                    self.update_sqr(self.curr_lvl, _row, _col)
+                    self.refresh_player_view()
+                    self.dui.display_message("You make short work of that door.")
+                else:
+                    self.dui.display_message("You wave the chainsaw around in the air.")
+                    
+                chainsaw.charge -= 1
+                if chainsaw.charge == 0: self.items_discharged(self.player, [chainsaw])         
+            self.player.energy -= STD_ENERGY_COST
+                
+    def player_uses_lockpick(self, lockpick):    
         _dir = self.dui.get_direction()
         if _dir == '':
             self.dui.display_message('Never mind.')
