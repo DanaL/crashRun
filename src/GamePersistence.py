@@ -28,7 +28,7 @@ class NoSaveFileFound:
 
 def get_preferences():
     if not path.exists('prefs.txt'):
-        _prefs = {"auto unlock doors" : True, "bump to open doors" : False}
+        _prefs = {"auto unlock doors" : True, "bump to open doors" : True}
         _file = file("prefs.txt", "w")
         for _key in _prefs:
             _file.write("%s : %s\n" % (_key, str(_prefs[_key])))

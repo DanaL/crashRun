@@ -659,34 +659,43 @@ class DungeonMaster:
                 self.dui.display_message('The lift is deactivated.')
         else:
             self.dui.display_message('You cannot go up here.')
-             
-    def cmd_move_player(self,direction):
+          
+    def __should_attempt_to_open(self, sqr):
+        if self.prefs["bump to open doors"]: 
+            if sqr.get_type() in (Terrain.DOOR, Terrain.SPECIAL_DOOR):
+                if not sqr.is_open():
+                    return True
+        return False
+            
+    def cmd_move_player(self, direction):
         self.dui.clear_msg_line()
         if direction == '<':
             self.player_moves_up_a_level()
         elif direction == '>':
             self.player_moves_down_a_level()
         else:
-            dt = self.convert_to_dir_tuple(self.player, direction)
+            _dt = self.convert_to_dir_tuple(self.player, direction)
             _p = self.player
-            next_r = _p.row + dt[0]
-            next_c = _p.col + dt[1] 
+            _next_r = _p.row + _dt[0]
+            _next_c = _p.col + _dt[1] 
+            _tile = self.curr_lvl.map[_next_r][_next_c]
 
-            if self.is_clear(next_r, next_c) or self.is_special_tile(next_r, next_c):
-                self.__move_player(_p.row, _p.col, next_r, next_c, dt)
-            elif self.curr_lvl.dungeon_loc[next_r][next_c].occupant <> '':
-                _occ = self.curr_lvl.dungeon_loc[next_r][next_c].occupant
+            if self.is_clear(_next_r, _next_c) or self.is_special_tile(_next_r, _next_c):
+                self.__move_player(_p.row, _p.col, _next_r, _next_c, _dt)
+            elif self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant <> '':
+                _occ = self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant
 
                 if isinstance(_occ, BaseAgent):
                     self.curr_lvl.melee.attack(self.player, _occ)           
                     self.player.energy -= STD_ENERGY_COST
-            elif self.curr_lvl.map[next_r][next_c].get_type() == Terrain.OCEAN:
+            elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
+            elif self.__should_attempt_to_open(_tile):     
+                self.open_door(_tile, _next_r, _next_c)
             else:
                 if self.player.has_condition('dazed'):
                     self.player.energy -= STD_ENERGY_COST
-                    _tile = self.curr_lvl.map[next_r][next_c]
                     self.dui.display_message('You stagger into ' + _tile.get_name() + '!')
                 else:
                     self.dui.display_message('You cannot move that way!')
@@ -1383,13 +1392,14 @@ class DungeonMaster:
             elif isinstance(item, Items.Chainsaw):
                 self.player_uses_chainsaw(item, i)
             elif item.get_category() == 'Tool': 
-                _tool = self.player.inventory.remove_item(i,1)
-                if _tool.get_name(1) == 'flare':
-                    self.__player_uses_flare(_tool)
-                elif isinstance(_tool, Items.Battery):
-                    self.__player_uses_battery(_tool)
-                elif _tool.get_name(1) == 'lockpick':
-                    self.player_uses_lockpick(_tool)
+                if item.get_name(1) == 'flare':
+                    _flare = self.player.inventory.remove_item(i,1)
+                    self.__player_uses_flare(_flare)
+                elif isinstance(item, Items.Battery):
+                    _battery = self.player.inventory.remove_item(i,1)
+                    self.__player_uses_battery(_battery)
+                elif item.get_name(1) == 'lockpick':
+                    self.player_uses_lockpick(item)
                 else:
                     self.dui.display_message('Huh?  Use it for what?')
             elif item.get_name() == 'the wristwatch':
