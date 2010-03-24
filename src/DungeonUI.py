@@ -22,6 +22,8 @@ from pygame.locals import *
 from string import digits
 from string import letters
 
+from GamePersistence import get_preferences
+from GamePersistence import save_preferences
 from Util import EmptyInventory
 from Util import get_direction_tuple
 from Util import NonePicked
@@ -384,6 +386,8 @@ class DungeonUI(object):
             self.cc.swap_weapons()
         elif cmd == 'SAVE_WPN_CONFIG':
             self.cc.save_weapon_config()
+        elif cmd == 'TOGGLE_OPTIONS':
+            self.toggle_options()
             
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
@@ -401,6 +405,28 @@ class DungeonUI(object):
                 
         return _ch
     
+    def toggle_options(self):
+        _prefs = self.cc.dm.prefs
+        _msg = ["Toggle options, hit ESC when you're done."]
+        
+        while True:
+            _menu = []
+            _keys = _prefs.keys()
+            _keys.sort()
+            for j in range(len(_keys)):
+                _letter = chr(ord('a') + j)
+                _key = _keys[j]
+                _q = "%s - %s" % (_key, _prefs[_key])
+                _option = (_letter, _q, _key, False)
+                _menu.append(_option)
+            _result = self.ask_menued_question(_msg, _menu)
+            if _result == '':
+                break
+            else:
+                _prefs[_result] = not _prefs[_result]
+                
+        save_preferences(_prefs)
+            
     # I will eventually use pick_from_list to drive 
     # pick_inventory_item
     def pick_inventory_item(self, msg):

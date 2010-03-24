@@ -26,12 +26,16 @@ import tarfile
 class NoSaveFileFound:
     pass
 
+def save_preferences(prefs):
+    _file = file("prefs.txt", "w")
+    for _key in prefs:
+        _file.write("%s : %s\n" % (_key, str(prefs[_key])))
+    _file.close()
+    
 def get_preferences():
     if not path.exists('prefs.txt'):
         _prefs = {"auto unlock doors" : True, "bump to open doors" : True}
-        _file = file("prefs.txt", "w")
-        for _key in _prefs:
-            _file.write("%s : %s\n" % (_key, str(_prefs[_key])))
+        save_preferences(_prefs)
     else:
         _prefs = {}
         _file = file("prefs.txt", "r")
@@ -40,7 +44,7 @@ def get_preferences():
             _prefs[_parts[0].strip()] = _parts[1].strip().lower() == "true"
     
     return _prefs
-    
+            
 def get_level_from_save_obj(level, obj):
     _map = obj[0]
     _locations = obj[1]
