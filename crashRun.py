@@ -22,7 +22,7 @@ from src.Keys import KeyConfigReader
 from sys import setcheckinterval
 #import profile
 
-VERSION = '0.4.0'
+VERSION = '0.4.1'
 
 keys = KeyConfigReader(VERSION)
 keymap = keys.read_keys()

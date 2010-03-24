@@ -1,4 +1,4 @@
-crashRun 0.4.0 help file
+crashRun 0.4.1 help file
 
 Basic commands:
 
