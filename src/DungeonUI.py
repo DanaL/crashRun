@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import platform
+
 from BaseTile import BaseTile
 from random import randrange
 import math,pygame
@@ -95,6 +98,10 @@ class DungeonUI(object):
         self.__message_memory = MessageMemory(MESS_HIST_SIZE)
         self.__msg_cursor = 0
         self.keymap = keymap
+
+        if platform.system() == "Windows":
+            os.environ['SDL_VIDEODRIVER'] = 'windib'
+        
         pygame.init()
 
         self.map_r = ''
