@@ -82,6 +82,7 @@ from Terrain import SPECIAL_FLOOR
 from Terrain import SUBNET_NODE
 from Terrain import TOXIC_WASTE
 from TowerFactory import TowerFactory
+from Util import bresenham_line
 from Util import calc_distance
 from Util import do_d10_roll
 from Util import get_correct_article
@@ -1969,6 +1970,13 @@ class DungeonMaster:
         self.player_forcibly_exits_cyberspace()
         
         raise TurnInterrupted
+    
+    def __check_trajectory(self, start_r, start_c, target_r, target_c):
+        _pts = bresenham_line(start_r, start_c, target_r, target_c)
+        for _pt in _pts:
+            if not self.curr_lvl.map[_pt[0]][_pt[1]].is_passable():
+                return False
+        return True
         
     def __pick_thrown_target(self, start_r, start_c, _range, colour):
         _cursor = BaseTile('*',colour,'black',colour,'cursor')
@@ -1980,7 +1988,12 @@ class DungeonMaster:
         
         while True:
             ch = self.dui.get_target()
-            if ch == ' ': break
+            if ch == ' ': 
+                if self.__check_trajectory(start_r, start_c, _cursor.row, _cursor.col):
+                    break
+                else:
+                    self.dui.display_message("You can't target that location.")
+                    continue
             if ch == 'home':
                 _next_r = start_r
                 _next_c = start_c

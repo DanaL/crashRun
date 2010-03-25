@@ -29,7 +29,36 @@ class EmptyInventory:
     
 class NonePicked:
     pass
-                    
+
+# Pretty much directly the opitmized version
+# of the algorithm from Wikipedia
+def bresenham_line(x0, y0, x1, y1):
+    _pts = []
+    _steep = abs(y1 - y0) > abs(x1 - x0)
+    if _steep:
+        x0, y0 = y0, x0
+        x1, y1 = y1, x1
+    if x0 > x1:
+        x0, x1 = x1, x0
+        y0, y1 = y1, y0
+        
+    delta_x = x1 - x0
+    delta_y = abs(y1 - y0)
+    error = delta_x / 2
+    delta_err = float(delta_y) / float(delta_x)
+    y = y0
+    y_step = 1 if y0 < y1 else -1
+    for x in range(x0, x1+1):
+        if _steep:
+            _pts.append((y, x))
+        else:
+            _pts.append((x, y))
+        error -= delta_y
+        if error < 0:
+            y += y_step
+            error += delta_x
+    return _pts
+                  
 def calc_distance(x0, y0, x1, y1):
     xd = x0 - x1
     yd = y0 - y1
