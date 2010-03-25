@@ -597,11 +597,11 @@ class ItemFactory:
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
-        self.__item_db['truncheon'] = ('weapon','Melee','/','brown','lightbrown',6,1,2,False,0,0,1)
-        self.__item_db['combat knife'] = ('weapon','Melee','|','grey','white',5,1,1,False,0,0,1)
-        self.__item_db['rusty switchblade'] = ('weapon','Melee','|','grey','white',4,1,1,False,0,0,1)
-        self.__item_db['katana'] = ('weapon','Melee','|','grey','white',10,1,1,False,0,0,2)
-        self.__item_db['baseball bat'] = ('weapon','Melee','/','yellow-orange','yellow',8,1,2,False,0,2,2)
+        self.__item_db['truncheon'] = ('weapon','Melee','/','brown','lightbrown',7,1,2,False,0,0,1)
+        self.__item_db['combat knife'] = ('weapon','Melee','|','grey','white',6,1,1,False,0,0,1)
+        self.__item_db['rusty switchblade'] = ('weapon','Melee','|','grey','white',5,1,1,False,0,0,1)
+        self.__item_db['katana'] = ('weapon','Melee','|','grey','white',12,1,1,False,0,0,2)
+        self.__item_db['baseball bat'] = ('weapon','Melee','/','yellow-orange','yellow',9,1,2,False,0,2,2)
         self.__item_db['grenade'] = ('weapon','Thrown','*','darkgrey','grey',1,1,1,True,0,0,1)
         self.__item_db['push broom'] =  ('weapon','Melee','/','red','brown',10,1,2,False,0,0,2)
         self.__item_db['throwing knife'] = ('weapon','Thrown','|','grey','white',5,1,1,True,0,0,1)

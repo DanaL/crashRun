@@ -157,7 +157,7 @@ def _incinerator(dm,row,col):
     
 def _junkie(dm,row,col):
     _if = Items.ItemFactory()
-    junkie = AltPredator(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=5, dmg_rolls=1, 
+    junkie = AltPredator(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=3, dmg_rolls=1, 
             ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='red', name='junkie', row=row,
             col=col, xp_value=3, gender='male', level=1)
             
