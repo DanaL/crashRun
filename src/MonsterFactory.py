@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-import Items
-from Agent import *
 from random import choice
 from random import random
 from random import randrange
+
+import Items
+from Agent import *
+import Behaviour
 from Software import get_software_by_name
 
 def _basicNinja(dm, row, col):
@@ -69,7 +71,7 @@ def _cyborg(dm, row, col):
     
     if randrange(4) == 0:
         _cy.inventory.add_item(_if.gen_item('combat knife'))
-    _cy.select_weapon()
+    Behaviour.select_weapon_for_shooter(_cy)
     
     return _cy
 
@@ -85,7 +87,7 @@ def _cyborgSergeant(dm, row, col):
     
     if randrange(4) == 0:
         _cy.inventory.add_item(_if.gen_item('combat knife'))
-    _cy.select_weapon()
+    Behaviour.select_weapon_for_shooter(_cy)
     
     return _cy
           
@@ -157,24 +159,27 @@ def _incinerator(dm,row,col):
     
 def _junkie(dm,row,col):
     _if = Items.ItemFactory()
-    junkie = AltPredator(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=3, dmg_rolls=1, 
+    _junkie = AltPredator(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=3, dmg_rolls=1, 
             ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='red', name='junkie', row=row,
             col=col, xp_value=3, gender='male', level=1)
             
     if random() < 0.25:
         _roll = random()
         if _roll < 0.20:
-            junkie.inventory.add_item(_if.gen_item('rusty switchblade'))
+            _junkie.inventory.add_item(_if.gen_item('rusty switchblade'))
         elif _roll < 0.40:
-            junkie.inventory.add_item(_if.gen_item('army helmet'))
+            _junkie.inventory.add_item(_if.gen_item('army helmet'))
         elif _roll < 0.70:
-            junkie.inventory.add_item(_if.gen_item('old fatigues'))
+            _junkie.inventory.add_item(_if.gen_item('old fatigues'))
         else:
-            junkie.inventory.add_item(_if.gen_item('baseball bat'))
+            _junkie.inventory.add_item(_if.gen_item('baseball bat'))
     if random() < 0.15:
         for j in range(randrange(1,4)):
-            junkie.inventory.add_item(_if.gen_item('shotgun shell'))
-    return junkie
+            _junkie.inventory.add_item(_if.gen_item('shotgun shell'))
+
+    Behaviour.select_weapon_for_brawler(_junkie)
+    
+    return _junkie
 
 def _lolcat(dm, row, col):
     return CyberspaceMonster(8, 20, 25, 35, 6, 2, 0, dm, 'f', 'yellow', 'black', 'yellow',

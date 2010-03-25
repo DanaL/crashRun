@@ -21,6 +21,7 @@ from random import randrange
 from random import random
 
 from BaseTile import BaseTile
+import Behaviour
 from FieldOfView import Shadowcaster
 import Items
 from Items import ItemFactory
@@ -283,6 +284,9 @@ class BaseAgent(BaseTile):
         
     def get_hand_to_hand_dmg_roll(self):
         return do_dN(self.unarmed_rolls, self.unarmed_dice)
+    
+    def get_max_h_to_h_dmg(self):
+        return self.unarmed_rolls * self.unarmed_dice
         
     def get_melee_type(self):
         return self.melee_type
@@ -882,72 +886,7 @@ class Cyborg(Shooter):
         self.weapon = ''
         self.attitude = 'hostile'
         self.range = 5
-        
-    def has_ammo_for(self, gun):
-        _a = ord('a')
-        for _num in range(26):
-            _letter = chr(_a + _num)
-            _item = self.inventory.get_item(_letter)
-            if _item != '' and gun.is_ammo_compatible(_item):
-                return _letter
-        return ''
                 
-    def check_inventory_for_guns(self):
-        _guns = []
-        _a = ord('a')
-        for _num in range(26):
-            _letter = chr(_a + _num)
-            _item = self.inventory.get_item(_letter)
-            if isinstance(_item, Items.Firearm):
-                if _item.current_ammo > 0 or self.has_ammo_for(_item) != '':
-                    _guns.append((_item, _letter))
-
-        return _guns
-    
-    def find_best_melee_weapon(self):
-        _a = ord('a')
-        _max_dmg = 0
-        _pick = '-'
-        for _num in range(26):
-            _letter = chr(_a + _num)
-            _item = self.inventory.get_item(_letter)
-            if isinstance(_item, Items.Weapon):
-                _dmg = _item.d_roll * _item.d_dice
-                if _dmg > _max_dmg:
-                    _pick = _letter
-                    _max_dmg = _dmg
-
-        return _pick
-        
-    def pick_gun(self):
-        _pick = ''
-        _guns = self.check_inventory_for_guns()
-        _max_dmg = 0
-        for _gun in _guns:
-            _dmg = _gun[0].shooting_roll * _gun[0].shooting_damage
-            if _dmg > _max_dmg:
-                _max_dmg = _dmg
-                _pick = _gun[1]
-        return _pick
-        
-    def select_weapon(self):
-        _gun = self.pick_gun()
-        if _gun != '':
-            self.inventory.ready_weapon(_gun)
-        else:
-            _pick = self.find_best_melee_weapon()
-            _msg = self.get_articled_name()
-            if _pick == '-':
-                _msg += " cracks his knuckles."
-            else:
-                _item = self.inventory.get_item(_pick)
-                _name = _item.get_name(1)
-                _msg += " readies " + get_correct_article(_name) + " " + _name
-            self.dm.alert_player(self.row, self.col, _msg)
-            self.inventory.ready_weapon(_pick)
-            
-        self.energy -= STD_ENERGY_COST    
-        
     def perform_action(self):            
         self.weapon = self.inventory.get_primary_weapon()
         if isinstance(self.weapon, Items.Firearm): 
@@ -958,7 +897,8 @@ class Cyborg(Shooter):
                 if _letter != '':
                     self.dm.add_ammo_to_gun(self, self.weapon, _letter)
                 else:
-                    self.select_weapon()
+                    Behaviour.select_weapon_for_shooter(self)
+                    self.energy -= STD_ENERGY_COST
         else:
             RelentlessPredator.perform_action(self)
             
