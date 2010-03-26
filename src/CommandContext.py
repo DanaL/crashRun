@@ -22,6 +22,7 @@ import Items
 import Inventory
 from Inventory import AlreadyWearingSomething
 from Inventory import CannotWieldSomethingYouAreWearing
+import MessageResolver
 from SubnetNode import SubnetNode
 import Terrain
 from Terrain import DownStairs
@@ -398,7 +399,8 @@ class MeatspaceCC(CommandContext):
                     _player.inventory.ready_armour(_ch)
                     _player.calc_ac()
                     _player.apply_effects_from_equipment()
-                    self.dui.display_message('You put on the ' + _item.get_full_name())
+                    _mr = MessageResolver.MessageResolver(self.dm, self.dui)
+                    _mr.put_on_item(_player, _item)
                 
                     # Yes! I will definitely use three lines of code just for a bad joke!!
                     if isinstance(_item, Items.TargetingWizard):

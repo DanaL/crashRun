@@ -88,11 +88,7 @@ class MessageResolver(object):
     def put_on_item(self, agent, item):
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'put')
         _item = item.get_full_name()
-        _art = get_correct_article(_item)
-        _msg += ' on '
-        if _art != '':
-            _msg += _art + ' '
-        _msg += _item + '.'
+        _msg += ' on the ' + item.get_full_name() + '.'
 
         self.dm.alert_player(agent.row, agent.col, _msg)
         
