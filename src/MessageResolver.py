@@ -84,7 +84,18 @@ class MessageResolver(object):
             return agent.get_name()
         else:
             return 'it'
-            
+    
+    def put_on_item(self, agent, item):
+        _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'put')
+        _item = item.get_full_name()
+        _art = get_correct_article(_item)
+        _msg += ' on '
+        if _art != '':
+            _msg += _art + ' '
+        _msg += _item + '.'
+
+        self.dm.alert_player(agent.row, agent.col, _msg)
+        
     def simple_verb_action(self, subject, text, verbs):
         verbs = tuple([self.parse(subject, v) for v in verbs])
         _name = self.resolve_name(subject)

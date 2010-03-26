@@ -640,7 +640,35 @@ class AltPredator(BaseMonster):
             self.attack(player_loc)
         elif _move_to != '':
             self.move_to(_move_to)
-                
+
+class HumanFoe(AltPredator):
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
+            fg, bg, lit, name, row, col, xp_value, gender, level):
+        AltPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+    
+    def should_put_on_armour(self, pieces):
+        if len(pieces) == 0:
+            return False
+        if self.is_player_adjacent():
+            return False
+        if self.is_player_visible() and self.curr_hp < self.max_hp:
+            return False
+        return True
+        
+    def perform_action(self):
+        # Hmm...do I have any armour I might want to put on?
+        _pieces = Behaviour.pick_armour(self)
+        if self.should_put_on_armour(_pieces):
+            self.inventory.ready_armour(_pieces[0])
+            _mr = MessageResolver(self.dm, self.dm.dui)
+            _item = self.inventory.get_item(_pieces[0])
+            _mr.put_on_item(self, _item)
+            self.energy -= STD_ENERGY_COST
+            self.calc_ac()
+        else:
+            AltPredator.perform_action(self)
+        
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):

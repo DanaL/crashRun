@@ -329,7 +329,7 @@ class Inventory:
 
     # This function doesn't remove an item, it provides a reference to the object
     # so the item may be used without removing it from the player's inventory.
-    def get_item(self,slot):
+    def get_item(self, slot):
         try:
             if len(self.__inv[slot]) == 0:
                 return ''

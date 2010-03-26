@@ -90,5 +90,25 @@ def select_weapon_for_shooter(agent):
     else:
         select_weapon_for_brawler(agent)
            
+# Return a list of armour to equip, ordered from most to least effective.
 def pick_armour(agent):
-    pass
+    _inv = agent.inventory
+    _best_pieces = {'suit' : None, 'helmet' : None, 'gloves' : None, 'cloak' : None,
+                'boots' : None, 'glasses' : None, 'watch' : None}
+                
+    for j in range(0, 26):
+        _slot = chr(ord('a') + j)
+        _item = _inv.get_item(_slot)
+        if isinstance(_item, Items.Armour):
+            _area = _item.get_area()
+            _ac_mod = _item.get_ac_modifier()
+            _curr = _inv.get_armour_in_location(_area)
+            if _curr == '' or _ac_mod > _curr.get_ac_modifier():
+                if _best_pieces[_area] == None or _ac_mod > _best_pieces[_area][0]:
+                    _best_pieces[_area] = (_ac_mod, _slot)
+    
+    _pieces = _best_pieces.values()
+    _pieces.sort()
+    _pieces.reverse()
+    
+    return [_p[1] for _p in _pieces if _p != None]

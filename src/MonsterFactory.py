@@ -107,7 +107,7 @@ def _docBot(dm, row, col):
     
 def _dusthead(dm, row, col):
     _if = Items.ItemFactory()
-    _dusthead = AltPredator(vision_radius=6, ac=16, hp_low=5, hp_high=16, dmg_dice=8,dmg_rolls=1, 
+    _dusthead = HumanFoe(vision_radius=6, ac=16, hp_low=5, hp_high=16, dmg_dice=6,dmg_rolls=1, 
                ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='brown', name='dust head',
                row=row, col=col, xp_value=3, gender='male', level=4)
     if random() < 0.15:
@@ -122,6 +122,9 @@ def _dusthead(dm, row, col):
     if random() < 0.15:
         for j in range(randrange(1,5)):
             _dusthead.inventory.add_item(_if.gen_item('amphetamine'))
+            
+    Behaviour.select_weapon_for_brawler(_dusthead)
+    
     return _dusthead
 
 
@@ -159,10 +162,11 @@ def _incinerator(dm,row,col):
     
 def _junkie(dm,row,col):
     _if = Items.ItemFactory()
-    _junkie = AltPredator(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=3, dmg_rolls=1, 
+    _junkie = HumanFoe(vision_radius=6, ac=12, hp_low=1, hp_high=8, dmg_dice=3, dmg_rolls=1, 
             ab=0, dm=dm, ch='@', fg='brown', bg='black', lit='red', name='junkie', row=row,
             col=col, xp_value=3, gender='male', level=1)
-            
+    _junkie.attitude = 'hostile'
+    
     if random() < 0.25:
         _roll = random()
         if _roll < 0.20:
