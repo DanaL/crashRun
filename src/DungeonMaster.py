@@ -48,7 +48,6 @@ from GamePersistence import get_save_file_name
 from GamePersistence import load_level
 from GamePersistence import load_saved_game
 from GamePersistence import NoSaveFileFound
-from GamePersistence import read_scores
 from GamePersistence import save_game
 from GamePersistence import save_level
 from GamePersistence import write_score
@@ -517,33 +516,7 @@ class DungeonMaster:
         self.player.row = player_start[0]
         self.player.col = player_start[1]   
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-
-    def __format_score(self, score):
-        _score = str(score[0]) + ' points, '
-        _score += 'version ' + score[1]
-        _score += ', on ' + score[2]
-        
-        return _score
-        
-    # I'd sorta like this just moved into CommandContext
-    def display_high_scores(self, num_to_display, score=[]):
-        _msg = ['Top crashRunners:','']
-        _scores = read_scores()[:num_to_display]
-        _count = 1
-        for _score in _scores:
-            _msg.append(str(_count) + '. ' + _score[3])
-            _msg.append('   ' + self.__format_score(_score))
-            _count += 1
-            
-        if len(score) > 0:
-            _msg.append(' ')
-            _msg.append(score[1][3])
-            _msg.append(' ')
-            _msg.append('You scored #%d on the top score list with %d points.' % (score[0],score[1][0]))
-            
-        self.dui.write_screen(_msg, True)
-        self.dui.clear_screen(True)
-        
+                
     def save_and_exit(self):
         self.dui.display_message('Saving...')
         self.player.perform_action = ''
@@ -551,7 +524,7 @@ class DungeonMaster:
         
         _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
         save_game(self.player.get_name(), _save_obj)
-        self.display_high_scores(5)
+        self.dui.display_high_scores(5)
         self.dui.clear_msg_line()
         self.dui.display_message('Be seeing you...', True)
         
@@ -960,7 +933,7 @@ class DungeonMaster:
             self.__end_of_game()
 
     def __end_of_game(self, score=[]):
-        self.display_high_scores(5,score)
+        self.dui.display_high_scores(5,score)
         self.dui.write_screen(['Good-bye, ' + self.player.get_name() + '.'], True)
         raise GameOver
 

@@ -26,6 +26,7 @@ from string import digits
 from string import letters
 
 from GamePersistence import get_preferences
+from GamePersistence import read_scores
 from GamePersistence import save_preferences
 from Util import EmptyInventory
 from Util import get_direction_tuple
@@ -253,6 +254,32 @@ class DungeonUI(object):
         self.screen.blit(blank,(0,start_row))
         pygame.display.flip()
 
+
+    def format_score(self, score):
+        _score = str(score[0]) + ' points, '
+        _score += 'version ' + score[1]
+        _score += ', on ' + score[2]
+        
+        return _score
+        
+    def display_high_scores(self, num_to_display, score=[]):    
+        _msg = ['Top crashRunners:','']
+        _scores = read_scores()[:num_to_display]
+        _count = 1
+        for _score in _scores:
+            _msg.append(str(_count) + '. ' + _score[3])
+            _msg.append('   ' + self.format_score(_score))
+            _count += 1
+            
+        if len(score) > 0:
+            _msg.append(' ')
+            _msg.append(score[1][3])
+            _msg.append(' ')
+            _msg.append('You scored #%d on the top score list with %d points.' % (score[0], score[1][0]))
+            
+        self.write_screen(_msg, True)
+        self.redraw_screen()
+        
     def display_message(self, msg, pause_for_more=False):
         if not msg.startswith('iCannon'):
             # what I won't do for a joke...
@@ -372,7 +399,7 @@ class DungeonUI(object):
         elif cmd == 'USE_ITEM':
             self.cc.use_item()
         elif cmd == 'VIEW_SCORES':
-            self.display_high_scores()
+            self.display_high_scores(100)
         elif cmd == 'WIELD_WEAPON':
             self.cc.wield_weapon()
         elif cmd == 'WEAR_ARMOUR':
@@ -511,10 +538,6 @@ class DungeonUI(object):
         
         self.update_view(self.cc.get_sqr_info(_row, _col))
         self.clear_msg_line()
-        
-    def display_high_scores(self):
-        self.cc.display_high_scores(100)
-        self.redraw_screen()
         
     def practice_skills(self, player):
         _sp = player.skill_points

@@ -59,9 +59,6 @@ class CommandContext(object):
     
     def debug_command(self, command):
         self.dm.debug_command(command)
-        
-    def display_high_scores(self, count):
-        self.dm.display_high_scores(count)
     
     def get_software_list(self, as_menu):
         msg = ['Software packages installed on your wetboard:']
