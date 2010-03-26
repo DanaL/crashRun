@@ -56,6 +56,7 @@ class OldComplexLevel(GameLevel):
         _chart.uncommon_items[6] = ('flashlight', 0)
         _chart.uncommon_items[7] = ('throwing knife', 2)
         _chart.uncommon_items[8] = ('instant coffee', 0)
+        _chart.uncommon_items[9] = ('leather gloves', 0)
         
         _chart.rare_items[0] = ('grenade', 3)
         _chart.rare_items[1] = ('C4 Charge', 0)

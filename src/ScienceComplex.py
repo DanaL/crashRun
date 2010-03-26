@@ -116,6 +116,7 @@ class ScienceComplexLevel(GameLevel):
         _chart.uncommon_items[14] = ('9mm clip', 0)
         _chart.uncommon_items[15] = ('m1911a1', 0)
         _chart.uncommon_items[16] = ('p90 assault rifle', 0)
+        _chart.uncommon_items[17] = ('leather gloves', 0)
         
         _chart.rare_items[0] = ('kevlar vest', 0)
         _chart.rare_items[1] = ('riot gear', 0)

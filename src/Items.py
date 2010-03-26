@@ -623,6 +623,7 @@ class ItemFactory:
         self.__item_db['stylish sunglasses'] = ('armour','glasses','darkgrey','grey',0,0,0,[('light',-1,0),('chutzpah',1,0),('light protection',0,0)])
         self.__item_db['wristwatch'] = ('armour','watch','darkblue','blue',0,0,0,[])
         self.__item_db['tattered rags'] = ('armour','suit','grey','darkgrey',1,1,0,[])
+        self.__item_db['leather gloves'] = ('armour','gloves','brown','brown',1,1,0,[])
         
         # add the tools
         self.__item_db['lockpick'] = ('tool', 'lockpick', 'grey', 'white')
