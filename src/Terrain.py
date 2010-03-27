@@ -263,7 +263,7 @@ class SpecialFloor(TerrainTile):
 # self,ch,fg,bg,lit,passable,opaque,open,recepticle,name,type
 class Trap(TerrainTile):
     def __init__(self, name, fgc='grey', lit='white'):
-        TerrainTile.__init__(self,'^', fgc,'black', lit,1,1,1,0,name,14)
+        TerrainTile.__init__(self,'^', fgc,'black', lit, 1, 0, 1, 0, name, TRAP)
         self.revealed = False
 
     def get_ch(self):
