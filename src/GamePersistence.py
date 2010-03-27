@@ -53,29 +53,29 @@ def get_level_from_save_obj(level, obj):
     _monsters = obj[4]
     _category = obj[5]
     _lvlNum = obj[6]
-    _entrance = obj[7]
+    _player_loc = obj[7]
     _cameras = obj[8]
-    _upStairs = obj[9]
-    _downStairs = obj[10]
+    _entrances = obj[9]
+    _exits = obj[10]
     _length = len(_map)
     _width = len(_map[0])
     _sec_lock = obj[11]
     _subnet_nodes = obj[12]
     _cameras_active = obj[13]
     _security = obj[14]
-    
+
     level.eventQueue = _eq
     level.map = _map
     level.dungeon_loc = _locations
     level.light_sources = _light_sources
     level.cameras = _cameras
-    level.upStairs = _upStairs
-    level.downStairs = _downStairs
+    level.entrances = _entrances
+    level.exits = _exits
     level.security_lockdown = _sec_lock
     level.subnet_nodes = _subnet_nodes
     level.cameras_active = _cameras_active
     level.security_active = _security
-    level.entrance = _entrance
+    level.player_loc = _player_loc
     
     for _m in _monsters:
         _m.dm = level.dm

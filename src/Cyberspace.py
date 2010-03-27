@@ -116,8 +116,9 @@ class CyberspaceLevel(GameLevel):
             self.dm.dui.display_message('You deactivate the lift.')
                 
     def mark_initially_known_sqrs(self, radius):
+        _entrance = self.entrances[0][0]
         for _sqr in get_lit_list(radius):
-            _s = (self.upStairs[0] + _sqr[0], self.upStairs[1] + _sqr[1])
+            _s = (_entrance[0] + _sqr[0], _entrance[1] + _sqr[1])
             if self.in_bounds(_s[0], _s[1]):
                 self.dungeon_loc[_s[0]][_s[1]].visited = True
 
@@ -129,9 +130,9 @@ class CyberspaceLevel(GameLevel):
         self.place_sqr(SecurityCamera(0, state), CYBERSPACE_FLOOR) 
         
     def set_real_stairs(self, upstairs, downstairs):
-        if upstairs != None:
+        if upstairs:
             self.place_sqr(upstairs, CYBERSPACE_FLOOR)
-        if downstairs != None:
+        if downstairs:
             self.place_sqr(downstairs, CYBERSPACE_FLOOR)
             
     def __add_exit_nodes(self):
@@ -281,6 +282,5 @@ class CyberspaceLevel(GameLevel):
             
             if self.is_clear(r, c): 
                 break
-            
-        self.upStairs = (r, c)
+        self.entrances.append([(r, c), None]) 
         

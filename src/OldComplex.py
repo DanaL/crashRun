@@ -150,8 +150,8 @@ class OldComplexLevel(GameLevel):
     def __generate_map(self):
         _tower = TowerFactory(self.lvl_length, self.lvl_width, False, False)
         self.map = _tower.gen_map()
-        self.upStairs = _tower.upStairs
-        self.downStairs = _tower.downStairs
+        self.entrances.append([_tower.upStairs, None])
+        self.exits.append([_tower.downStairs, None])
 
         self.__bust_up_level()
 
@@ -179,7 +179,8 @@ class OldComplexLevel(GameLevel):
         self.__add_subnet_nodes()
         
         if random() < 0.25:
-            self.map[self.downStairs[0]][self.downStairs[1]].activated = False
+            _downstairs = self.exits[0][0]
+            self.map[_downstairs[0]][_downstairs[1]].activated = False
 
         if 'EHID41K' not in self.dm.player.events:
             self.add_EHID41K()

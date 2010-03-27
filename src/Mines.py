@@ -104,8 +104,8 @@ class MinesLevel(GameLevel):
     def __generate_map(self):
         _cf = CA_CaveFactory(self.lvl_length, self.lvl_width)
         self.map = _cf.gen_map()
-        self.upStairs = _cf.upStairs
-        self.downStairs = _cf.downStairs
+        self.entrances.append([_cf.upStairs, None])
+        self.exits.append([_cf.downStairs, None])
     
     # Copied from OldComplex.  I didn't think it was worth creating a super
     # class for OldComplex and Mines just to share this one method.

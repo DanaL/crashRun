@@ -90,7 +90,7 @@ class MiniBoss1Level(GameLevel):
                         _east_walls.append((r,c))
         self.__set_complex_exits(_east_walls, _west_walls)
         _stairs = _ncf.upStairs
-        self.upStairs = (_stairs[0]+5, _stairs[1]+5)
+        self.entrances.append([(_stairs[0] + 5, _stairs[1] + 5), None])
         self.__translate_rooms(_ncf)
         
     def __set_east_wall(self):

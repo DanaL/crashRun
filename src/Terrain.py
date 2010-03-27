@@ -123,8 +123,9 @@ class Terminal(Equipment):
                 return
 
     def enter_cyberspace(self, dm):
+        _pl = (dm.player.row, dm.player.col)
         _c = dm.generate_cyberspace_level()
-        dm.move_to_new_level(_c)
+        dm.move_to_new_level(_c, _pl)
         
     def jack_in(self, dm):
         _p = dm.player
@@ -280,6 +281,13 @@ class LogicBomb(Trap):
         if victim == dm.player:
             dm.alert_player(dm.player.row, dm.player.col, 'The shock severs your connection.')
             dm.player_forcibly_exits_cyberspace()
+
+class GapingHole(Trap):
+    def __init__(self):
+        Trap.__init__(self, 'gaping hole', 'darkgrey', 'grey')
+    
+    def trigger(self, dm, victim):
+        dm.agent_steps_on_hole(victim)
         
 class TerrainFactory:
     def __init__(self):

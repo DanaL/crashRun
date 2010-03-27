@@ -137,8 +137,6 @@ class GameLevel:
         self.cameras = {}
         self.light_sources = []
         self.security_lockdown = False
-        self.upStairs = ''
-        self.downStairs = ''
         self.map = []
         self.lvl_length = length
         self.lvl_width = width
@@ -150,7 +148,9 @@ class GameLevel:
         self.subnet_nodes = []
         self.cameras_active = random() < 0.8
         self.security_active = True
-    
+        self.entrances = []
+        self.exits = []
+        
     # It would be nice if instead of alerting all monsters within a 
     # certain radius, if the sound were blocked by walls, muffled by
     # doors etc.  A flood-fill algorithm of some sort?
@@ -232,13 +232,11 @@ class GameLevel:
         return _pts
         
     def disable_lifts(self):
-        if self.upStairs != '':
-            _up = self.map[self.upStairs[0]][self.upStairs[1]]
-            _up.activated = False
-        if self.downStairs != '':
-            _down = self.map[self.downStairs[0]][self.downStairs[1]]
-            _down.activated = False 
-
+        for _e in self.entrances + self.exits:
+            _sqr = self.map[_e[0][0]][_e[0][1]]
+            if _sqr.get_type() in (UP_STAIRS, DOWN_STAIRS):
+                _sqr.activated = False
+                
     def douse_squares(self, ls):
         self.eventQueue.pluck(('extinguish', ls.row, ls.col, ls))
         self.light_sources.remove(ls)
@@ -279,8 +277,8 @@ class GameLevel:
 
         self.clear_occupants()
         _exit_point = (self.dm.player.row,self.dm.player.col)
-        _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, \
-                self.category,self.level_num,_exit_point,self.cameras,self.upStairs,self.downStairs,\
+        _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, 
+                self.category,self.level_num,_exit_point,self.cameras,self.entrances,self.exits,
                 self.security_lockdown, self.subnet_nodes, self.cameras_active, self.security_active)
 
         return _save_obj
@@ -405,9 +403,6 @@ class GameLevel:
         monster.col = c
         self.dungeon_loc[r][c].occupant = monster
         self.monsters.append(monster)
-        
-    def get_player_start_loc(self):
-        return self.player_start_loc
 
     def initialize_dungeon_locs(self):
         self.dungeon_loc = []

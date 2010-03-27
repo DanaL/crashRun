@@ -53,15 +53,14 @@ class Prologue(GameLevel):
         _col = 4
         
         if self.dungeon_loc[_row][_col].occupant == '':
-            self.player_start_loc = (_row, _col)
+            return (_row, _col)
         else:
             # The game placed a monster where we prefer to start the player.
             # So put him somewhere else.
             for r in (-1, 0, 1):
                 for c in (-1, 0, 1):
                     if self.is_clear(_row + r, _col + c):
-                        self.player_start_loc = (_row+r, _col+c)
-                        return
+                        return (_row+r, _col+c)
                         
             # If we get to this point, we're in a totally improbable configuraiton where
             # the usual starting location and all adjacent squares are surrounded.  So just
@@ -70,15 +69,14 @@ class Prologue(GameLevel):
                 _row = randrange(1, self.lvl_length - 1)
                 _col = randrange(1, self.lvl_width - 1)
                 if self.is_clear(_row, _col):
-                    self.player_start_loc = (_row, _col)
-                    return
+                    return (_row, _col)
             
     def generate_level(self):
         self.map = self.__generate_map()
         for x in range(1,11):
             self.add_monster()
 
-        self.set_start_loc_for_player()
+        self.entrances = [[self.set_start_loc_for_player(), None]]
             
     def __generate_map(self):
         _map = []
@@ -116,8 +114,6 @@ class Prologue(GameLevel):
         # generate the tower section
         _tower = TowerFactory(length = 20, width = 30, top = True, bottom = False)
         _tower.gen_map()
-        self.upStairs = None
-        self.downStairs = _tower.downStairs
         
         for r in range(0, 20):
             for c in range(0, 30):
@@ -165,5 +161,7 @@ class Prologue(GameLevel):
             _box.add_item(_if.gen_item('flare', 1))
         if randrange(4) > 2:
             _box.add_item(_if.gen_item('medkit', 1))
-            
+        
+        self.exists = [(_tower.downStairs, None)]
+        
         return _map
