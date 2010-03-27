@@ -1175,29 +1175,6 @@ class DungeonMaster:
         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
         self.__item_hits_ground(self.curr_lvl, item_row, item_col, item)
         self.update_sqr(self.curr_lvl, item_row, item_col)  
-        
-    def player_reload_firearm(self):
-        try:
-            _p = self.player
-            _inv = _p.inventory
-            _ch = self.dui.pick_inventory_item('Reload which item (Enter to repeat last)?')
-            _item = _inv.get_item(_ch)
-
-            if _item == '':
-                if hasattr(_p, 'reload_memory'):
-                    if _inv.contains_item(_p.reload_memory[0]):
-                        self.add_ammo_to_gun(_p, _p.reload_memory[0], _p.reload_memory[1])
-                    else:
-                        self.dui.display_message('You no longer have that item.')
-                else:
-                    self.dui.display_message('Huh?')
-            elif _item.get_category() != 'Firearm':
-                self.dui.display_message("That isn't a firearm.")
-            else:
-                _ch = self.dui.pick_inventory_item('Reload with what?')
-                self.add_ammo_to_gun(_p, _item, _ch)
-        except NonePicked:
-                self.dui.clear_msg_line()
 
     def add_ammo_to_gun(self, agent, gun, ammo_pick):
         if agent == self.player:

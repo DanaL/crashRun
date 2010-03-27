@@ -124,7 +124,8 @@ class Player(BaseAgent):
         self.events = []
         self.software = Wetboard(3,10)
         self.weapon_configs = {}
-    
+        self.reload_memory = None
+        
     def add_hp(self, delta):
         BaseAgent.add_hp(self, delta)
         self.dm.dui.update_status_bar()

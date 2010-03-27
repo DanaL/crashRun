@@ -322,7 +322,27 @@ class MeatspaceCC(CommandContext):
         self.dui.display_message('You see nothing hackable nearby.')
         
     def reload_firearm(self):
-        self.dm.player_reload_firearm()
+        try:
+            _p = self.dm.player
+            _inv = _p.inventory
+            _ch = self.dui.pick_inventory_item('Reload which item (Enter to repeat last)?')
+            _item = _inv.get_item(_ch)
+
+            if _item == '':
+                if _p.reload_memory:
+                    if _inv.contains_item(_p.reload_memory[0]):
+                        self.dm.add_ammo_to_gun(_p, _p.reload_memory[0], _p.reload_memory[1])
+                    else:
+                        self.dui.display_message('You no longer have that item.')
+                else:
+                    self.dui.display_message('Huh?')
+            elif _item.get_category() != 'Firearm':
+                self.dui.display_message("That isn't a firearm.")
+            else:
+                _ch = self.dui.pick_inventory_item('Reload with what?')
+                self.dm.add_ammo_to_gun(_p, _item, _ch)
+        except NonePicked:
+                self.dui.clear_msg_line()
         
     def remove_armour(self):
         _player = self.get_player()
