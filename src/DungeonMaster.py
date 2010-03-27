@@ -1033,6 +1033,8 @@ class DungeonMaster:
 
         if self.curr_lvl.level_num == 0:
             _msg = "You fire straight up into the air."
+        elif isinstance(_sqr, Terrain.HoleInCeiling):
+            _msg = "You fire into the hole in the ceiling."
         else:
             _msg = "You shoot at the ceiling and are rewarded with a shower of dust and rubble."
         self.dui.display_message(_msg)
