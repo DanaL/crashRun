@@ -519,7 +519,6 @@ class DungeonMaster:
                 
     def save_and_exit(self):
         self.dui.display_message('Saving...')
-        self.player.perform_action = ''
         self.player.dm = ''
         
         _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
