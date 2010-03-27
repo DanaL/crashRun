@@ -328,8 +328,8 @@ class GameLevel:
                 self.dm.handle_explosion(self, event[1],event[2],event[3])
                 # bomb is returned, return tile to what it was
                 _sqr = self.map[event[1]][event[2]]
-                if isinstance(_sqr,Terrain.Trap):
-                    self.map[event[1]][event[2]] = _sqr.previousTile
+                if isinstance(_sqr, Terrain.Trap) and hasattr(_sqr, "previous_tile"):
+                    self.map[event[1]][event[2]] = _sqr.previous_tile
                     self.dm.update_sqr(self, event[1], event[2])
             elif event[0] == 'extinguish':
                 self.extinguish_light_source(event[3])

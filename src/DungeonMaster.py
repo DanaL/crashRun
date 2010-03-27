@@ -607,8 +607,8 @@ class DungeonMaster:
             
     def player_moves_down_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previousTile, Terrain.DownStairs):
-            sqr = sqr.previousTile
+        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previous_tile, Terrain.DownStairs):
+            sqr = sqr.previous_tile
 
         if isinstance(sqr,Terrain.DownStairs):
             if  sqr.activated:
@@ -621,8 +621,8 @@ class DungeonMaster:
 
     def player_moves_up_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previousTile, Terrain.UpStairs):
-            sqr = sqr.previousTile
+        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previous_tile, Terrain.UpStairs):
+            sqr = sqr.previous_tile
 
         if isinstance(sqr, Terrain.UpStairs):
             if sqr.activated:
@@ -1439,7 +1439,7 @@ class DungeonMaster:
             self.player.apply_effect(_drug_effect, _instant)
         self.dui.display_message(hit.message)
         
-    def player_set_bomb(self,bomb):
+    def player_set_bomb(self, bomb):
         if bomb.timed:
             timer = self.dui.query_user('Set timer for how many turns:')
             
@@ -1449,9 +1449,9 @@ class DungeonMaster:
                 trap = Terrain.Trap('bomb')
                 trap.explosive = bomb
                 trap.revealed = True # player knows where his own bomb is
-                trap.previousTile = self.curr_lvl.map[self.player.row][self.player.col]
+                trap.previous_tile = self.curr_lvl.map[self.player.row][self.player.col]
                 self.curr_lvl.map[self.player.row][self.player.col] = trap
-                self.curr_lvl.eventQueue.push( ('explosion',self.player.row,self.player.col,trap), self.turn+turns)
+                self.curr_lvl.eventQueue.push( ('explosion',self.player.row,self.player.col, trap), self.turn+turns)
                 self.dui.display_message('You set the bomb.  Best clear out.')
             except ValueError:
                 self.player.inventory.add_item(bomb)
@@ -1753,10 +1753,10 @@ class DungeonMaster:
         if not isinstance(tile, Terrain.Trap):
             return False
         
-        if not hasattr(tile, "previousTile"):
+        if not hasattr(tile, 'previous_tile'):
             return False
-            
-        return isinstance(tile.previousTile, Terrain.DownStairs) or isinstance(tile.previousTile, Terrain.UpStairs)
+        
+        return tile.previous_tile.get_type() in (Terrain.DOWN_STAIRS, Terrain.UP_STAIRS)    
         
     def __check_ground(self, r, c):
         _loc = self.curr_lvl.dungeon_loc[r][c]
@@ -1827,9 +1827,17 @@ class DungeonMaster:
             victim.damaged(self, level, dmg, '', ['explosion'])
             
     def handle_explosion(self, level, row, col, source):
-        self.alert_player_to_event(row, col, level,'BOOM!!', False)
+        self.alert_player_to_event(row, col, level, 'BOOM!!', False)
         explosive = source.explosive
         
+        if explosive.get_name(1) == "C4 Charge":
+            _sqr = self.curr_lvl.map[row][col]
+            if _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS:
+                self.alert_player(row, col, "The lift is destroyed in the explosion")
+                _trap = Terrain.Trap("gaping hole")
+                _trap.revealed = True
+                self.curr_lvl.map[row][col] = _trap
+                
         _noise = Noise(10, source, row, col, 'explosion')
         self.curr_lvl.monsters_react_to_noise(explosive.blast_radius * 1.5, _noise)
                     
@@ -1868,7 +1876,7 @@ class DungeonMaster:
 
         for key in areaOfEffect.keys():
             level.dungeon_loc[key[0]][key[1]].temp_tile = ''
-            self.update_sqr(level, key[0],key[1])
+            self.update_sqr(level, key[0], key[1])
         
         if explosive.get_name(1) != 'flash bomb':   
             level.begin_security_lockdown()
