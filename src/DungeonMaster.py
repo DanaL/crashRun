@@ -361,18 +361,25 @@ class DungeonMaster:
         return _monsters
     
     def agent_steps_on_hole(self, victim):
-        print 'flag'
+        _mr = MessageResolver(self, self.dui)
+        _mr.simple_verb_action(victim, ' %s into the hole.', ['fall'], True)
+        self.__determine_next_level('down', (victim.row, victim.col))
         
     def __determine_next_level(self, direction, exit_point):
+        _exit_sqr = self.curr_lvl.map[exit_point[0]][exit_point[1]]
         if direction == 'up':
             next_level_num = self.curr_lvl.level_num - 1
         else:
             next_level_num = self.curr_lvl.level_num + 1
 
-        _monsters = self.__check_for_monsters_surrounding_stairs()
-        if len(_monsters) > 0:
-            _monster = choice(_monsters)
-            self.__remove_monster_from_level(self.curr_lvl, _monster, _monster.row, _monster.col)
+        if not isinstance(_exit_sqr, Terrain.GapingHole):
+            # Monsters don't jump into the hole after the player...
+            _monsters = self.__check_for_monsters_surrounding_stairs()
+            if len(_monsters) > 0:
+                _monster = choice(_monsters)
+                self.__remove_monster_from_level(self.curr_lvl, _monster, _monster.row, _monster.col)
+            else:
+                _monster = None
         else:
             _monster = None
 
@@ -402,7 +409,12 @@ class DungeonMaster:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
             elif self.curr_lvl.level_num == 13:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
-                
+        
+        # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
+        # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
+        if isinstance(_exit_sqr, Terrain.GapingHole):
+            self.curr_lvl.map[self.player.row][self.player.col] = Terrain.HoleInCeiling()
+        
     def start_game(self, dui):
         self.prefs = get_preferences()
 
@@ -626,8 +638,13 @@ class DungeonMaster:
 
     def player_moves_up_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previous_tile, Terrain.UpStairs):
-            sqr = sqr.previous_tile
+        if isinstance(sqr, Terrain.Trap):
+            if isinstance(sqr, Terrain.HoleInCeiling):
+                self.dui.display_message("You can't jump high enough.")
+                self.player.energy -= STD_ENERGY_COST
+                return
+            elif isinstance(sqr.previous_tile, Terrain.UpStairs):
+                sqr = sqr.previous_tile
 
         if isinstance(sqr, Terrain.UpStairs):
             if sqr.activated:
@@ -1577,10 +1594,10 @@ class DungeonMaster:
         return not self.sight_matrix.has_key(j)
     
     # This only really deals with visual information, should add audio, also
-    def alert_player(self,r,c,message):
+    def alert_player(self, r, c, message, pause_for_more=False):
         if self.sight_matrix.has_key((r,c)):
             message = message[0].upper() + message[1:]
-            self.dui.display_message(message)
+            self.dui.display_message(message, pause_for_more)
 
     def can_player_see_location(self, r, c, level):
         return level == self.curr_lvl and self.sight_matrix.has_key((r,c))
@@ -1780,7 +1797,8 @@ class DungeonMaster:
             self.player_steps_in_acid_pool(r, c)
             
         if isinstance(_sqr, Terrain.Trap):
-            self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
+            if not isinstance(_sqr, Terrain.HoleInCeiling):
+                self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
             self.__player_steps_on_trap(_sqr)
                     
         if self.curr_lvl.size_of_item_stack(r,c) == 1:
@@ -1840,7 +1858,6 @@ class DungeonMaster:
             if _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS:
                 self.alert_player(row, col, "The lift is destroyed in the explosion")
                 _trap = Terrain.GapingHole()
-                _trap.revealed = True
                 self.curr_lvl.map[row][col] = _trap
                 
         _noise = Noise(10, source, row, col, 'explosion')

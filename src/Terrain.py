@@ -285,10 +285,20 @@ class LogicBomb(Trap):
 class GapingHole(Trap):
     def __init__(self):
         Trap.__init__(self, 'gaping hole', 'darkgrey', 'grey')
-    
+        self.revealed = True
+        
     def trigger(self, dm, victim):
         dm.agent_steps_on_hole(victim)
+
+class HoleInCeiling(Trap):
+    def __init__(self):
+        Trap.__init__(self, 'hole in ceiling', 'yellow-orange', 'yellow')
+        self.revealed = True
         
+    def trigger(self, dm, victim):
+        if victim == dm.player:
+            dm.alert_player(victim.row, victim.col, "There is a hole in the ceiling above you.")
+            
 class TerrainFactory:
     def __init__(self):
         self.__terrain_cache = {}

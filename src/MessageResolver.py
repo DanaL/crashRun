@@ -92,12 +92,12 @@ class MessageResolver(object):
 
         self.dm.alert_player(agent.row, agent.col, _msg)
         
-    def simple_verb_action(self, subject, text, verbs):
+    def simple_verb_action(self, subject, text, verbs, pause_for_more=False):
         verbs = tuple([self.parse(subject, v) for v in verbs])
         _name = self.resolve_name(subject)
         _mess = _name + (text % verbs)
         
-        self.dm.alert_player(subject.row, subject.col, _mess)
+        self.dm.alert_player(subject.row, subject.col, _mess, pause_for_more)
 
     def shot_message(self, victim):
         _verb = self.parse(victim, 'etre')
