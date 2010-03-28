@@ -1969,6 +1969,8 @@ class DungeonMaster:
         raise TurnInterrupted
     
     def __check_trajectory(self, start_r, start_c, target_r, target_c):
+        if start_r == target_r and start_c == target_c:
+            return True
         _pts = bresenham_line(start_r, start_c, target_r, target_c)
         for _pt in _pts:
             if not self.curr_lvl.map[_pt[0]][_pt[1]].is_passable():
