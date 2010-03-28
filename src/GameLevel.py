@@ -16,6 +16,7 @@
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
 from CombatResolver import MeleeResolver
+import Agent
 import Items
 from Items import ItemFactory
 import Terrain
@@ -203,10 +204,14 @@ class GameLevel:
                     _passable.append((_entrance[0] + r, _entrance[1] + c))
 
         for _thing in things:
-            _s = choice(_passable)
-            if isinstance(_thing, Items.WithOffSwitch) and _thing.on:
-                _thing.on = False
-            self.dm.item_hits_ground(self, _s[0], _s[1], _thing)
+            if isinstance(_thing, Agent.BaseAgent):
+                _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
+                self.add_monster_to_dungeon(_thing, _sqr[0], _sqr[1])
+            else:
+                _s = choice(_passable)
+                if isinstance(_thing, Items.WithOffSwitch) and _thing.on:
+                    _thing.on = False
+                self.dm.item_hits_ground(self, _s[0], _s[1], _thing)
             
     def size_of_item_stack(self, row, col):
         _loc = self.dungeon_loc[row][col]

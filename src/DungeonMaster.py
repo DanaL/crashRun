@@ -361,10 +361,18 @@ class DungeonMaster:
         return _monsters
     
     def agent_steps_on_hole(self, victim):
+        if victim.has_condition('flying'):
+            return
+            
         _mr = MessageResolver(self, self.dui)
         _mr.simple_verb_action(victim, ' %s into the hole.', ['fall'], True)
-        self.__determine_next_level('down', (victim.row, victim.col))
-        
+        if victim == self.player:
+            self.__determine_next_level('down', (victim.row, victim.col))
+        else:
+            self.__remove_monster_from_level(self.curr_lvl, victim, victim.row, victim.col)
+            self.update_sqr(self.curr_lvl,  victim.row, victim.col)
+            self.curr_lvl.things_fallen_in_holes.append(victim)
+            
     def __determine_next_level(self, direction, exit_point):
         _exit_sqr = self.curr_lvl.map[exit_point[0]][exit_point[1]]
         _things_to_transfer = []
@@ -811,7 +819,7 @@ class DungeonMaster:
                     self.update_sqr(self.curr_lvl, _r, _c)
                     self.player.energy -= STD_ENERGY_COST
                 except TrapSetOff:
-                    self.__player_steps_on_trap(_tile)
+                    self.agent_steps_on_trap(self.player, _tile)
             else:
                 self.dui.display_message("You don't have the skills to hack that.")
         else:
@@ -1621,7 +1629,7 @@ class DungeonMaster:
                 self.refresh_player_view()
 
     # Update a monster's location, and update the player's view if necessary
-    def move_monster(self,monster,h_move,v_move):
+    def move_monster(self, monster, h_move, v_move):
         if monster.has_condition('dazed'):
             _dt = get_rnd_direction_tuple()
             next_row = monster.row + _dt[0]
@@ -1633,10 +1641,11 @@ class DungeonMaster:
         if not self.is_clear(next_row,next_col):
             raise IllegalMonsterMove
         else:
-            self.__agent_moves_to_sqr(next_row,next_col,monster)
             if monster.has_condition('dazed'):
                 self.alert_player(next_row, next_col, monster.get_name() + ' staggers wildly.')
-
+            self.__agent_moves_to_sqr(next_row, next_col, monster)
+            self.check_ground_effects(monster, next_row, next_col)
+            
     def update_sqr(self, level, r , c):
         if self.can_player_see_location(r, c, level):
             self.dui.update_view(self.get_sqr_info(r, c))
@@ -1732,7 +1741,8 @@ class DungeonMaster:
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
-        self.__check_ground(self.player.row, self.player.col)
+        self.tell_player_about_sqr(self.player.row, self.player.col)
+        self.check_ground_effects(self.player, self.player.row, self.player.col)
         
     def monster_killed(self, level, r, c, by_player):
         victim = level.dungeon_loc[r][c].occupant
@@ -1764,7 +1774,8 @@ class DungeonMaster:
         self.__agent_moves_to_sqr(next_r,next_c,self.player)
         self.curr_lvl.handle_stealth_check(self.player)
         self.update_player()
-        self.__check_ground(next_r,next_c)
+        self.tell_player_about_sqr(next_r, next_c)
+        self.check_ground_effects(self.player, next_r, next_c)
         
         if self.is_special_tile(self.player.row, self.player.col):
             self.player_moves_onto_a_special_sqr(self.player.row, self.player.col)
@@ -1788,10 +1799,11 @@ class DungeonMaster:
             return False
         
         return tile.previous_tile.get_type() in (Terrain.DOWN_STAIRS, Terrain.UP_STAIRS)    
-        
-    def __check_ground(self, r, c):
+    
+    def tell_player_about_sqr(self, r, c):
         _loc = self.curr_lvl.dungeon_loc[r][c]
         _sqr = self.curr_lvl.map[r][c]
+        
         if isinstance(_sqr,Terrain.DownStairs) or isinstance(_sqr, Terrain.UpStairs):
             self.dui.display_message('There is a lift access here.')
         if self.__was_stairs(_sqr):
@@ -1800,16 +1812,7 @@ class DungeonMaster:
             self.dui.display_message('There is an exit node here.')
         elif _sqr.get_type() == SUBNET_NODE:
             self.dui.display_message('There is a subnet node access point here.')
-        elif _sqr.get_type() == TOXIC_WASTE:
-            self.player_steps_in_toxic_waste(r, c)
-        elif _sqr.get_type() == ACID_POOL:
-            self.player_steps_in_acid_pool(r, c)
-            
-        if isinstance(_sqr, Terrain.Trap):
-            if not isinstance(_sqr, Terrain.HoleInCeiling):
-                self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
-            self.__player_steps_on_trap(_sqr)
-                    
+        
         if self.curr_lvl.size_of_item_stack(r,c) == 1:
             item_name = _loc.item_stack[0].get_name(True)
             msg = 'You see ' + get_correct_article(item_name)
@@ -1818,10 +1821,25 @@ class DungeonMaster:
             self.dui.display_message(msg)
         elif self.curr_lvl.size_of_item_stack(r,c) > 1:
             self.dui.display_message('There are several items here.')
-
-    def __player_steps_on_trap(self, trap):
+        
+    def check_ground_effects(self, agent, r, c):
+        _loc = self.curr_lvl.dungeon_loc[r][c]
+        _sqr = self.curr_lvl.map[r][c]
+        
+        if _sqr.get_type() == TOXIC_WASTE:
+            self.agent_steps_in_toxic_waste(agent, r, c)
+        elif _sqr.get_type() == ACID_POOL:
+            self.agent_steps_in_acid_pool(agent, r, c)
+            
+        if isinstance(_sqr, Terrain.Trap):
+            if not isinstance(_sqr, Terrain.HoleInCeiling):
+                self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
+            self.agent_steps_on_trap(agent, _sqr)
+                    
+        
+    def agent_steps_on_trap(self, agent, trap):
         trap.revealed = True
-        trap.trigger(self, self.player)
+        trap.trigger(self, agent)
                 
     # Eventually, weight of the item will be a factor
     # I could get rid of the conditionals by have items know their range modifier...
@@ -1941,26 +1959,30 @@ class DungeonMaster:
         
         self.__end_of_game(_score)
     
-    def player_steps_in_acid_pool(self, row, col):
-        self.dui.display_message('Acid!')
+    def agent_steps_in_acid_pool(self, agent, row, col):
+        if agent == self.player:
+            self.dui.display_message('Acid!')
         
-        _shoes = self.player.inventory.get_armour_in_location('boots')
+        _shoes = agent.inventory.get_armour_in_location('boots')
         if _shoes != '':
-            self.dui.display_message('The acid eats through your shoes.')
-            self.player.inventory.destroy_item(_shoes)
-            self.player.remove_effects(_shoes)
-            self.player.calc_ac()
-            self.dui.update_status_bar()
+            agent.inventory.destroy_item(_shoes)
+            agent.remove_effects(_shoes)
+            agent.calc_ac()
+            if agent == self.player:
+                self.dui.display_message('The acid eats through your shoes.')
+                self.dui.update_status_bar()
         else:
             _dmg = randrange(5,11)
-            self.player.damaged(self, self.curr_lvl, _dmg, '', ['acid'])
+            agent.damaged(self, self.curr_lvl, _dmg, '', ['acid'])
             
-    def player_steps_in_toxic_waste(self, row, col):
-        self.dui.display_message('Gross! You step in toxic waste.')
+    def agent_steps_in_toxic_waste(self, agent, row, col):
+        if agent == self.player:
+            self.dui.display_message('Gross! You step in toxic waste.')
+            self.dui.display_message('You feel dizzy.')
+             
         _dmg = randrange(1,11)
-        self.player.damaged(self, self.curr_lvl, _dmg, '', ['toxic waste'])
-        self.dui.display_message('You feel dizzy.')
-        self.player.dazed('')
+        agent.damaged(self, self.curr_lvl, _dmg, '', ['toxic waste'])
+        agent.dazed('')
         
     def __player_killed_in_cyberspace(self):
         self.dui.display_message('You have been expunged.', True)
@@ -2196,7 +2218,7 @@ class DungeonMaster:
                         _picks.append((_r+r,_c+c))
         
             _pick = choice(_picks)
-            if _request == 'Temporary Squirrel':
+            if _request == 'temporary squirrel':
                 from Agent import TemporarySquirrel
                 _monster = TemporarySquirrel(self, _pick[0], _pick[1])
             else:

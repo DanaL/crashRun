@@ -144,10 +144,13 @@ def _extraLargeCockroach(dm,row,col):
             row=row, col=col, xp_value=4, gender='male', level=3)
 
 def _giantBat(dm,row,col):
-    return AltPredator(vision_radius=8, ac=17, hp_low=10, hp_high=20, dmg_dice=4, dmg_rolls=2, ab=0,
+    _gb = AltPredator(vision_radius=8, ac=17, hp_low=10, hp_high=20, dmg_dice=4, dmg_rolls=2, ab=0,
             dm=dm, ch='b', fg='brown', bg='black', lit='brown', name='giant bat', row=row,
             col=col, xp_value=12, gender='male', level=4)
-
+    _gb.conditions.append((('flying', 0, 0), _gb))
+    
+    return _gb
+    
 def _gridBug(dm, row, col):
     return GridBug(dm, row, col)
 
@@ -307,9 +310,12 @@ def _troll(dm, row, col):
     return Troll(dm=dm, row=row, col=col)
     
 def _turkeyVulture(dm,row,col):
-    return AltPredator(vision_radius=8, ac=12, hp_low=2, hp_high=8, dmg_dice=3, dmg_rolls=1, ab=0,
+    _tv = AltPredator(vision_radius=8, ac=12, hp_low=2, hp_high=8, dmg_dice=3, dmg_rolls=1, ab=0,
         dm=dm, ch='b', fg='brown', bg='black', lit='lightbrown', name='turkey vulture',
         row=row, col=col, xp_value=2, gender='male', level=1)
+    _tv.conditions.append((('flying', 0, 0), _tv))
+    
+    return _tv
     
 def _twoBitHacker(dm, row, col):
     _name = 'two-bit %s hacker' % (choice(['American','Chinese','Canadian','Estonian','German','Nigerian','Russian']))

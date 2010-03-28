@@ -1275,6 +1275,7 @@ class SurveillanceDrone(CleanerBot):
         BaseMonster.__init__(self, vision_radius=5, ac=16, hp_low=2, hp_high=10, dmg_dice=2, 
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='blue', bg='black', lit='blue', 
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
+        self.conditions.append((('flying', 0, 0), self))
         
     def perform_action(self):
         self.move()
