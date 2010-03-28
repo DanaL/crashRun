@@ -367,11 +367,14 @@ class DungeonMaster:
         
     def __determine_next_level(self, direction, exit_point):
         _exit_sqr = self.curr_lvl.map[exit_point[0]][exit_point[1]]
+        _things_to_transfer = []
         if direction == 'up':
             next_level_num = self.curr_lvl.level_num - 1
         else:
             next_level_num = self.curr_lvl.level_num + 1
-
+            _things_to_transfer += self.curr_lvl.things_fallen_in_holes
+            self.curr_lvl.things_fallen_in_holes = []
+            
         if not isinstance(_exit_sqr, Terrain.GapingHole):
             # Monsters don't jump into the hole after the player...
             _monsters = self.__check_for_monsters_surrounding_stairs()
@@ -415,6 +418,10 @@ class DungeonMaster:
         if isinstance(_exit_sqr, Terrain.GapingHole):
             self.curr_lvl.map[self.player.row][self.player.col] = Terrain.HoleInCeiling()
         
+        if _things_to_transfer:
+            self.curr_lvl.things_fell_into_level(_things_to_transfer)
+            self.refresh_player_view()
+            
     def start_game(self, dui):
         self.prefs = get_preferences()
 
@@ -578,7 +585,7 @@ class DungeonMaster:
         self.dui.display_message(_monster_name + ' fires a missile.')
             
         _explosion = Items.Explosion('missle', dmg_dice, dmg_rolls, radius)
-        self.__item_hits_ground(self.curr_lvl, target_r, target_c, _explosion)
+        self.item_hits_ground(self.curr_lvl, target_r, target_c, _explosion)
     
     def handle_mathematics_attack(self, attacker, victim):
         try:
@@ -770,7 +777,7 @@ class DungeonMaster:
             self.alert_player(row, col, 'The box was empty.')
         else:
             for c in box.contents:
-                self.__item_hits_ground(self.curr_lvl, row, col, c)
+                self.item_hits_ground(self.curr_lvl, row, col, c)
 
     # If there is just one adjacent door, pick it, otherwise return None
     def get_adjacent_door(self, row, col, open):
@@ -924,7 +931,7 @@ class DungeonMaster:
                 _msg = 'There is no more room in your backpack for the '
                 _msg += i.get_name() + '.'
                 self.dui.display_message(_msg)
-            self.__item_hits_ground(self.curr_lvl, agent.row, agent.col, i)
+            self.item_hits_ground(self.curr_lvl, agent.row, agent.col, i)
             raise PickUpAborted
 
     def __build_pick_up_menu(self,stack):
@@ -979,7 +986,7 @@ class DungeonMaster:
 
             if item.get_category() == 'Tool' and item.get_name(1) == 'lit flare':
                 self.dui.display_message('Youch!  You burn your hand on the lit flare!')
-                self.__item_hits_ground(self.curr_lvl, self.player.row,self.player.col,item)
+                self.item_hits_ground(self.curr_lvl, self.player.row,self.player.col,item)
                 self.player.damaged(self, self.curr_lvl, randrange(1,5), '', ['burn'])
                 self.player.energy -= STD_ENERGY_COST
                 return
@@ -1125,7 +1132,7 @@ class DungeonMaster:
     def throw_item_down(self, item):
         _p = self.player
         self.dui.display_message("You toss it to the ground at your feet.")
-        self.__item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
+        self.item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
         
     def throw_item_up(self, item):
         _p = self.player
@@ -1135,7 +1142,7 @@ class DungeonMaster:
             _dmg = item.dmg_roll() 
             _p.damaged(self, self.curr_lvl, _dmg, item)
              
-        self.__item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
+        self.item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
         
     # function to handle when player throws something
     # should be broken up into a few parts for clarity
@@ -1197,7 +1204,7 @@ class DungeonMaster:
             sleep(ANIMATION_PAUSE) # do I really want to bother doing this?
 
         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
-        self.__item_hits_ground(self.curr_lvl, item_row, item_col, item)
+        self.item_hits_ground(self.curr_lvl, item_row, item_col, item)
         self.update_sqr(self.curr_lvl, item_row, item_col)  
 
     def add_ammo_to_gun(self, agent, gun, ammo_pick):
@@ -1302,7 +1309,7 @@ class DungeonMaster:
         else:
             self.dui.display_message('You drop your ' + item.get_full_name() + '.')
             self.player.remove_effects(item)
-            self.__item_hits_ground(self.curr_lvl, self.player.row, self.player.col, item)
+            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, item)
             self.player.energy -= STD_ENERGY_COST
 
     def access_software(self, sw, exe_mess):
@@ -1330,7 +1337,7 @@ class DungeonMaster:
             _file = _files[_pick]
             _files[_pick] = ''
             self.dui.display_message('You drop the ' + _file.get_name() + '.')
-            self.__item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _file)
+            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _file)
         except UnableToAccess:
             pass
             
@@ -1487,7 +1494,7 @@ class DungeonMaster:
         _range = self.__calc_thrown_range(self.player,grenade)
         _target = self.__pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
         _item = Items.Explosion('grenade', 10, 4, 2)
-        self.__item_hits_ground(self.curr_lvl, _target[0], _target[1], _item)
+        self.item_hits_ground(self.curr_lvl, _target[0], _target[1], _item)
 
     def player_throw_item(self,i):
         was_readied = False
@@ -1541,7 +1548,7 @@ class DungeonMaster:
         return True
     
     def get_terrain_tile(self, loc, r, c, visible, omniscient):
-        if visible and loc.temp_tile <> '':
+        if visible and loc.temp_tile != '':
             return loc.temp_tile
         elif visible and self.is_occupant_visible_to_player(self.curr_lvl, loc.occupant, omniscient):
             return loc.occupant
@@ -1735,7 +1742,7 @@ class DungeonMaster:
             items = victim.inventory.get_dump()
             
             for i in items:
-                self.__item_hits_ground(level, r, c, i)
+                self.item_hits_ground(level, r, c, i)
 
         self.mr.monster_killed(victim, by_player)
         self.__remove_monster_from_level(level, victim, r, c)
@@ -1831,7 +1838,16 @@ class DungeonMaster:
             
         return range
             
-    def __item_hits_ground(self, level, r, c, item):
+    def item_hits_ground(self, level, r, c, item):
+        # If an item lands on a hole it should fall to the next level
+        if isinstance(self.curr_lvl.map[r][c], Terrain.GapingHole):
+            self.curr_lvl.dungeon_loc[r][c].temp_tile = ''
+            self.update_sqr(level, r, c)
+            self.alert_player(r, c, item.get_name() + ' falls down the hole.')
+            if not isinstance(item, Items.Explosion) and not isinstance(item, Items.LitFlare):
+                self.curr_lvl.things_fallen_in_holes.append(item)
+            return
+            
         if isinstance(item, Items.Explosion):
             self.handle_explosion(level, r, c, item)
         else:
@@ -2037,7 +2053,7 @@ class DungeonMaster:
         self.alert_player(target[0], target[1], 'You light the ' + flare.get_name(1) + '.')
         self.curr_lvl.dungeon_loc[target[0]][target[1]].temp_tile = ''
         self.curr_lvl.eventQueue.push( ('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare), self.turn + _lit_flare.duration)
-        self.__item_hits_ground(self.curr_lvl, target[0], target[1], _lit_flare)
+        self.item_hits_ground(self.curr_lvl, target[0], target[1], _lit_flare)
         self.curr_lvl.add_light_source(_lit_flare)
         self.refresh_player_view()
         self.player.energy -= STD_ENERGY_COST
@@ -2157,7 +2173,7 @@ class DungeonMaster:
         try:
             _if = ItemFactory()
             _item = _if.gen_item(_request,1)
-            self.__item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _item)
+            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _item)
         except ItemDoesNotExist:
             self.dui.clear_msg_line()
             self.dui.display_message('Unknown item.')

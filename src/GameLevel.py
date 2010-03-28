@@ -150,6 +150,7 @@ class GameLevel:
         self.security_active = True
         self.entrances = []
         self.exits = []
+        self.things_fallen_in_holes = []
         
     # It would be nice if instead of alerting all monsters within a 
     # certain radius, if the sound were blocked by walls, muffled by
@@ -191,6 +192,22 @@ class GameLevel:
             
         self.dungeon_loc[row][col].item_stack.append(item)
     
+    # This is assuming for the moment that none of the "things" are monsters
+    def things_fell_into_level(self, things):
+        # scatter the items around
+        _entrance = self.entrances[0][0]
+        _passable = []
+        for r in range(-1, 2):
+            for c in range(-1, 2):
+                if self.map[_entrance[0] + r][_entrance[1] + c].is_passable():
+                    _passable.append((_entrance[0] + r, _entrance[1] + c))
+
+        for _thing in things:
+            _s = choice(_passable)
+            if isinstance(_thing, Items.WithOffSwitch) and _thing.on:
+                _thing.on = False
+            self.dm.item_hits_ground(self, _s[0], _s[1], _thing)
+            
     def size_of_item_stack(self, row, col):
         _loc = self.dungeon_loc[row][col]
         if not hasattr(_loc, 'item_stack'): return 0
@@ -279,7 +296,8 @@ class GameLevel:
         _exit_point = (self.dm.player.row,self.dm.player.col)
         _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, 
                 self.category,self.level_num,_exit_point,self.cameras,self.entrances,self.exits,
-                self.security_lockdown, self.subnet_nodes, self.cameras_active, self.security_active)
+                self.security_lockdown, self.subnet_nodes, self.cameras_active, self.security_active,
+                self.things_fallen_in_holes)
 
         return _save_obj
         

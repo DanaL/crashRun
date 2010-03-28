@@ -63,7 +63,8 @@ def get_level_from_save_obj(level, obj):
     _subnet_nodes = obj[12]
     _cameras_active = obj[13]
     _security = obj[14]
-
+    _fallen = obj[15]
+    
     level.eventQueue = _eq
     level.map = _map
     level.dungeon_loc = _locations
@@ -76,6 +77,7 @@ def get_level_from_save_obj(level, obj):
     level.cameras_active = _cameras_active
     level.security_active = _security
     level.player_loc = _player_loc
+    level.things_fallen_in_holes = _fallen
     
     for _m in _monsters:
         _m.dm = level.dm
