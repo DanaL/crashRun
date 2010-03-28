@@ -1668,7 +1668,7 @@ class DungeonMaster:
             
         if hasattr(loc.tile,'revealed') and not loc.tile.revealed:
             loc.tile.revealed = True
-            self.alert_player(loc.r, loc.c, "You see " + ' ' + loc.tile.get_name(2) + ".")
+            self.alert_player(loc.r, loc.c, "You see " + loc.tile.get_name(2) + ".")
             self.update_sqr(self.curr_lvl, loc.r, loc.c)
             
         _occ = self.curr_lvl.dungeon_loc[loc.r][loc.c].occupant
@@ -1684,9 +1684,13 @@ class DungeonMaster:
         _pc = self.player.col
         _sqrs_to_draw = [] 
         self.sight_matrix = {}
-        _perception_roll = randrange(self.player.stats.get_intuition() + 5) 
-        _perception_roll += self.player.get_search_bonus(isinstance(self.curr_lvl, CyberspaceLevel))
-    
+        
+        if isinstance(self.curr_lvl, CyberspaceLevel):
+            _perception_roll = randrange(self.player.stats.get_intuition() + 5) 
+            _perception_roll += self.player.get_search_bonus()
+        else:
+            _perception_roll = 0
+            
         sc = Shadowcaster(self,self.player.vision_radius, _pr, _pc)
         _visible = sc.calc_visible_list()
             
@@ -1833,13 +1837,13 @@ class DungeonMaster:
             
         if isinstance(_sqr, Terrain.Trap):
             if not isinstance(_sqr, Terrain.HoleInCeiling):
-                self.alert_player(self.player.row, self.player.col,'You step on ' + _sqr.get_name(2) + "!")
+                _mr = MessageResolver(self, self.dui)
+                _mr.simple_verb_action(agent, ' %s on ' + _sqr.get_name(2) + "!", ['step'])
             self.agent_steps_on_trap(agent, _sqr)
                     
-        
     def agent_steps_on_trap(self, agent, trap):
         trap.revealed = True
-        trap.trigger(self, agent)
+        trap.trigger(self, agent, agent.row, agent.col)
                 
     # Eventually, weight of the item will be a factor
     # I could get rid of the conditionals by have items know their range modifier...
@@ -2106,7 +2110,7 @@ class DungeonMaster:
                 _sr = self.player.row+r
                 _sc = self.player.col+c
                 _sqr = self.curr_lvl.map[_sr][_sc]
-                if hasattr(_sqr,'revealed'):
+                if hasattr(_sqr, 'revealed') and not _sqr.revealed:
                     self.alert_player(_sr,_sc, "You find " + _sqr.get_name(2))
                     _sqr.revealed = True
                     self.update_sqr(self.curr_lvl,_sr,_sc)

@@ -375,37 +375,42 @@ class BaseAgent(BaseTile):
     def restore_vision(self):
         self.vision_radius = self.__std_vision_radius
     
-    def get_saving_throw_for_shock(self):
-        if hasattr(self,'stats'):
-            _saving_throw = self.stats.get_toughness()
-        else:
-            _saving_throw = self.level
-                
-        return _saving_throw
+    def get_toughness_saving_throw(self):
+        try:
+            return self.stats.get_toughness() / 2
+        except AttributeError:
+            return self.level
         
     def try_to_shake_off_shock(self):
-        _saving_throw =  self.get_saving_throw_for_shock()             
-        _roll = randrange(21)
-        
-        if _roll < _saving_throw:
+        _roll = randrange(20) + 1
+        if _roll < self.get_toughness_saving_throw():
             for _c in self.conditions:
                 if _c[0][0] == 'stunned':
                     self.remove_effect(_c[0], _c[1])
                     _mr = MessageResolver(self.dm, self.dm.dui)
-                    _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' shakes off the stun.'
-                    self.dm.alert_player(self.row, self.col, _msg)
+                    _mr.simple_verb_action(self, ' %s off the stun.', ['shake'])
             
     def shocked(self, attacker):
-        _saving_throw =  self.get_saving_throw_for_shock()    
+        _saving_throw =  self.get_toughness_saving_throw()    
         for _c in self.conditions:
             if _c[0][0] == 'shock immune':
                 return 
             elif _c [0][0] == 'grounded':
                 _saving_throw += _c[0][1]
                 
-        _roll = randrange(21)
-        if _roll == 20 or _roll > _saving_throw:
-            self.apply_effect((('stunned', 0, randrange(3, 6) + self.dm.turn), attacker), False)
+        _roll = randrange(20) + 1
+        if _roll == 1 or _roll < _saving_throw:
+            self.apply_effect((('stunned', 0, randrange(5, 10) + self.dm.turn), attacker), False)
+            _mr = MessageResolver(self.dm, self.dm.dui)
+            _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
+            self.dm.alert_player(self.row, self.col, _msg)
+    
+    # This is different from shocked in that is it a physical attack.  Concussion mine
+    # or some such, rather than electricity. This one also lasts until they shake it off.
+    def stun_attack(self, attacker):
+        _roll = randrange(20) + 1
+        if _roll == 20 or _roll > self.get_toughness_saving_throw():
+            self.apply_effect((('stunned', 0, 0), attacker), False)
             _mr = MessageResolver(self.dm, self.dm.dui)
             _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
             self.dm.alert_player(self.row, self.col, _msg)

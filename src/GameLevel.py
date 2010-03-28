@@ -212,6 +212,10 @@ class GameLevel:
                 if isinstance(_thing, Items.WithOffSwitch) and _thing.on:
                     _thing.on = False
                 self.dm.item_hits_ground(self, _s[0], _s[1], _thing)
+    
+    def remove_trap(self, row, col):
+        _tf = TerrainFactory()
+        self.map[row][col] = _tf.get_terrain_tile(FLOOR)
             
     def size_of_item_stack(self, row, col):
         _loc = self.dungeon_loc[row][col]

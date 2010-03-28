@@ -270,34 +270,43 @@ class Trap(TerrainTile):
     def get_ch(self):
         return '^' if self.revealed else '.'
         
-    def trigger(self, dm, victim):
+    def trigger(self, dm, victim, row, col):
         pass
         
 class LogicBomb(Trap):
     def __init__(self):
         Trap.__init__(self, 'logic bomb', 'darkgreen', 'green')
         
-    def trigger(self, dm, victim):
+    def trigger(self, dm, victim, row, col):
         if victim == dm.player:
-            dm.alert_player(dm.player.row, dm.player.col, 'The shock severs your connection.')
+            dm.alert_player(row, col, 'The shock severs your connection.')
             dm.player_forcibly_exits_cyberspace()
 
+class ConcussionMine(Trap):
+    def __init__(self):
+        Trap.__init__(self, 'concussion mine', 'grey', 'white')
+    
+    def trigger(self, dm, victim, row, col):
+        dm.dui.display_message("Whomp!")
+        dm.curr_lvl.remove_trap(row, col)
+        victim.stun_attack(self)
+        
 class GapingHole(Trap):
     def __init__(self):
         Trap.__init__(self, 'gaping hole', 'darkgrey', 'grey')
         self.revealed = True
         
-    def trigger(self, dm, victim):
+    def trigger(self, dm, victim, row, col):
         dm.agent_steps_on_hole(victim)
-
+        
 class HoleInCeiling(Trap):
     def __init__(self):
         Trap.__init__(self, 'hole in ceiling', 'yellow-orange', 'yellow')
         self.revealed = True
         
-    def trigger(self, dm, victim):
+    def trigger(self, dm, victim, row, col):
         if victim == dm.player:
-            dm.alert_player(victim.row, victim.col, "There is a hole in the ceiling above you.")
+            dm.alert_player(row, col, "There is a hole in the ceiling above you.")
             
 class TerrainFactory:
     def __init__(self):
