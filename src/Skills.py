@@ -67,7 +67,7 @@ class SkillTable(object):
         self.__skills['Robot Psychology'] = Skill('Robot Psychology','Tech')
         self.__skills['Wetware Admin'] = Skill('Wetware Admin','Tech')
         
-        self.__skills['Bomb Difusing'] = Skill('Bomb Difusing','Subterfuge')
+        self.__skills['Bomb Defusing'] = Skill('Bomb Defusing','Subterfuge')
         self.__skills['Lock Picking'] = Skill('Lock Picking','Subterfuge')
         self.__skills['Stealth'] = Skill('Stealth','Subterfuge')
 

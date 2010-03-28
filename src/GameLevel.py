@@ -216,7 +216,8 @@ class GameLevel:
     def remove_trap(self, row, col):
         _tf = TerrainFactory()
         self.map[row][col] = _tf.get_terrain_tile(FLOOR)
-            
+        self.dm.update_sqr(self, row, col)
+        
     def size_of_item_stack(self, row, col):
         _loc = self.dungeon_loc[row][col]
         if not hasattr(_loc, 'item_stack'): return 0

@@ -73,7 +73,7 @@ def get_skill_node(skill = ""):
     
     if skill == "":
         skill = choice(['Guns','Hand-to-Hand','Melee','Hacking','Crypto','Hardware Tech','Robot Psychology','Wetware Admin',
-                        'Bomb Difusing','Lock Picking','First Aid','Stealth'])
+                        'Bomb Defusing','Lock Picking','First Aid','Stealth'])
     
     if skill == 'Guns':
         _sn = SkillBuilderNode(skill, 'Combat')
@@ -118,7 +118,7 @@ def get_skill_node(skill = ""):
         _sn.desc = "You access the knowledgebase for your brain OS."
         _sn.visit_msg = "You pick up some handy tips on defragging your brain."
         _sn.already_visited_msg = "But learn nothing new."
-    elif skill == 'Bomb Difusing':
+    elif skill == 'Bomb Defusing':
         _sn = SkillBuilderNode(skill, 'Subterfuge')
         _sn.desc = "You take a correspondence course in bomb disposal."
         _sn.visit_msg = "You learn some new techniques."

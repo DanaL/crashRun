@@ -16,6 +16,7 @@
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
 import string
+from random import randrange
 
 from Agent import STD_ENERGY_COST
 import Items
@@ -33,6 +34,7 @@ from Terrain import DOOR
 from Terrain import EXIT_NODE
 from Terrain import SPECIAL_DOOR
 from Terrain import TERMINAL
+from Terrain import TRAP
 from Util import EmptyInventory
 from Util import do_d10_roll
 from Util import get_correct_article
@@ -141,7 +143,26 @@ class CommandContext(object):
     def use_special_ability(self):
         self.dui.display_message('You have no special abilities.  You are perfectly average.')
         
-class MeatspaceCC(CommandContext):         
+class MeatspaceCC(CommandContext):       
+    def attempt_to_disarm(self, trap, row, col):
+        _p = self.dm.player
+        _rank = _p.skills.get_skill('Bomb Defusing').get_rank()
+        if _rank == 0:
+            _score = _p.stats.get_intuition() / 2
+        else:
+            _score = _p.stats.get_intuition() + _p.stats.get_coordination()
+            _score += _rank * 10
+        
+        _roll = randrange(100)
+        if _roll < _score:
+            self.dui.display_message("You disarm the " + trap.get_name() + ".")
+            self.dm.curr_lvl.remove_trap(row, col)
+        elif _roll > _score * 2:
+            self.dui.display_message("Whoops! You set off " + trap.get_name() + ".")
+            trap.trigger(self.dm, _p, row, col)
+        else:
+            self.dui.display_message("Uh, was it the green wire or the red wire?")
+            
     def bash(self):
         _dir = self.dui.get_direction()
         if _dir != '':
@@ -192,13 +213,16 @@ class MeatspaceCC(CommandContext):
             _sc = _sqr[1][1]
             _sqr = _sqr[0]
         
-        if isinstance(_sqr, Terrain.Door):
+        if _sqr.get_type() in (DOOR, SPECIAL_DOOR):
             self.door_action(_sqr, _sr, _sc, _lvl)
-        elif isinstance(_sqr, Terminal) and _sr == _p.row and _sc == _p.col:
+        elif _sqr.get_type() == TERMINAL and _sr == _p.row and _sc == _p.col:
             _sqr.jack_in(self.dm)
             self.dm.player.energy -= STD_ENERGY_COST
         elif isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
             self.open_box(_sqr, _sr, _sc)
+        elif _sqr.get_type() == TRAP and _sqr.revealed:
+            self.attempt_to_disarm(_sqr, _sr, _sc)
+            self.dm.player.energy -= STD_ENERGY_COST
         else:
             self.dui.display_message("Hmm?")
             
@@ -251,7 +275,10 @@ class MeatspaceCC(CommandContext):
                 elif _type == DOOR or _type == SPECIAL_DOOR:
                     if not _sqr.broken:
                         _sqrs.append((_sqr, (row+r, col+c)))
-                                        
+                elif _type == TRAP and not (isinstance(_sqr, Terrain.GapingHole) or isinstance(_sqr, Terrain.HoleInCeiling)):
+                    if _sqr.revealed:
+                        _sqrs.append((_sqr, (row+r, col+c)))
+                    
         return _sqrs[0] if len(_sqrs) == 1 else None
 
     def get_boxes(self, lvl, row, col):
