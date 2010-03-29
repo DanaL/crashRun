@@ -174,6 +174,12 @@ class OldComplexLevel(GameLevel):
             self.cameras[j] = _cam
             self.add_feature_to_map(_cam)
         
+        # add a few traps, maybe
+        if self.level_num > 2:
+            for j in range(3):
+                if randrange(4) == 0:
+                    self.place_sqr(Terrain.ConcussionMine(), FLOOR)
+            
         self.__add_items_to_level()
         self.__add_monsters()
         self.__add_subnet_nodes()

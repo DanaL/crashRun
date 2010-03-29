@@ -76,7 +76,9 @@ class ProvingGroundsLevel(GameLevel):
             self.draw_exit_tunnel()
         self.add_buildings()
         self.add_toxic_pools()
-        
+        for j in range(2, 5):
+            self.place_sqr(Terrain.ConcussionMine(), FLOOR)
+                
     def draw_entrance_tunnel(self):
         _row = randrange(5, self.lvl_length-5)
         _col = 3

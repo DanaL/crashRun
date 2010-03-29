@@ -119,6 +119,9 @@ class MinesLevel(GameLevel):
                 
     def generate_level(self):
         self.__generate_map()
+        for j in range(3):
+            if randrange(4) == 0:
+                self.place_sqr(Terrain.ConcussionMine(), FLOOR)
         self.__add_items_to_level()
         self.__add_monsters()
         
