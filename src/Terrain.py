@@ -19,6 +19,7 @@ from random import randrange
 
 from BaseTile import BaseTile
 from FieldOfView import Shadowcaster
+from Items import ItemFactory
 
 FLOOR = 0
 WALL = 1
@@ -285,7 +286,9 @@ class LogicBomb(Trap):
 class ConcussionMine(Trap):
     def __init__(self):
         Trap.__init__(self, 'concussion mine', 'grey', 'white')
-    
+        _if = ItemFactory()
+        self.explosive = _if.gen_item("concussion mine")
+        
     def trigger(self, dm, victim, row, col):
         dm.dui.display_message("Whomp!")
         dm.curr_lvl.remove_trap(row, col)

@@ -145,6 +145,7 @@ class CommandContext(object):
         
 class MeatspaceCC(CommandContext):       
     def attempt_to_disarm(self, trap, row, col):
+        _lvl = self.dm.curr_lvl
         _p = self.dm.player
         _rank = _p.skills.get_skill('Bomb Defusing').get_rank()
         if _rank == 0:
@@ -156,10 +157,14 @@ class MeatspaceCC(CommandContext):
         _roll = randrange(100)
         if _roll < _score:
             self.dui.display_message("You disarm the " + trap.get_name() + ".")
-            self.dm.curr_lvl.remove_trap(row, col)
+            _lvl.add_item_to_sqr(row, col, trap.explosive)
+            _lvl.remove_trap(row, col)
+            _lvl.eventQueue.pluck(('explosion', row, col, trap))
         elif _roll > _score * 2:
             self.dui.display_message("Whoops! You set off " + trap.get_name() + ".")
             trap.trigger(self.dm, _p, row, col)
+            if trap.get_name(1) == "bomb":
+                self.dm.handle_explosion(_lvl, row, col, trap)
         else:
             self.dui.display_message("Uh, was it the green wire or the red wire?")
             

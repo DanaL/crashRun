@@ -594,6 +594,7 @@ class ItemFactory:
         
         # add explosives
         self.__item_db['C4 Charge'] = ('explosive', 'C4 Charge', 10, 4, 5, True)
+        self.__item_db['concussion mine'] = ('explosive', 'concussion mine', 0, 0, 1, False)
         self.__item_db['flash bomb'] = ('explosive', 'flash bomb', 0, 0, 2, True)
             
         # add the weapons
@@ -671,7 +672,7 @@ class ItemFactory:
             elif it[1] == '9mm Clip':
                 return NineMMClip()
         elif it[0] == 'explosive':
-            return Explosive(item_name, it[2], it[3], it[4], True)
+            return Explosive(item_name, it[2], it[3], it[4], it[5])
         elif it[0] == 'pharmaceutical':
             if it[1] == 'Medkit':
                 return Medkit(it[1], it[2], it[3], it[4], it[5])
