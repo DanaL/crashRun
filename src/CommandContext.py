@@ -218,7 +218,9 @@ class MeatspaceCC(CommandContext):
             _sc = _sqr[1][1]
             _sqr = _sqr[0]
         
-        if _sqr.get_type() in (DOOR, SPECIAL_DOOR):
+        if isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
+            self.open_box(_sqr, _sr, _sc)
+        elif _sqr.get_type() in (DOOR, SPECIAL_DOOR):
             self.door_action(_sqr, _sr, _sc, _lvl)
         elif _sqr.get_type() == TERMINAL and _sr == _p.row and _sc == _p.col:
             _sqr.jack_in(self.dm)
