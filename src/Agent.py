@@ -1057,6 +1057,11 @@ class Ninja(RelentlessPredator):
 class BasicBot(RelentlessPredator):
     pass
 
+    def robot_psych_check(self, player):
+        _skill = player.skills.get_skill("Robot Psychology").get_rank() * 5
+
+        return randrange(30) < _skill
+        
 class SecurityBot(BasicBot):
     def __init__(self, dm, row, col):
         RelentlessPredator.__init__(self, vision_radius=10, ac=20, hp_low=15, hp_high=25, dmg_dice=4, dmg_rolls=2, ab=2,
@@ -1213,7 +1218,7 @@ class Roomba(CleanerBot):
         self.melee_type = 'vacuum'
 
     def try_to_vacuum(self, loc, odds=4):
-        if randrange(0, odds) == 0:
+        if randrange(odds) == 0:
             for j in range(randrange(1,4)):
                 _item = self.dm.monster_steals(self, loc[0],loc[1], False)
                 if _item != '':
@@ -1234,7 +1239,7 @@ class Roomba(CleanerBot):
         self.look_for_trash_to_vacuum()
         
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent():
+        if self.is_player_adjacent() and not self.robot_psych_check(self.dm.player):
             self.attack(player_loc)
             self.try_to_vacuum(player_loc)
         
@@ -1251,7 +1256,7 @@ class Incinerator(CleanerBot):
         
     def __go_about_business(self):
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent() and random() < 0.5:
+        if self.is_player_adjacent() and not self.robot_psych_check(self.dm.player):
             self.attack(player_loc)
         else:
             self.move()
