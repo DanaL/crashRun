@@ -165,6 +165,7 @@ class MeatspaceCC(CommandContext):
             trap.trigger(self.dm, _p, row, col)
             if trap.get_name(1) == "bomb":
                 self.dm.handle_explosion(_lvl, row, col, trap)
+            _lvl.remove_trap(row, col)
         else:
             self.dui.display_message("Uh, was it the green wire or the red wire?")
             
@@ -275,7 +276,7 @@ class MeatspaceCC(CommandContext):
                 _sqr = _lvl.map[row+r][col+c]
                 _type = _sqr.get_type()
                 if r == c == 0:
-                    if _type == TERMINAL:
+                    if _type in (TERMINAL, TRAP):
                         _sqrs.append((_sqr, (row, col)))
                 
                     _sqrs += self.get_boxes(_lvl, row, col)
