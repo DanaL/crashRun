@@ -610,7 +610,7 @@ class DungeonMaster:
     # I could/should move this and __agent_burnt to Agent.py
     def handle_attack_effects(self, attacker, victim, damage_types):
         for _method in damage_types:
-            if _method == 'fire':
+            if _method == 'burn':
                 self.__agent_burnt(victim, attacker)
             elif _method == 'shock':
                 victim.shocked(attacker)
