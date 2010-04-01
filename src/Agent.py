@@ -14,7 +14,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
-
+from collections import deque
 from copy import copy
 from random import choice
 from random import randrange
@@ -46,9 +46,6 @@ class IllegalMonsterMove:
 class MoraleCheckFailed:
     pass
 
-class MoveFound:
-    pass
-
 # This class represents information the agents receive about the game
 # environment
 class Fact:
@@ -72,8 +69,6 @@ class DamageDesc(object):
         return self.get_correct_article() + self.desc
         
 class AStarPathFactory: 
-    MAX_SEARCH_DEPTH = 120
-    
     def __init__(self,dm,start,goal):
         self.__start = start
         self.__goal = goal
@@ -127,7 +122,6 @@ class AStarPathFactory:
                     s_cost = g + h
 
                     # give up after searched for too long
-                    if len(self.__visited) > self.MAX_SEARCH_DEPTH: return []
                     if not self.__visited.has_key(successor):
                         self.__open.append((successor,s_cost))
                         self.__visited[successor] = (s_cost,current)
@@ -147,6 +141,39 @@ class AStarPathFactory:
 
         return path
 
+# An algorithm to find the furthest distance from a square on the map.
+def furthest_sqr(level, scary_thing, max_distance):
+    _checked = {}
+    _check = deque()
+    _check.append(scary_thing)
+
+    # Flood-fill the map, calculating distances as we go.
+    _max_d = 0
+    while len(_check) > 0:
+        _loc = _check.pop()
+        if _loc in _checked:
+            continue
+        else:
+            _checked[_loc] = True
+
+        if level.is_clear(_loc[0], _loc[1]):
+            _d = calc_distance(scary_thing[0], scary_thing[1], _loc[0], _loc[1])
+            if _d > _max_d:
+                _furthest = _loc
+                _max_d = _d
+                if _d > max_distance:
+                    return _furthest
+                
+        for r in (-1, 0, 1):
+            for c in (-1, 0, 1):
+                if r == 0 and c == 0:
+                    continue
+                _s = (_loc[0] + r, _loc[1] + c)
+                if not _s in _checked and level.is_clear(_s[0], _s[1]):
+                    _check.appendleft(_s)
+    
+    return _furthest
+    
 class BaseAgent(BaseTile):
     ENERGY_THRESHOLD = 12
     
@@ -449,10 +476,10 @@ class AStarMover:
     # goal finding from being too expensive.  Instead of making no
     # move, perhaps I could have them just move generally toward the
     # player?
-    def move_to(self,goal):
+    def move_to(self, goal):
         if len(self.moves) == 0 and self.distance(goal) <= 10:
             _start = (self.row,self.col)
-            _as = AStarPathFactory(self.dm, _start,goal)
+            _as = AStarPathFactory(self.dm, _start, goal)
             self.moves = _as.find_path()[:4]
 
         if len(self.moves) > 0:
@@ -463,7 +490,26 @@ class AStarMover:
                 # If the path we were following is not longer valid, start a
                 # new path
                 self.moves = []
-            
+    
+    def move_to_unbound(self, goal):
+        if not self.moves:
+            _start = (self.row, self.col)
+            _as = AStarPathFactory(self.dm, _start, goal)
+            self.moves = _as.find_path()
+            if not self.moves:
+                return False
+                
+        if self.moves:
+            _move = self.moves.pop(0)
+            try:
+                self.dm.move_monster(self, _move[1] - self.col, _move[0] - self.row)
+                return True
+            except IllegalMonsterMove:
+                # If the path we were following is not longer valid, start a
+                # new path
+                self.moves = []
+                return False
+                
 class BaseMonster(BaseAgent, AStarMover):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch, 
                 fg, bg, lit, name, row, col, xp_value, gender, level):
@@ -571,19 +617,27 @@ class AltPredator(BaseMonster):
         if self.attitude == 'inactive':
             self.energy = 0
             return
-            
-        player_loc = self.dm.get_player_loc()
+        
+        _player_loc = self.dm.get_player_loc()
          
         try:
             self.__check_morale()
             
             if self.is_player_adjacent():
-                self.attack(player_loc)
+                self.attack(_player_loc)
             else:
-                self.move_to(player_loc)
+                self.move_to(_player_loc)
         except MoraleCheckFailed:
-            self.__run_away(player_loc, self.distance_from_player(player_loc))
-    
+            if self.__state != 'scared':
+                self.dm.alert_player(self.row,self.col,'The ' + self.get_name() +' turns to flee!')
+                self.__state = 'scared'
+            
+            if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
+                self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25)
+                
+            if not self.move_to_unbound(self.flee_to) and self.is_player_adjacent():
+                self.attack(_player_loc)
+            
         self.energy -= STD_ENERGY_COST
         
     def __check_morale(self):
@@ -602,49 +656,6 @@ class AltPredator(BaseMonster):
                 self.dm.alert_player(self.row,self.col,"".join(['The ',self.get_name(),' turns to fight!']))
 
             self.__state = ''
-
-    def __run_away(self,player_loc,distance):
-        if self.__state != 'scared':
-            self.dm.alert_player(self.row,self.col,"".join(['The ',self.get_name(),' turns to flee!']))
-
-        self.__pick_fleeing_move(player_loc,distance)
-        
-        self.__state = 'scared'
-
-    # At the moment, a scared monster picks kind of shitty fleeing moves...
-    def __pick_fleeing_move(self,player_loc,distance):
-        if player_loc[0] < self.row:
-            delta_r = -1
-        elif player_loc[0] == self.row:
-            delta_r = 0
-        else:
-            delta_r = 1
-
-        if player_loc[1] < self.col:
-            delta_c = -1
-        elif player_loc[1] == self.col:
-            delta_c = 0
-        else:
-            delta_c = 1
-
-        _move_to = ''
-    
-        try:
-            for r in (delta_r+1,delta_r+2,delta_r+3):
-                r_to_try = r % 3 - 1
-                for c in (delta_c+1,delta_c+2,delta_c+3):
-                    c_to_try = r % 3 - 1
-                    loc_to_try = (self.row + r_to_try,self.col + c_to_try)
-                    if self.dm.is_clear(loc_to_try[0],loc_to_try[1]):
-                        _move_to = loc_to_try
-                        raise MoveFound
-        except MoveFound:
-            pass
-
-        if _move_to == '' and distance == 1:
-            self.attack(player_loc)
-        elif _move_to != '':
-            self.move_to(_move_to)
 
 class HumanFoe(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
