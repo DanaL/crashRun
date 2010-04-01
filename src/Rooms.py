@@ -57,7 +57,7 @@ def place_repair_shop_bots(dm, room, level):
     place_monster(room, level, _bot)
     
     for j in range(_num_of_bots):
-        if len(room) == 0: break
+        if not room: break
         
         _roll = randrange(12)
         if _roll < 5:

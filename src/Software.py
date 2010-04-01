@@ -106,7 +106,7 @@ class DataFile(Software):
         
     def execute(self, dm, agent):
         self.decrypted = True
-        if len(self.txt) == 0:
+        if not self.txt:
             _rf = RumourFactory()
             self.txt = _rf.fetch_rumour(self.level)
             

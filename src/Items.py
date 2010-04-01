@@ -118,7 +118,7 @@ class ItemStack(BaseItem):
             self.__items = [bi]
     
     def get_name(self, p=0):
-        if len(self.__items) == 0:
+        if not self.__items:
             return BaseItem.get_name(self)
         elif len(self.__items) == 1:
             return self.__items[0].get_full_name()
@@ -132,7 +132,7 @@ class ItemStack(BaseItem):
             return msg
 
     def get_signature(self):
-        if len(self.__items) == 0:
+        if not self.__items:
             return super(ItemStack, self).get_signature()
         else:
             return self.__items[0].get_signature()
@@ -141,7 +141,7 @@ class ItemStack(BaseItem):
         return self.get_name()
 
     def get_weight(self):
-        if len(self.__items) == 0:
+        if not self.__items:
             return super(ItemStack, self).get_weight()
         else:
             return self.__items[0].get_weight() * len(self.__items)

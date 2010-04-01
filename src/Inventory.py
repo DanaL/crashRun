@@ -254,7 +254,7 @@ class Inventory:
 
                 item = self.__inv[slot][0].remove_item(count)
 
-                if len(self.__inv[slot][0]) == 0:
+                if not self.__inv[slot][0]:
                     self.clear_slot(slot)
             else:
                 item = self.__inv[slot][0]
@@ -269,7 +269,7 @@ class Inventory:
             return ''
 
     def unready_item(self, slot):
-        if len(self.__inv[slot]) == 0:
+        if not self.__inv[slot]:
             return
 
         if self.__inv[slot] == self.__primary_weapon:
@@ -331,7 +331,7 @@ class Inventory:
     # so the item may be used without removing it from the player's inventory.
     def get_item(self, slot):
         try:
-            if len(self.__inv[slot]) == 0:
+            if not self.__inv[slot]:
                 return ''
 
             return self.__inv[slot][0]

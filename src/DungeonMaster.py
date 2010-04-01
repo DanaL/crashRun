@@ -864,7 +864,7 @@ class DungeonMaster:
     def __attempt_to_unlock_door(self, door):
         if self.prefs["auto unlock doors"]:
             _picks = self.player.inventory.find_items_by_name("lockpick")
-            if len(_picks) == 0:
+            if not _picks:
                 self.dui.display_message("You don't have a lockpick...")
                 return
             _pick = _picks[0]
@@ -1008,7 +1008,7 @@ class DungeonMaster:
             menu = self.__build_pick_up_menu(stack)
             picks = self.dui.ask_repeated_menued_question(['Pick up what?'],menu)
 
-            if len(picks) == 0:
+            if not picks:
                 self.dui.display_message('Nevermind.')
                 return
 
@@ -1242,7 +1242,7 @@ class DungeonMaster:
             
         if isinstance(_picked, ItemStack):
             _clip = _picked.remove_item()
-            if len(_picked) == 0:
+            if not _picked:
                 agent.inventory.clear_slot(pick)
         else:
             _clip = _picked
@@ -1290,7 +1290,7 @@ class DungeonMaster:
         else:
             while len(_picked) > 0 and gun.current_ammo < gun.max_ammo:
                 ammo = _picked.remove_item()
-                if len(_picked) == 0:
+                if not _picked:
                     agent.inventory.clear_slot(pick)
                 if not self.add_ammo_to_shotgun(agent, gun, ammo):
                     agent.inventory.add_item(ammo)

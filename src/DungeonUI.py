@@ -466,7 +466,7 @@ class DungeonUI(object):
     def pick_inventory_item(self, msg):
         i = self.cc.get_inventory_list()
 
-        if len(i) == 0:
+        if not i:
             self.__write_message('You aren\'t carrying anything.', False)
             raise EmptyInventory
 
