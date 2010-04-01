@@ -1687,7 +1687,7 @@ class DungeonMaster:
         
         if isinstance(self.curr_lvl, CyberspaceLevel):
             _perception_roll = randrange(self.player.stats.get_intuition() + 5) 
-            _perception_roll += self.player.get_search_bonus()
+            _perception_roll += self.player.get_search_bonus(True)
         else:
             _perception_roll = 0
             
