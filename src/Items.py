@@ -591,7 +591,9 @@ class ItemFactory:
         self.__item_db['stimpak'] = ('pharmaceutical', 'Stimpak', 'white',
             'white', [('hit', 0, 300), ('co-ordination',2, 100), 
                 ('strength', 3, 100), ('heal', 5, 0)], 'AWWW YEAH!')
-        
+        self.__item_db['syringe of blindness'] = ('pharmaceutical', 'syringe of blindness', 'white',
+            'white', [('blind', 0, 100)], 'Uh-oh! You\'ve gone blind!')
+            
         # add explosives
         self.__item_db['C4 Charge'] = ('explosive', 'C4 Charge', 10, 4, 5, True)
         self.__item_db['concussion mine'] = ('explosive', 'concussion mine', 0, 0, 1, False)

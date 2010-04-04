@@ -726,8 +726,6 @@ class DungeonUI(object):
             if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
                 colours = sqr.get_fg_bg()
                 self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,False)
-        _ur = pygame.Rect( (_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),(_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
-        pygame.display.update(_ur)
             
     def update_view(self, sqr):
         actual_r = sqr.r - self.map_r

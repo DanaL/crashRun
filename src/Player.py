@@ -207,14 +207,20 @@ class Player(BaseAgent):
 
     def apply_effect(self, effect, instant):
         BaseAgent.apply_effect(self, effect, instant)
-        if effect[0][0] in ('infrared','light'):
+        if effect[0][0] in ('infrared', 'light', 'blind'):
             self.dm.refresh_player_view()
         self.dm.dui.update_status_bar()
         
     def check_for_expired_conditions(self):
-        if BaseAgent.check_for_expired_conditions(self):
-            self.dm.alert_player(self.row, self.col, 'You are coming down a bit.')
-            
+        _expired = BaseAgent.check_for_expired_conditions(self)
+        for _e in _expired:
+            self.remove_effect(_e[0], _e[1])
+            if _e[1] == 'high':
+                self.dm.alert_player(self.row, self.col, 'You are coming down a bit.')
+            elif _e[1] == 'blind':
+                self.dm.alert_player(self.row, self.col, 'You can see again.')
+                self.dm.refresh_player_view()
+                
     def check_for_withdrawal_effects(self):
         for _condition in self.conditions:
             if _condition[0][0] == 'hit':

@@ -676,7 +676,12 @@ class DungeonMaster:
                 if not sqr.is_open():
                     return True
         return False
-            
+    
+    def mark_invisible_monster(self, loc, row, col):
+        _occ = BaseTile('I', 'white', 'black', 'white', 'it')
+        loc.temp_tile = _occ
+        self.dui.update_view(self.get_sqr_info(row, col, True))
+        
     def cmd_move_player(self, direction):
         self.dui.clear_msg_line()
         if direction == '<':
@@ -695,6 +700,8 @@ class DungeonMaster:
             elif self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant <> '':
                 _occ = self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant
 
+                if self.player.has_condition('blind'):
+                    self.mark_invisible_monster(self.curr_lvl.dungeon_loc[_next_r][_next_c], _next_r, _next_c)
                 if isinstance(_occ, BaseAgent):
                     self.curr_lvl.melee.attack(self.player, _occ)           
                     self.player.energy -= STD_ENERGY_COST
@@ -1472,6 +1479,9 @@ class DungeonMaster:
             _instant = _effect[2] == 0
             if _effect[0] == 'heal':
                 _drug_effect = ((_effect[0], _effect[1], 0), hit)
+            elif _effect[0] == 'blind':
+                _duration =  randrange(_effect[2]) + 1
+                _drug_effect = ((_effect[0], _effect[1], self.turn + _duration), 'blind')
             else:
                 _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.turn), 'high')
             
@@ -1607,7 +1617,7 @@ class DungeonMaster:
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
 
-    def __not_in_sight_matrix(self,j):
+    def __not_in_sight_matrix(self, j):
         return not self.sight_matrix.has_key(j)
     
     # This only really deals with visual information, should add audio, also
@@ -1690,10 +1700,11 @@ class DungeonMaster:
             _perception_roll += self.player.get_search_bonus(True)
         else:
             _perception_roll = 0
-            
-        sc = Shadowcaster(self,self.player.vision_radius, _pr, _pc)
+        
+        _vr = 0 if self.player.has_condition("blind") else self.player.vision_radius
+        sc = Shadowcaster(self, _vr, _pr, _pc)
         _visible = sc.calc_visible_list()
-            
+        
         _sqrs = [(_pr,_pc)]
         for _sqr in get_lit_list(self.player.light_radius):
             _s = (_pr + _sqr[0], _pc + _sqr[1])
@@ -1702,7 +1713,7 @@ class DungeonMaster:
         for _ls in self.curr_lvl.light_sources:
             for _sqr in _ls.illuminates:
                 if _sqr in _visible: _sqrs.append(_sqr)
-                
+        
         for _s in _sqrs:
             self.sight_matrix[_s] = 0
             self.curr_lvl.dungeon_loc[_s[0]][_s[1]].visible = True
@@ -1715,13 +1726,14 @@ class DungeonMaster:
                 _loc = self.get_sqr_info(_s[0],_s[1])
                 
             _sqrs_to_draw.append(_loc)
-            
+
         # now we need to 'extinguish' squares that are not longer lit
-        for s in filter(self.__not_in_sight_matrix,self.last_sight_matrix):
+        for s in filter(self.__not_in_sight_matrix, self.last_sight_matrix):
             self.__loc_out_of_sight(s)
             _sqrs_to_draw.append(self.get_sqr_info(s[0],s[1]))
 
         self.dui.update_block(_sqrs_to_draw)
+        self.dui.update_view(self.get_sqr_info(self.player.row, self.player.col))
         
     # Called when a square moves out of sight range
     def __loc_out_of_sight(self,loc):
@@ -1732,14 +1744,10 @@ class DungeonMaster:
     # Yanked some duplicate code out of the movement functions.  After 
     # calculating new player location, update LOS and alert the UI
     def update_player(self):
-        sqr = self.get_sqr_info(self.player.row,self.player.col)
         self.refresh_player_view()
-        self.dui.update_view(sqr)
     
         if not self.player.has_condition('dazed'):
             pass
-            
-        self.dui.update_view(sqr)   
         
     def cmd_pass(self):
         self.refresh_player_view() # This allows a passive search
@@ -1772,10 +1780,11 @@ class DungeonMaster:
     def __remove_monster_from_level(self, level, monster, row, col):
         level.remove_monster(monster, row, col)
 
-    def __move_player(self,curr_r,curr_c,next_r,next_c,dt):
+    def __move_player(self, curr_r, curr_c, next_r, next_c, dt):
         self.player.energy -= STD_ENERGY_COST
         self.curr_lvl.dungeon_loc[curr_r][curr_c].visited = True
-        self.__agent_moves_to_sqr(next_r,next_c,self.player)
+        self.__agent_moves_to_sqr(next_r, next_c, self.player)
+        self.curr_lvl.dungeon_loc[next_r][next_c].temp_tile = ''
         self.curr_lvl.handle_stealth_check(self.player)
         self.update_player()
         self.tell_player_about_sqr(next_r, next_c)
@@ -1884,7 +1893,7 @@ class DungeonMaster:
                 
     def explosive_effect(self, level, victim, dmg, explosive):
         if explosive.get_name(1) == 'flash bomb':
-            if not victim.has_condition('light protection'):
+            if not victim.has_condition('light protection') and not victim.has_condition('blind'):
                 victim.dazed(explosive)
         else:
             victim.damaged(self, level, dmg, '', ['explosion'])

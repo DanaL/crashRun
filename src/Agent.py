@@ -46,14 +46,6 @@ class IllegalMonsterMove:
 class MoraleCheckFailed:
     pass
 
-# This class represents information the agents receive about the game
-# environment
-class Fact:
-    def __init__(self,name,value,time):
-        self.name = name
-        self.value = value
-        self.time = time
-
 class DamageDesc(object):
     def __init__(self, desc):
         self.desc = desc
@@ -367,7 +359,7 @@ class BaseAgent(BaseTile):
             _was_hit = _was_hit or _e[1] == 'high'
             self.remove_effect(_e[0], _e[1])
 
-        return _was_hit
+        return _expired
             
     def __count_flashlights_in_conditions(self):
         _count = 0
@@ -1346,7 +1338,7 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
 class MoreauBot6000(CleanerBot, Unique):
     def __init__(self, dm, row, col):
         CleanerBot.__init__(self, vision_radius=8, ac=22, hp_low=25, hp_high=35, dmg_dice=6, 
-                  dmg_rolls=1, ab=2, dm=dm, ch='I', fg='yellow-orange', bg='black', 
+                  dmg_rolls=1, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', 
                   lit='yellow-orange', name='MoreauBot 6000', row=row, col=col, xp_value=40,
                   gender='male', level=8)
     
