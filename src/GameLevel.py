@@ -335,6 +335,14 @@ class GameLevel:
             
         return self.map[r][c].is_passable() and self.dungeon_loc[r][c].occupant == ''
 
+    def is_clear_for_agent(self, r, c, agent):
+        if not self.in_bounds(r,c):
+            return False
+        if agent == self.dungeon_loc[r][c].occupant:
+            return True
+            
+        return self.map[r][c].is_passable() and self.dungeon_loc[r][c].occupant == ''
+        
     def place_sqr(self, sqr, target_type):
         while True:
             r = randrange(1,self.lvl_length-1)

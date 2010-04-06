@@ -347,7 +347,12 @@ class Player(BaseAgent):
         self.calc_hp()
         self.curr_hp -= delta_hp
 
-        self.dm.player_went_up_level(self.level)
+        _m = 'Welcome to level %d!' % (self.level)
+        self.dm.dui.display_message(_m)
+        if self.skill_points > 0:
+            _m = 'You have %d skill points to spend.' % (self.skill_points)
+            self.dm.dui.display_message(_m)
+        self.dm.dui.update_status_bar()
         self.__calc_next_level()
 
     # I probably really need to adjust this.  I don't think they need to go up exponentially
@@ -444,4 +449,18 @@ class Player(BaseAgent):
         
         self.__base_hp.append(hp)
         self.calc_hp()
+        
+    def takes_drugs(self, hit):
+        for _effect in hit.effects:
+            _instant = _effect[2] == 0
+            if _effect[0] == 'heal':
+                _drug_effect = ((_effect[0], _effect[1], 0), hit)
+            elif _effect[0] == 'blind':
+                _duration =  randrange(_effect[2]) + 1
+                _drug_effect = ((_effect[0], _effect[1], self.dm.turn + _duration), 'blind')
+            else:
+                _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.dm.turn), 'high')
+            
+            self.apply_effect(_drug_effect, _instant)
+        self.dm.dui.display_message(hit.message)
     

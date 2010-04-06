@@ -83,6 +83,13 @@ class TerrainTile(BaseTile):
     def square_entered(self):
         pass
 
+    # Check if sqr is a stair being hidden by a bomb
+    def was_stairs(self):
+        if not isinstance(self, Trap) or not hasattr(self, 'previous_tile'):
+            return False
+        
+        return self.previous_tile.get_type() in (DOWN_STAIRS, UP_STAIRS) 
+        
 # Used when I want to draw a blank space
 class BlankSquare(TerrainTile):
     def __init__(self):

@@ -369,7 +369,7 @@ class DungeonMaster:
         if victim == self.player:
             self.__determine_next_level('down', (victim.row, victim.col))
         else:
-            self.__remove_monster_from_level(self.curr_lvl, victim, victim.row, victim.col)
+            self.curr_lvl.remove_monster(victim, victim.row, victim.col)
             self.update_sqr(self.curr_lvl,  victim.row, victim.col)
             self.curr_lvl.things_fallen_in_holes.append(victim)
             
@@ -388,7 +388,7 @@ class DungeonMaster:
             _monsters = self.__check_for_monsters_surrounding_stairs()
             if len(_monsters) > 0:
                 _monster = choice(_monsters)
-                self.__remove_monster_from_level(self.curr_lvl, _monster, _monster.row, _monster.col)
+                self.curr_lvl.remove_monster(_monster, _monster.row, _monster.col)
             else:
                 _monster = None
         else:
@@ -1403,7 +1403,7 @@ class DungeonMaster:
                 self.player.energy -= STD_ENERGY_COST
             elif item.get_category() == 'Pharmaceutical':
                 hit = self.player.inventory.remove_item(i,1)
-                self.player_takes_drugs(hit)
+                self.player.takes_drugs(hit)
                 self.player.energy -= STD_ENERGY_COST
             elif item.get_category() == 'Ammunition':
                 _ch = self.dui.pick_inventory_item('Reload which gun?')
@@ -1473,20 +1473,6 @@ class DungeonMaster:
                     self.pick_lock(_tile, lockpick)
             else:
                 self.dui.display_message("You aren't making any sense.")
-            
-    def player_takes_drugs(self,hit):
-        for _effect in hit.effects:
-            _instant = _effect[2] == 0
-            if _effect[0] == 'heal':
-                _drug_effect = ((_effect[0], _effect[1], 0), hit)
-            elif _effect[0] == 'blind':
-                _duration =  randrange(_effect[2]) + 1
-                _drug_effect = ((_effect[0], _effect[1], self.turn + _duration), 'blind')
-            else:
-                _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.turn), 'high')
-            
-            self.player.apply_effect(_drug_effect, _instant)
-        self.dui.display_message(hit.message)
         
     def player_set_bomb(self, bomb):
         if bomb.timed:
@@ -1659,15 +1645,6 @@ class DungeonMaster:
     def update_sqr(self, level, r , c):
         if self.can_player_see_location(r, c, level):
             self.dui.update_view(self.get_sqr_info(r, c))
-            
-    def player_went_up_level(self,new_level):
-        _p = self.player
-        _m = 'Welcome to level %d!' % (new_level)
-        self.alert_player_to_event(_p.row, _p.col, self.curr_lvl,_m,False)
-        if _p.skill_points > 0:
-            _m = 'You have %d skill points to spend.' % (_p.skill_points)
-            self.alert_player_to_event(_p.row, _p.col, self.curr_lvl,_m,False)
-        self.dui.update_status_bar()
 
     def passive_search(self, loc):
         if self.player.has_condition('dazed'): 
@@ -1767,8 +1744,8 @@ class DungeonMaster:
                 self.item_hits_ground(level, r, c, i)
 
         self.mr.monster_killed(victim, by_player)
-        self.__remove_monster_from_level(level, victim, r, c)
-
+        level.remove_monster(victim, r, c)
+        
         if self.can_player_see_location(r, c, level):
             self.dui.update_view(self.get_sqr_info(r,c))
 
@@ -1777,9 +1754,6 @@ class DungeonMaster:
         elif victim == self.active_agent:
             raise TurnInterrupted
     
-    def __remove_monster_from_level(self, level, monster, row, col):
-        level.remove_monster(monster, row, col)
-
     def __move_player(self, curr_r, curr_c, next_r, next_c, dt):
         self.player.energy -= STD_ENERGY_COST
         self.curr_lvl.dungeon_loc[curr_r][curr_c].visited = True
@@ -1803,23 +1777,13 @@ class DungeonMaster:
         self.curr_lvl.dungeon_loc[r][c].occupant = agent
         self.update_sqr(self.curr_lvl, r, c)
 
-    # Check if sqr is a stair being hidden by a bomb
-    def __was_stairs(self, tile):
-        if not isinstance(tile, Terrain.Trap):
-            return False
-        
-        if not hasattr(tile, 'previous_tile'):
-            return False
-        
-        return tile.previous_tile.get_type() in (Terrain.DOWN_STAIRS, Terrain.UP_STAIRS)    
-    
     def tell_player_about_sqr(self, r, c):
         _loc = self.curr_lvl.dungeon_loc[r][c]
         _sqr = self.curr_lvl.map[r][c]
         
         if isinstance(_sqr,Terrain.DownStairs) or isinstance(_sqr, Terrain.UpStairs):
             self.dui.display_message('There is a lift access here.')
-        if self.__was_stairs(_sqr):
+        if _sqr.was_stairs():
             self.dui.display_message('There is a lift access here.')
         if _sqr.get_type() == EXIT_NODE:
             self.dui.display_message('There is an exit node here.')

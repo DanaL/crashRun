@@ -134,11 +134,11 @@ class AStarPathFactory:
         return path
 
 # An algorithm to find the furthest distance from a square on the map.
-def furthest_sqr(level, scary_thing, max_distance):
+def furthest_sqr(level, scary_thing, max_distance, agent):
     _checked = {}
     _check = deque()
     _check.append(scary_thing)
-
+    
     # Flood-fill the map, calculating distances as we go.
     _max_d = 0
     while len(_check) > 0:
@@ -161,7 +161,7 @@ def furthest_sqr(level, scary_thing, max_distance):
                 if r == 0 and c == 0:
                     continue
                 _s = (_loc[0] + r, _loc[1] + c)
-                if not _s in _checked and level.is_clear(_s[0], _s[1]):
+                if not _s in _checked and level.is_clear_for_agent(_s[0], _s[1], agent):
                     _check.appendleft(_s)
     
     return _furthest
@@ -625,7 +625,7 @@ class AltPredator(BaseMonster):
                 self.__state = 'scared'
             
             if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
-                self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25)
+                self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25, self)
                 
             if not self.move_to_unbound(self.flee_to) and self.is_player_adjacent():
                 self.attack(_player_loc)
