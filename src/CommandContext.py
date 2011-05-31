@@ -517,6 +517,17 @@ class MeatspaceCC(CommandContext):
             
         self.dm.player.energy -= STD_ENERGY_COST
     
+    def show_wield_message(self, ch, item):
+        if ch == '-':
+            self.dui.display_message('You are fighting empty-handed.')
+        elif item.get_name(True) == 'chainsaw':
+            self.dui.clear_msg_line()
+            self.dui.display_message('VrRRrRrroOOoOom!!')
+        elif item.hands_required == 2:
+            self.dui.display_message('You hold the %s in both hands' % (item.get_full_name()))
+        else:
+            self.dui.display_message('%s (primary weapon)' % (item.get_full_name()))
+            
     def use_weapon_config(self, slot):
         _player = self.dm.player
         _inv = _player.inventory
@@ -536,6 +547,7 @@ class MeatspaceCC(CommandContext):
                 _inv.ready_weapon(_config[1])
                 _inv.ready_secondary_weapon(_config[3])
                 self.dui.display_message("You switch weapon configurations.")
+                self.show_wield_message(_config[1], _config[0])
                 self.dm.player.energy -= STD_ENERGY_COST
             except CannotWieldSomethingYouAreWearing:
                 self.dui.display_message("You can't wield something you are wearing.")
@@ -557,17 +569,7 @@ class MeatspaceCC(CommandContext):
             
             if ch == '-' or item != '':
                 self.dm.player.inventory.ready_weapon(ch)
-
-                if ch == '-':
-                    self.dui.display_message('You are fighting empty-handed.')
-                elif item.get_name(True) == 'chainsaw':
-                    self.dui.clear_msg_line()
-                    self.dui.display_message('VrRRrRrroOOoOom!!')
-                elif item.hands_required == 2:
-                    self.dui.display_message('You hold the %s in both hands' % (item.get_full_name()))
-                else:
-                    self.dui.display_message('%s (primary weapon)' % (item.get_full_name()))
-
+                self.show_wield_message(ch, item)
                 self.dm.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('You do not have that item.')          
@@ -682,5 +684,3 @@ class CyberspaceCC(CommandContext):
     
     def save_weapon_config(self):
         self.not_in_cyberspace()
-        
-        
