@@ -725,7 +725,7 @@ class DungeonUI(object):
             
             if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
                 colours = sqr.get_fg_bg()
-                self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,False)
+                self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,True)
             
     def update_view(self, sqr):
         actual_r = sqr.r - self.map_r
