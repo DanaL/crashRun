@@ -838,7 +838,33 @@ class BelligerentProcess(CyberspaceMonster):
             self.move_to(player_loc)
 
         self.energy -= STD_ENERGY_COST
-        
+
+class DaemonicProcess(CyberspaceMonster):
+    def __init__(self, dm, row, col, level):
+        if level < 3:
+            _ac = 15
+            _hpl, _hph = 20, 25
+            _dr, _dd = 1, 6
+            _lvl = 3
+        elif level < 7:
+            _ac = 17
+            _hpl, _hph = 30, 35
+            _dr, _dd = 2, 4
+            _lvl = 7
+        else:
+            _ac = 19
+            _hpl, _hph = 40, 45
+            _dr, _dd = 2, 6
+            _lvl = 12
+
+        CyberspaceMonster.__init__(self, 4, _ac, _hpl, _hph, _dd, _dr, 2, dm, '&', 'plum', 'black',
+            'orchid', 'daemonic process', row, col, 1, 'male', _lvl)
+
+    def perform_action(self):
+        if randrange(4) == 0:
+            self.dm.alert_player(self.row, self.col, "A maniacal laugh echoes.") 
+        self.energy -= STD_ENERGY_COST
+
 # This is a monster who tracks the player down to attack him and will not flee,
 # regardless of his level of damage.  Good for zombies and particularly dumb robots.
 class RelentlessPredator(BaseMonster):
@@ -1403,3 +1429,4 @@ class Roomba3000(Roomba, Unique):
             self.look_for_trash_to_vacuum()
             
         self.energy -= STD_ENERGY_COST
+

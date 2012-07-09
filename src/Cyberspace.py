@@ -19,6 +19,7 @@ from random import choice
 from random import random
 from random import randrange
 
+from Agent import DaemonicProcess
 from Agent import SecurityControlProgram
 from CombatResolver import CyberspaceCombatResolver
 from FieldOfView import get_lit_list
@@ -31,6 +32,7 @@ from Terrain import SecurityCamera
 from Terrain import TerrainFactory
 from Terrain import CYBERSPACE_FLOOR
 from Terrain import EXIT_NODE
+from Terrain import FIREWALL
 from Terrain import UP_STAIRS
 from Util import do_d10_roll
 
@@ -61,7 +63,31 @@ class CyberspaceLevel(GameLevel):
             
     def add_monster(self):
         GameLevel.add_monster(self, self.__get_monster())
-    
+   
+    def __add_daemon_fortress(self):
+        _width = randrange(3, 7)
+        _tf = TerrainFactory()
+        
+        # place the fortress
+        _start_r = randrange(1, self.lvl_length - _width - 2)
+        _start_c = randrange(1, self.lvl_width - _width - 2)
+        for col in range(_width + 1):
+            self.map[_start_r][_start_c + col] = _tf.get_terrain_tile(FIREWALL)
+            self.map[_start_r + _width][_start_c + col] = _tf.get_terrain_tile(FIREWALL)
+
+        for row in range(1, _width):
+            self.map[_start_r + row][_start_c] =  _tf.get_terrain_tile(FIREWALL)    
+            self.map[_start_r + row][_start_c + _width] =  _tf.get_terrain_tile(FIREWALL)    
+            for col in range(1, _width - 1):
+                self.map[_start_r + row][_start_c + col] = _tf.get_terrain_tile(CYBERSPACE_FLOOR) 
+
+        _r_delta = randrange(1, _width)
+        _c_delta = randrange(1, _width)
+        _daemon_r = _start_r + _r_delta
+        _daemon_c = _start_c + _c_delta
+        _daemon = DaemonicProcess(self.dm, _daemon_r, _daemon_c, self.level_num)
+        self.add_monster_to_dungeon(_daemon, _daemon_r, _daemon_c)
+
     # Eventually traps should have a difficulty level, for now 
     # we'll require a roll of 15 to disarm the trap
     def attempt_to_hack_trap(self, player, tile, row, col):
@@ -94,9 +120,10 @@ class CyberspaceLevel(GameLevel):
             
     def generate_level(self):
         self.__generate_map()
+        self.__add_daemon_fortress()
         self.__add_traps()
         self.__add_exit_nodes()
-        self.__add_monsters()
+        #self.__add_monsters()
         self.__add_files()
         self.__set_entry_spot()
         
@@ -227,6 +254,12 @@ class CyberspaceLevel(GameLevel):
         self.lvl_length = _maze.length
         self.lvl_width = _maze.width
         
+        _tf = TerrainFactory()
+        for r in range(1, self.lvl_length-1):
+            for c in range(1, self.lvl_width-1):
+                self.map[r][c] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
+        pass
+
         # Add a few open spaces
         _tf = TerrainFactory()
         for j in range(randrange(1,4)):

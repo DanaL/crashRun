@@ -628,6 +628,26 @@ class DungeonMaster:
             
         return _dt
 
+    def player_tries_moving_through_firewall(self, p, next_r, next_c, dt):
+        _hacking = p.skills.get_skill('Hacking').get_rank()
+        _roll = do_d10_roll(1 + _hacking, 0)
+        if self.curr_lvl.level_num <= 3:
+            _difficulty = 15
+        elif self.curr_lvl.level_num <= 7:
+            _difficulty = 30
+        else:
+            _difficulty = 45
+
+        if _roll < _difficulty:
+            self.player.energy -= STD_ENERGY_COST
+            self.dui.display_message('The firewall repels you.')
+
+            if _roll < _difficulty / 2:
+                self.dui.display_message('The shock severs your connection.')
+                self.player_forcibly_exits_cyberspace()
+        else:
+            self.__move_player(p.row, p.col, next_r, next_c, dt)
+
     def player_moves_onto_a_special_sqr(self, row, col):
         self.player.energy -= STD_ENERGY_COST
         _sqr = self.curr_lvl.map[row][col]
@@ -636,7 +656,7 @@ class DungeonMaster:
             self.__determine_next_level(_sqr.direction, (row, col))
         except AttributeError:
             self.__determine_next_level('down', (row, col))
-            
+       
     def player_moves_down_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previous_tile, Terrain.DownStairs):
@@ -710,6 +730,8 @@ class DungeonMaster:
                 self.dui.display_message(_msg)
             elif self.__should_attempt_to_open(_tile):     
                 self.open_door(_tile, _next_r, _next_c)
+            elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.FIREWALL:
+                self.player_tries_moving_through_firewall(_p, _next_r, _next_c, _dt)
             else:
                 if self.player.has_condition('dazed'):
                     self.player.energy -= STD_ENERGY_COST
