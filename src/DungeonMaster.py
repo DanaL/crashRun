@@ -1414,6 +1414,8 @@ class DungeonMaster:
             elif isinstance(item, Items.Chainsaw):
                 self.player_uses_chainsaw(item, i)
             elif item.get_category() == 'Tool': 
+                if isinstance(item, Items.ItemStack):
+                    item = item.peek_at_item()
                 if item.get_name(1) == 'flare':
                     _flare = self.player.inventory.remove_item(i,1)
                     self.__player_uses_flare(_flare)
