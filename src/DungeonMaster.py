@@ -629,8 +629,6 @@ class DungeonMaster:
         return _dt
 
     def player_tries_moving_through_firewall(self, p, next_r, next_c, dt):
-        _hacking = p.skills.get_skill('Hacking').get_rank()
-        _roll = do_d10_roll(1 + _hacking, 0)
         if self.curr_lvl.level_num <= 3:
             _difficulty = 15
         elif self.curr_lvl.level_num <= 7:
@@ -638,15 +636,21 @@ class DungeonMaster:
         else:
             _difficulty = 45
 
-        if _roll < _difficulty:
+        _hacking = p.skills.get_skill('Hacking').get_rank()
+        _roll = do_d10_roll(1, 0)
+        _total = _roll + do_d10_roll(_hacking, 0)
+
+        # If the player rolls a "10", they succeed regardless of difficulty
+        if _roll == 9 or _total >= _difficulty:
+            self.dui.display_message('You pierce the firewall.')
+            self.__move_player(p.row, p.col, next_r, next_c, dt)
+        else:
             self.player.energy -= STD_ENERGY_COST
             self.dui.display_message('The firewall repels you.')
 
-            if _roll < _difficulty / 2:
+            if _total < _difficulty / 2:
                 self.dui.display_message('The shock severs your connection.')
                 self.player_forcibly_exits_cyberspace()
-        else:
-            self.__move_player(p.row, p.col, next_r, next_c, dt)
 
     def player_moves_onto_a_special_sqr(self, row, col):
         self.player.energy -= STD_ENERGY_COST

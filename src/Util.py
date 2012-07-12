@@ -117,8 +117,7 @@ def get_rnd_direction_tuple():
 def do_d10_roll(rolls, bonus):
     _roll = 0
     for x in range(rolls):
-        r = randrange(10)
-        if r > 0: r += bonus
+        r = randrange(10) + bonus
         _roll += r
     
     return _roll
