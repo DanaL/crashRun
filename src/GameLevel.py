@@ -329,11 +329,14 @@ class GameLevel:
     def get_occupant(self, r, c):
         return self.dungeon_loc[r][c].occupant
         
-    def is_clear(self,r,c):
+    def is_clear(self, r, c, ignore_occupants=False):
         if not self.in_bounds(r,c):
             return False
-            
-        return self.map[r][c].is_passable() and self.dungeon_loc[r][c].occupant == ''
+        
+        if ignore_occupants:
+            return self.map[r][c].is_passable()
+        else:
+            return self.map[r][c].is_passable() and self.dungeon_loc[r][c].occupant == ''
 
     def is_clear_for_agent(self, r, c, agent):
         if not self.in_bounds(r,c):

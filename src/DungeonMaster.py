@@ -2027,7 +2027,8 @@ class DungeonMaster:
                 _dir = get_direction_tuple(ch)
                 _next_r = _cursor.row + _dir[0]
                 _next_c = _cursor.col + _dir[1]
-            if self.is_clear(_next_r, _next_c) and calc_distance(start_r, start_c, _next_r, _next_c) <= _range:
+
+            if self.curr_lvl.is_clear(_next_r, _next_c, True) and calc_distance(start_r, start_c, _next_r, _next_c) <= _range:
                 self.curr_lvl.dungeon_loc[_cursor.row][_cursor.col].temp_tile = ''
                 self.update_sqr(self.curr_lvl, _cursor.row, _cursor.col)
                 self.curr_lvl.dungeon_loc[_next_r][_next_c].temp_tile = _cursor
