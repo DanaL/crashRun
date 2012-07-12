@@ -330,6 +330,10 @@ class DungeonUI(object):
                 return ''
             else:
                 _key = self.translate_keystroke(d[1])
+                # Make '.' a synonym for '>' when selecting direction (this might 
+                # need to be finer-grained at some point depending if I need to differentiate
+                # betwen "Use item on self" or "Use item on floor"
+                if _key == "PASS": _key = "MOVE_DOWN"
                 _dir = self.translate_dir(_key)
         
         return _dir
@@ -670,7 +674,7 @@ class DungeonUI(object):
             elif event.type == KEYDOWN and event.key not in (SHIFT,ALT,CTRL):   
                 _key = self.translate_keystroke(event.unicode)
                 _dir = self.translate_dir(_key)
-                if _dir in ('<', '>'):
+                if _dir in ('<', '>', '.'):
                     continue
                 if _dir != '': 
                     return _dir    

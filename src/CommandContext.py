@@ -204,7 +204,7 @@ class MeatspaceCC(CommandContext):
             _sr = _p.row+_dt[0]
             _sc = _p.col+_dt[1]
             
-            if _dir == '>':
+            if _dir in ('>', '.'):
                 _boxes = self.get_boxes(_lvl, _sr, _sc)
                 
                 # This is obviously dumb.  Need to fix it for sqrs with more
