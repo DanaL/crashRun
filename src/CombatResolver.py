@@ -72,13 +72,14 @@ class MeleeResolver(CombatResolver):
         _roll = _base_roll + tori.level / 2 
         _roll += tori.get_melee_attack_modifier(weapon)
         _roll += attack_modifiers
+        _success = False
         
         if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             if weapon == '':
                 _dmg = tori.get_hand_to_hand_dmg_roll()
             else:
                 _dmg = weapon.dmg_roll(tori)
-                    
+                       
             try:
                 if uke.attitude == 'inactive':
                     _dmg *= 2
@@ -97,12 +98,15 @@ class MeleeResolver(CombatResolver):
             
             self.dm.mr.show_hit_message(tori, uke, _verb)
             uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, _dmg_types)
+            _success = True
         else:
             self.dm.mr.show_miss_message(tori, uke)
         
         if isinstance(weapon, BatteryPowered) and weapon.charge > 0:
-                weapon.charge -= 1
-                if weapon.charge == 0: self.dm.items_discharged(tori, [weapon])
+                # taser should only use a charge if it hit
+                if _success or weapon.get_name(1) != "taser":
+                    weapon.charge -= 1
+                    if weapon.charge == 0: self.dm.items_discharged(tori, [weapon])
                 
     def attack(self, tori, uke):
         if tori.has_condition('dazed'):
