@@ -23,6 +23,7 @@ from ca_cave import CA_CaveFactory
 from GameLevel import GameLevel
 from GameLevel import ItemChart
 import MonsterFactory
+import Terrain
 
 class MinesLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):
@@ -121,7 +122,7 @@ class MinesLevel(GameLevel):
         self.__generate_map()
         for j in range(3):
             if randrange(4) == 0:
-                self.place_sqr(Terrain.ConcussionMine(), FLOOR)
+                self.place_sqr(Terrain.ConcussionMine(), Terrain.FLOOR)
         self.__add_items_to_level()
         self.__add_monsters()
         
