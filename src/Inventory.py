@@ -17,41 +17,41 @@
 
 from random import choice
 
-import Items
-from Items import BatteryPowered
-from Items import ItemStack
-from Items import WithOffSwitch
-from Util import get_correct_article
-from Util import NonePicked
+from . import Items
+from .Items import BatteryPowered
+from .Items import ItemStack
+from .Items import WithOffSwitch
+from .Util import get_correct_article
+from .Util import NonePicked
 
-class AlreadyWearingSomething:
+class AlreadyWearingSomething(Exception):
     pass
     
-class BUSError:
+class BUSError(Exception):
     pass
     
-class CannotDropReadiedArmour:
+class CannotDropReadiedArmour(Exception):
     pass
 
-class InventorySlotsFull:
+class InventorySlotsFull(Exception):
     pass
     
-class NoStackFound:
+class NoStackFound(Exception):
     pass
 
-class NotWearingItem:
+class NotWearingItem(Exception):
     pass
 
-class OutOfWetwareMemory:
+class OutOfWetwareMemory(Exception):
     pass
     
-class CannotWieldSomethingYouAreWearing:
+class CannotWieldSomethingYouAreWearing(Exception):
     pass
     
 # stores tuples of the form (item,category)
 class Inventory:
     lc = ord('a')
-    lcr = range(lc + 0, lc + 25)
+    lcr = list(range(lc + 0, lc + 25))
 
     def __init__(self):
         self.__inv = {}
@@ -109,7 +109,7 @@ class Inventory:
             for e in self.__secondary_weapon[0].effects:
                 effects.append((e, self.__secondary_weapon[0]))
                 
-        for ak in self.__readied_armour.keys():
+        for ak in list(self.__readied_armour.keys()):
             if self.__readied_armour[ak] != '':
                 for e in self.__readied_armour[ak][0].effects:
                     effects.append((e, self.__readied_armour[ak][0]))
@@ -178,7 +178,7 @@ class Inventory:
         if self.__primary_weapon != '' and item == self.__primary_weapon[0]:
             return True
         
-        for _location in self.__readied_armour.keys():
+        for _location in list(self.__readied_armour.keys()):
             _piece = self.__readied_armour[_location]
             if _piece != '' and _piece[0] == item:
                 return True
@@ -362,7 +362,7 @@ class Inventory:
         for j in range(0,26):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '':
-                print self.__inv[letter],self.__inv[letter][0].get_name()
+                print((self.__inv[letter], self.__inv[letter][0].get_name()))
 
     def get_dump(self):
         dump = []
@@ -393,7 +393,7 @@ class Inventory:
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         _name += ' (being worn)'
                         
-                if not _category in _menu.keys():
+                if not _category in list(_menu.keys()):
                     _menu[_category] = []
                 _menu[_category].append( (letter,_name,letter,letter))
         return _menu

@@ -83,7 +83,7 @@ class SkillTable(object):
             yield cat
 
     def get_category(self,category):
-        keys = self.__skills.keys()
+        keys = list(self.__skills.keys())
         keys.sort()
         cat_list = []
 

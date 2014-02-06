@@ -18,22 +18,22 @@
 from random import choice
 from random import randrange
 
-from ca_cave import CA_CaveFactory
-from GameLevel import GameLevel
-import Items
-from Items import ItemFactory
-import MonsterFactory
-from Rooms import place_item
-from Rooms import place_monster
-from Terrain import SpecialFloor
-from Terrain import TerrainFactory
-from Terrain import ACID_POOL
-from Terrain import DOOR
-from Terrain import FLOOR
-from Terrain import PERM_WALL
-from Terrain import TOXIC_WASTE
-from Terrain import UP_STAIRS
-from Terrain import WALL
+from .ca_cave import CA_CaveFactory
+from .GameLevel import GameLevel
+from . import Items
+from .Items import ItemFactory
+from . import MonsterFactory
+from .Rooms import place_item
+from .Rooms import place_monster
+from .Terrain import SpecialFloor
+from .Terrain import TerrainFactory
+from .Terrain import ACID_POOL
+from .Terrain import DOOR
+from .Terrain import FLOOR
+from .Terrain import PERM_WALL
+from .Terrain import TOXIC_WASTE
+from .Terrain import UP_STAIRS
+from .Terrain import WALL
 
 class ProvingGroundsLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):

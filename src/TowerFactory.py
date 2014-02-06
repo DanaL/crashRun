@@ -16,10 +16,10 @@
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
 from random import randrange
-import Terrain
-from Terrain import TerrainFactory
+from . import Terrain
+from .Terrain import TerrainFactory
 
-class FatalSplittingError:
+class FatalSplittingError(Exception):
     pass
     
 # if I create a method called get_sqr, I can factor much code that is common into an abstract DungeonFactory
@@ -100,8 +100,8 @@ class TowerFactory(object):
                 if ch == ' ':
                     ch = '#'
 
-                print ch,
-            print 
+                print(ch, end="")
+            print('')
 
     # refactoring candidate
     def set_cell(self,r, c, sqr):
@@ -383,6 +383,6 @@ class TowerFactory(object):
                 self.__do_v_split(start_r,start_c,length,width)
 
 if __name__ == "__main__":
-    tf = TowerFactory(20,30,False,False)
+    tf = TowerFactory(20, 30, False, False)
     tf.gen_map()
     tf.print_grid()

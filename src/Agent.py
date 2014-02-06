@@ -20,30 +20,30 @@ from random import choice
 from random import randrange
 from random import random
 
-from BaseTile import BaseTile
-import Behaviour
-from FieldOfView import Shadowcaster
-import Items
-from Items import ItemFactory
-from Inventory import Inventory
-from MessageResolver import MessageResolver
-from pq import PriorityQueue
-from Terrain import ACID_POOL
-from Terrain import TOXIC_WASTE
-from Util import calc_angle_between
-from Util import calc_distance
-from Util import convert_locations_to_dir
-from Util import do_dN
-from Util import do_d10_roll
-from Util import get_correct_article
+from .BaseTile import BaseTile
+from . import Behaviour
+from .FieldOfView import Shadowcaster
+from . import Items
+from .Items import ItemFactory
+from .Inventory import Inventory
+from .MessageResolver import MessageResolver
+from .PriorityQueue import PriorityQueue
+from .Terrain import ACID_POOL
+from .Terrain import TOXIC_WASTE
+from .Util import calc_angle_between
+from .Util import calc_distance
+from .Util import convert_locations_to_dir
+from .Util import do_dN
+from .Util import do_d10_roll
+from .Util import get_correct_article
 
 STD_ENERGY_COST = 12
 
 # This class is an exception raised when a monster makes an illegal move
-class IllegalMonsterMove:
+class IllegalMonsterMove(Exception):
     pass
 
-class MoraleCheckFailed:
+class MoraleCheckFailed(Exception):
     pass
 
 class DamageDesc(object):
@@ -114,7 +114,7 @@ class AStarPathFactory:
                     s_cost = g + h
 
                     # give up after searched for too long
-                    if not self.__visited.has_key(successor):
+                    if successor not in self.__visited:
                         self.__open.append((successor,s_cost))
                         self.__visited[successor] = (s_cost,current)
                     elif s_cost < self.__visited[successor][0]:

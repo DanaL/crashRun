@@ -18,96 +18,96 @@
 from copy import deepcopy
 from datetime import datetime
 from time import localtime, strftime, sleep
-from pq import PriorityQueue
 from random import random
 from random import randrange
 from random import choice
 import string
 
-import Agent
-from Agent import BaseAgent
-from Agent import BaseMonster
-from Agent import IllegalMonsterMove
-from Agent import STD_ENERGY_COST
-from BaseTile import BaseTile
-from CharacterGenerator import CharacterGenerator
-from CombatResolver import ShootingResolver
-from CombatResolver import ThrowingResolver
-from CommandContext import MeatspaceCC
-from CommandContext import CyberspaceCC
-from Cyberspace import CyberspaceLevel
-from Cyberspace import TrapSetOff
-from FieldOfView import get_lit_list
-from FieldOfView import Shadowcaster
-from GameLevel import GameLevel
-from GameLevel import Noise
-from GamePersistence import clean_up_files
-from GamePersistence import get_level_from_save_obj
-from GamePersistence import get_preferences
-from GamePersistence import get_save_file_name
-from GamePersistence import load_level
-from GamePersistence import load_saved_game
-from GamePersistence import NoSaveFileFound
-from GamePersistence import save_game
-from GamePersistence import save_level
-from GamePersistence import write_score
-import Items
-from Items import ItemDoesNotExist
-from Items import ItemFactory
-from Items import ItemStack
-from Inventory import BUSError
-from Inventory import CannotDropReadiedArmour
-from Inventory import InventorySlotsFull
-from Inventory import NotWearingItem
-from Inventory import OutOfWetwareMemory
-from MessageResolver import MessageResolver
-from Mines import MinesLevel
-from MiniBoss1 import MiniBoss1Level
-import MonsterFactory
-from NewComplexFactory import NewComplexFactory
-from OldComplex import OldComplexLevel
-from Player import Player
-from Prologue import Prologue
-from ProvingGrounds import ProvingGroundsLevel
-from ScienceComplex import ScienceComplexLevel
-from Software import Software
-import Terrain
-from Terrain import TerrainTile
-from Terrain import Trap
-from Terrain import ACID_POOL
-from Terrain import EXIT_NODE
-from Terrain import SPECIAL_DOOR
-from Terrain import SPECIAL_FLOOR
-from Terrain import SUBNET_NODE
-from Terrain import TOXIC_WASTE
-from TowerFactory import TowerFactory
-from Util import bresenham_line
-from Util import calc_distance
-from Util import do_d10_roll
-from Util import get_correct_article
-from Util import get_direction_tuple
-from Util import get_rnd_direction_tuple
-from Util import NonePicked
+#import Agent
+from .Agent import BaseAgent
+from .Agent import BaseMonster
+from .Agent import IllegalMonsterMove
+from .Agent import STD_ENERGY_COST
+from .BaseTile import BaseTile
+from .CharacterGenerator import CharacterGenerator
+from .CombatResolver import ShootingResolver
+from .CombatResolver import ThrowingResolver
+from .CommandContext import MeatspaceCC
+from .CommandContext import CyberspaceCC
+from .Cyberspace import CyberspaceLevel
+from .Cyberspace import TrapSetOff
+from .FieldOfView import get_lit_list
+from .FieldOfView import Shadowcaster
+from .GameLevel import GameLevel
+from .GameLevel import Noise
+from .GamePersistence import clean_up_files
+from .GamePersistence import get_level_from_save_obj
+from .GamePersistence import get_preferences
+from .GamePersistence import get_save_file_name
+from .GamePersistence import load_level
+from .GamePersistence import load_saved_game
+from .GamePersistence import NoSaveFileFound
+from .GamePersistence import save_game
+from .GamePersistence import save_level
+from .GamePersistence import write_score
+from . import Items
+from .Items import ItemDoesNotExist
+from .Items import ItemFactory
+from .Items import ItemStack
+from .Inventory import BUSError
+from .Inventory import CannotDropReadiedArmour
+from .Inventory import InventorySlotsFull
+from .Inventory import NotWearingItem
+from .Inventory import OutOfWetwareMemory
+from .MessageResolver import MessageResolver
+from .Mines import MinesLevel
+from .MiniBoss1 import MiniBoss1Level
+from . import MonsterFactory
+from .NewComplexFactory import NewComplexFactory
+from .OldComplex import OldComplexLevel
+from .Player import Player
+from .PriorityQueue import PriorityQueue
+from .Prologue import Prologue
+from .ProvingGrounds import ProvingGroundsLevel
+from .ScienceComplex import ScienceComplexLevel
+from .Software import Software
+from . import Terrain
+from .Terrain import TerrainTile
+from .Terrain import Trap
+from .Terrain import ACID_POOL
+from .Terrain import EXIT_NODE
+from .Terrain import SPECIAL_DOOR
+from .Terrain import SPECIAL_FLOOR
+from .Terrain import SUBNET_NODE
+from .Terrain import TOXIC_WASTE
+from .TowerFactory import TowerFactory
+from .Util import bresenham_line
+from .Util import calc_distance
+from .Util import do_d10_roll
+from .Util import get_correct_article
+from .Util import get_direction_tuple
+from .Util import get_rnd_direction_tuple
+from .Util import NonePicked
 
 ANIMATION_PAUSE = 0.02
 FINAL_TURN = 20000
 
-class UnableToAccess:
+class UnableToAccess(Exception):
     pass
     
-class PickUpAborted:
+class PickUpAborted(Exception):
     pass
 
-class GameOver:
+class GameOver(Exception):
     pass
 
-class TurnOver:
+class TurnOver(Exception):
     pass
 
-class TurnInterrupted:
+class TurnInterrupted(Exception):
     pass
 
-class UnknownDebugCommand:
+class UnknownDebugCommand(Exception):
     pass
             
 def GetGameFactoryObject(dm, level, length, width, category):
@@ -444,12 +444,12 @@ class DungeonMaster:
 
         try:
             self.__load_saved_game(game)
-            self.dui.set_r_c(self.player.row,self.player.col)
+            self.dui.set_r_c(self.player.row, self.player.col)
             self.dui.redraw_screen()
         except NoSaveFileFound:
-            self.begin_new_game(game)
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
-            self.dui.set_r_c(self.player.row,self.player.col)
+            self.begin_new_game(game)
+            self.dui.set_r_c(self.player.row, self.player.col)
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
@@ -721,7 +721,7 @@ class DungeonMaster:
 
             if self.is_clear(_next_r, _next_c) or self.is_special_tile(_next_r, _next_c):
                 self.__move_player(_p.row, _p.col, _next_r, _next_c, _dt)
-            elif self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant <> '':
+            elif self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant != '':
                 _occ = self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant
 
                 if self.player.has_condition('blind'):
@@ -1156,7 +1156,7 @@ class DungeonMaster:
             self.update_sqr(self.curr_lvl, bullet_row, bullet_col)
             self.update_sqr(self.curr_lvl, prev_r,prev_c)
             
-            if self.sight_matrix.has_key((bullet_row,bullet_col)):
+            if (bullet_row,bullet_col) in self.sight_matrix:
                 sleep(ANIMATION_PAUSE) 
 
         self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile =  '' 
@@ -1632,16 +1632,16 @@ class DungeonMaster:
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
 
     def __not_in_sight_matrix(self, j):
-        return not self.sight_matrix.has_key(j)
+        return j not in self.sight_matrix
     
     # This only really deals with visual information, should add audio, also
     def alert_player(self, r, c, message, pause_for_more=False):
-        if self.sight_matrix.has_key((r,c)):
+        if (r,c) in self.sight_matrix:
             message = message[0].upper() + message[1:]
             self.dui.display_message(message, pause_for_more)
 
     def can_player_see_location(self, r, c, level):
-        return level == self.curr_lvl and self.sight_matrix.has_key((r,c))
+        return level == self.curr_lvl and (r,c) in self.sight_matrix
 
     def alert_player_to_event(self, r, c, level, message, refresh):
         if self.can_player_see_location(r, c, level):
@@ -1916,7 +1916,7 @@ class DungeonMaster:
         areaOfEffect = sc.calc_visible_list()
         areaOfEffect[(row,col)] = 0
 
-        for key in areaOfEffect.keys():
+        for key in list(areaOfEffect.keys()):
             dSqr = level.dungeon_loc[key[0]][key[1]]
             mSqr = level.map[key[0]][key[1]]
 
@@ -1937,7 +1937,7 @@ class DungeonMaster:
             elif isinstance(mSqr, Terrain.Equipment):
                 mSqr.functional = False
 
-        for key in areaOfEffect.keys():
+        for key in list(areaOfEffect.keys()):
             level.dungeon_loc[key[0]][key[1]].temp_tile = ''
             self.update_sqr(level, key[0], key[1])
         
@@ -2225,7 +2225,7 @@ class DungeonMaster:
         
             _pick = choice(_picks)
             if _request == 'temporary squirrel':
-                from Agent import TemporarySquirrel
+                from .Agent import TemporarySquirrel
                 _monster = TemporarySquirrel(self, _pick[0], _pick[1])
             else:
                 _monster = MonsterFactory.get_monster_by_name(self, _request, _pick[0], _pick[1])

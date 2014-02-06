@@ -18,21 +18,21 @@
 from random import random
 from random import randrange
 
-import Items
-from Items import ItemFactory
-from GameLevel import GameLevel
-import MonsterFactory
-import Terrain
-from Terrain import TerrainFactory
-from Terrain import DOOR
-from Terrain import FLOOR
-from Terrain import WALL
-from Terrain import PERM_WALL
-from Terrain import TREE
-from Terrain import GRASS
-from Terrain import ROAD
-from Terrain import DOWN_STAIRS
-from TowerFactory import TowerFactory
+from . import Items
+from .Items import ItemFactory
+from .GameLevel import GameLevel
+from . import MonsterFactory
+from . import Terrain
+from .Terrain import TerrainFactory
+from .Terrain import DOOR
+from .Terrain import FLOOR
+from .Terrain import WALL
+from .Terrain import PERM_WALL
+from .Terrain import TREE
+from .Terrain import GRASS
+from .Terrain import ROAD
+from .Terrain import DOWN_STAIRS
+from .TowerFactory import TowerFactory
 
 class Prologue(GameLevel):
     def __init__(self, dm):

@@ -19,22 +19,22 @@ from random import choice
 from random import random
 from random import randrange
 
-from Agent import DaemonicProcess
-from Agent import SecurityControlProgram
-from CombatResolver import CyberspaceCombatResolver
-from FieldOfView import get_lit_list
-from GameLevel import GameLevel
-from Maze import Maze
-import MonsterFactory
-from Software import get_software_by_name
-from Terrain import LogicBomb
-from Terrain import SecurityCamera
-from Terrain import TerrainFactory
-from Terrain import CYBERSPACE_FLOOR
-from Terrain import EXIT_NODE
-from Terrain import FIREWALL
-from Terrain import UP_STAIRS
-from Util import do_d10_roll
+from .Agent import DaemonicProcess
+from .Agent import SecurityControlProgram
+from .CombatResolver import CyberspaceCombatResolver
+from .FieldOfView import get_lit_list
+from .GameLevel import GameLevel
+from .Maze import Maze
+from . import MonsterFactory
+from .Software import get_software_by_name
+from .Terrain import LogicBomb
+from .Terrain import SecurityCamera
+from .Terrain import TerrainFactory
+from .Terrain import CYBERSPACE_FLOOR
+from .Terrain import EXIT_NODE
+from .Terrain import FIREWALL
+from .Terrain import UP_STAIRS
+from .Util import do_d10_roll
 
 class TrapSetOff:
     pass
@@ -174,7 +174,7 @@ class CyberspaceLevel(GameLevel):
         if _r < 0.50:
             _s = get_software_by_name('mp3', 1)
         elif _r < 0.75:
-            _s = get_software_by_name('data file', self.level_num/2)
+            _s = get_software_by_name('data file', self.level_num // 2)
         else:
             _s = get_software_by_name('Portable Search Engine', 1)
     
@@ -186,7 +186,7 @@ class CyberspaceLevel(GameLevel):
         if _r < 0.20:
             _s = get_software_by_name('mp3', 1)
         elif _r < 0.70:
-            _s = get_software_by_name('data file', self.level_num/2)
+            _s = get_software_by_name('data file', self.level_num // 2)
         elif _r < 0.80:
             _s = get_software_by_name('Portable Search Engine', 1)
         elif _r < 0.90:
@@ -200,7 +200,7 @@ class CyberspaceLevel(GameLevel):
         _r = random()
         
         if _r < 0.50:
-            _s = get_software_by_name('data file', self.level_num/2)
+            _s = get_software_by_name('data file', self.level_num // 2)
         elif _r < 0.60:
             _s = get_software_by_name('Portable Search Engine', 1)
         elif _r < 0.70:

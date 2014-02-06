@@ -17,13 +17,13 @@
 
 from random import choice
 
-from DisjointSet import DSNode
-from DisjointSet import union
-from DisjointSet import find
-from DisjointSet import split_sets
-from Terrain import TerrainFactory
-from Terrain import CYBERSPACE_WALL
-from Terrain import CYBERSPACE_FLOOR
+from .DisjointSet import DSNode
+from .DisjointSet import union
+from .DisjointSet import find
+from .DisjointSet import split_sets
+from .Terrain import TerrainFactory
+from .Terrain import CYBERSPACE_WALL
+from .Terrain import CYBERSPACE_FLOOR
 
 class Maze(object):
     def __init__(self, length, width):

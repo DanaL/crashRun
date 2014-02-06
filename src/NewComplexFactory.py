@@ -18,19 +18,19 @@
 from random import choice
 from random import randrange
 
-from DisjointSet import DSNode
-from DisjointSet import union
-from DisjointSet import find
-from DisjointSet import split_sets
-from Terrain import TerrainFactory
-from Terrain import DOOR
-from Terrain import FLOOR
-from Terrain import WALL
-from Terrain import PERM_WALL
-from Terrain import UP_STAIRS
-from Terrain import DOWN_STAIRS
+from .DisjointSet import DSNode
+from .DisjointSet import union
+from .DisjointSet import find
+from .DisjointSet import split_sets
+from .Terrain import TerrainFactory
+from .Terrain import DOOR
+from .Terrain import FLOOR
+from .Terrain import WALL
+from .Terrain import PERM_WALL
+from .Terrain import UP_STAIRS
+from .Terrain import DOWN_STAIRS
 
-from Terrain import OCEAN
+from .Terrain import OCEAN
 
 class Room:
     count = 0
@@ -70,11 +70,11 @@ class NewComplexFactory:
         
         self.upStairs = ''
         self.downStairs = ''
-                
+        
     def __set_staircase(self,stairs):
         while 1:
-            r = randrange(0,self.__length)
-            c = randrange(0,self.__width)
+            r = randrange(0, self.__length)
+            c = randrange(0, self.__width)
 
             if self._map[r][c].get_type() == FLOOR:
                 self._map[r][c] = stairs
@@ -120,7 +120,7 @@ class NewComplexFactory:
         _ne = sqr
         _width = randrange(3,10)
         _length = randrange(3,10)
-
+        
         if sqr[0] + _length >= self.__length:
             _down = self.__length -1
         else:
@@ -387,7 +387,7 @@ class NewComplexFactory:
     
     def __merge_rooms(self, _sqrs, _floors):
         _rooms = split_sets(_floors)
-        while len(_rooms.keys()) > 1:
+        while len(list(_rooms.keys())) > 1:
             _start = self.__pick_room(_rooms)
             _dir = self.__pick_dir(_start.value)
             r = _start.value[0]+_dir[0]
@@ -419,7 +419,7 @@ class NewComplexFactory:
     def __pick_room(self, _rooms):
         _size = 1000
     
-        for _r in _rooms.keys():
+        for _r in list(_rooms.keys()):
             if len(_rooms[_r]) < _size:
                 _room = _r
                 _size = len(_rooms[_r])
@@ -457,12 +457,12 @@ class NewComplexFactory:
     
     def remove_up_stairs_from_rooms(self):
         if self.upStairs != '':
-            for _room in self.rooms.keys():
+            for _room in list(self.rooms.keys()):
                 if self.upStairs in self.rooms[_room]:
                     del self.rooms[_room]
 
     def gen_map(self):
-        _initial = (self.__length/2,self.__width/2)
+        _initial = (int(self.__length / 2), int(self.__width / 2))
 
         _rooms = []
         _rooms.append(self._make_sw_room(_initial))
@@ -485,10 +485,10 @@ class NewComplexFactory:
                     ch = '#'
                             
                 _line += _ch
-            print _line
+            print(_line)
                 
 if __name__ == '__main__':
-    _ncf = NewComplexFactory(50,70, False, False)
+    _ncf = NewComplexFactory(50, 70, False, False)
     
     _ncf.gen_map()
     _ncf.print_grid()

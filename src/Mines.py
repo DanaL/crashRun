@@ -18,12 +18,12 @@
 from random import random
 from random import randrange
 
-from Agent import ExperimentalHoboInfiltrationDroid41K
-from ca_cave import CA_CaveFactory
-from GameLevel import GameLevel
-from GameLevel import ItemChart
-import MonsterFactory
-import Terrain
+from .Agent import ExperimentalHoboInfiltrationDroid41K
+from .ca_cave import CA_CaveFactory
+from .GameLevel import GameLevel
+from .GameLevel import ItemChart
+from . import MonsterFactory
+from . import Terrain
 
 class MinesLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):

@@ -18,9 +18,9 @@
 from random import choice
 from random import randrange
 
-from BaseTile import BaseTile
-from Util import do_d10_roll
-from Util import do_dN
+from .BaseTile import BaseTile
+from .Util import do_d10_roll
+from .Util import do_dN
 
 # These classes are just exceptions to throw
 class ItemDoesNotExist:

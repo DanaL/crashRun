@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-import Items
-from Util import get_correct_article
+from . import Items
+from .Util import get_correct_article
 
 def has_ammo_for(agent, gun):
     _a = ord('a')
@@ -107,8 +107,10 @@ def pick_armour(agent):
                 if _best_pieces[_area] == None or _ac_mod > _best_pieces[_area][0]:
                     _best_pieces[_area] = (_ac_mod, _slot)
     
-    _pieces = _best_pieces.values()
-    _pieces.sort()
-    _pieces.reverse()
+    _pieces = [p for p in list(_best_pieces.values()) if p != None]
+
+    if _pieces != None:
+        _pieces.sort()
+        _pieces.reverse()
     
     return [_p[1] for _p in _pieces if _p != None]

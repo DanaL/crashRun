@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import with_statement
 from os import path
 
 _commands = {'PASS':'.', 'SPECIAL_ABILITY':'A', 'BASH':'B', 'DROP':'d', 'SHOOT':'f', 'HACKING':'H', 
@@ -39,7 +38,7 @@ class KeyConfigReader(object):
     
     def check_for_keymap_file(self):
         if not path.exists('keys.txt'):
-            print 'key.txt not found, generating default file.'
+            print('key.txt not found, generating default file.')
             self.generate_file()
         
     def check_line(self, token, cmd, line_count):
@@ -51,7 +50,7 @@ class KeyConfigReader(object):
             self.flag_error('Duplicate key', line_count)
             return False
             
-        if cmd in self._keys.values():
+        if cmd in list(self._keys.values()):
             self.flag_error('Duplicate command', line_count)
             return False
             
@@ -118,7 +117,7 @@ class KeyConfigReader(object):
         # need to generate file if it doesn't exist
         _line_count = 0
         _version = ''
-        with file('keys.txt') as _lines:
+        with open('keys.txt', 'r') as _lines:
             for _line in [l.strip() for l in _lines]:
                 _line_count += 1
                 if _line == '' or _line[0] == '#':

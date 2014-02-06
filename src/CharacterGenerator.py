@@ -19,11 +19,11 @@ from copy import deepcopy
 from random import choice
 from random import randrange
 
-from Items import ItemFactory
-from Player import Player
-from Player import PlayerStats
-from Skills import SkillTable
-from Software import get_software_by_name
+from .Items import ItemFactory
+from .Player import Player
+from .Player import PlayerStats
+from .Skills import SkillTable
+from .Software import get_software_by_name
 
 class CharacterGenerator:
     def __init__(self,dl,dm):
@@ -229,11 +229,11 @@ class CharacterGenerator:
             
     def __show_initial_stats(self):
         msg = ['Your initial stats are:']
-        msg.append('   Strength:  ' + `self.__player.stats.get_strength()`)
-        msg.append('   Co-ordination:  ' + `self.__player.stats.get_coordination()`)
-        msg.append('   Toughness:  ' + `self.__player.stats.get_toughness()`)
-        msg.append('   Intuition:  ' + `self.__player.stats.get_intuition()`)
-        msg.append('   Chutzpah:  ' + `self.__player.stats.get_chutzpah()`)
+        msg.append('   Strength:  ' + str(self.__player.stats.get_strength()))
+        msg.append('   Co-ordination:  ' + str(self.__player.stats.get_coordination()))
+        msg.append('   Toughness:  ' + str(self.__player.stats.get_toughness()))
+        msg.append('   Intuition:  ' + str(self.__player.stats.get_intuition()))
+        msg.append('   Chutzpah:  ' + str(self.__player.stats.get_chutzpah()))
 
         self.dui.write_screen(msg, True)
 

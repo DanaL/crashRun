@@ -18,29 +18,29 @@
 import string
 from random import randrange
 
-from Agent import STD_ENERGY_COST
-import Items
-import Inventory
-from Inventory import AlreadyWearingSomething
-from Inventory import CannotWieldSomethingYouAreWearing
-import MessageResolver
-from SubnetNode import SubnetNode
-import Terrain
-from Terrain import DownStairs
-from Terrain import SecurityCamera
-from Terrain import Terminal
-from Terrain import UpStairs
-from Terrain import DOOR
-from Terrain import EXIT_NODE
-from Terrain import SPECIAL_DOOR
-from Terrain import TERMINAL
-from Terrain import TRAP
-from Util import EmptyInventory
-from Util import do_d10_roll
-from Util import get_correct_article
-from Util import get_direction_tuple
-from Util import NonePicked
-from Util import pluralize
+from .Agent import STD_ENERGY_COST
+from . import Items
+from . import Inventory
+from .Inventory import AlreadyWearingSomething
+from .Inventory import CannotWieldSomethingYouAreWearing
+from . import MessageResolver
+from .SubnetNode import SubnetNode
+from . import Terrain
+from .Terrain import DownStairs
+from .Terrain import SecurityCamera
+from .Terrain import Terminal
+from .Terrain import UpStairs
+from .Terrain import DOOR
+from .Terrain import EXIT_NODE
+from .Terrain import SPECIAL_DOOR
+from .Terrain import TERMINAL
+from .Terrain import TRAP
+from .Util import EmptyInventory
+from .Util import do_d10_roll
+from .Util import get_correct_article
+from .Util import get_direction_tuple
+from .Util import NonePicked
+from .Util import pluralize
             
 class StatusBarInfo:
     def __init__(self,name,hp,max_hp,ac,lvl,lvl_type):
@@ -327,12 +327,12 @@ class MeatspaceCC(CommandContext):
             
     def get_inventory_category_lines(self, category, menu):
         _items = menu[category]
-        return [string.upper(pluralize(category))] + [i[0] + ' - ' + i[1] for i in _items]
+        return [pluralize(category).upper()] + [i[0] + ' - ' + i[1] for i in _items]
         
     def get_inventory_list(self):
         _lines = []
         _menu = self.dm.player.inventory.get_full_menu()
-        _categories = _menu.keys()
+        _categories = list(_menu.keys())
         if 'Firearm' in _categories:
             _lines += self.get_inventory_category_lines('Firearm', _menu)
             _categories.remove('Firearm')

@@ -18,19 +18,19 @@
 from random import random
 from random import randrange
 
-from Agent import ExperimentalHoboInfiltrationDroid41K
-from GameLevel import GameLevel
-from GameLevel import ItemChart
-import MonsterFactory
-import SubnetNode
-import Terrain
-from Terrain import TerrainFactory
-from Terrain import DOWN_STAIRS
-from Terrain import FLOOR
-from Terrain import SECURITY_CAMERA
-from Terrain import TERMINAL
-from Terrain import UP_STAIRS
-from TowerFactory import TowerFactory
+from .Agent import ExperimentalHoboInfiltrationDroid41K
+from .GameLevel import GameLevel
+from .GameLevel import ItemChart
+from . import MonsterFactory
+from . import SubnetNode
+from . import Terrain
+from .Terrain import TerrainFactory
+from .Terrain import DOWN_STAIRS
+from .Terrain import FLOOR
+from .Terrain import SECURITY_CAMERA
+from .Terrain import TERMINAL
+from .Terrain import UP_STAIRS
+from .TowerFactory import TowerFactory
 
 class OldComplexLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):
@@ -134,14 +134,14 @@ class OldComplexLevel(GameLevel):
             self.add_monster()
             
     def __bust_up_level(self):
-        maxDestruction = (500 - self.level_num) / 2
-        minDestruction = maxDestruction / 2
+        maxDestruction = (500 - self.level_num) // 2
+        minDestruction = maxDestruction // 2
 
         l = self.lvl_length - 1
         w = self.lvl_width - 1
         _tf = Terrain.TerrainFactory()
 
-        for x in range(randrange(minDestruction,maxDestruction)):
+        for x in range(randrange(minDestruction, maxDestruction)):
             r = randrange(1,l)
             c = randrange(1,w)
             if self.map[r][c].get_type() not in (UP_STAIRS,DOWN_STAIRS,SECURITY_CAMERA,TERMINAL):

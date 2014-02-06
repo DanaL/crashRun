@@ -18,13 +18,13 @@
 from random import random
 from random import randrange
 
-from NewComplexFactory import NewComplexFactory
-from GameLevel import GameLevel
-from GameLevel import ItemChart
-import MonsterFactory
-from Rooms import add_science_complex_rooms
-import SubnetNode
-import Terrain
+from .NewComplexFactory import NewComplexFactory
+from .GameLevel import GameLevel
+from .GameLevel import ItemChart
+from . import MonsterFactory
+from .Rooms import add_science_complex_rooms
+from . import SubnetNode
+from . import Terrain
 
 class ScienceComplexLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):

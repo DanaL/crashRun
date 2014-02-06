@@ -27,13 +27,13 @@ VERSION = '0.5.0'
 keys = KeyConfigReader(VERSION)
 keymap = keys.read_keys()
 if keys.error_count > 0:
-    print 'There were errors found in the keys.txt.  You must correct them'
-    print 'before crashRun can start.  If you wish, you may simply delete the'
-    print 'keys.txt file and crashrun will generate a new, default one.'
-    print
-    print 'The errors found were:'
+    print('There were errors found in the keys.txt.  You must correct them\n')
+    print('before crashRun can start.  If you wish, you may simply delete the\n')
+    print('keys.txt file and crashrun will generate a new, default one.\n')
+    print('\n')
+    print('The errors found were:\n')
     for e in keys.errors:
-        print e
+        print(e + '\n')
     exit()
 
 dui = DungeonUI(VERSION, keymap)        

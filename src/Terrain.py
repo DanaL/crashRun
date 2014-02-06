@@ -17,9 +17,9 @@
 
 from random import randrange
 
-from BaseTile import BaseTile
-from FieldOfView import Shadowcaster
-from Items import ItemFactory
+from .BaseTile import BaseTile
+from .FieldOfView import Shadowcaster
+from .Items import ItemFactory
 
 FLOOR = 0
 WALL = 1

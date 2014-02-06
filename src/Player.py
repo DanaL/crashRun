@@ -17,17 +17,18 @@
 
 from random import randrange
 
-from Agent import BaseAgent
-from Agent import STD_ENERGY_COST
-from BaseTile import BaseTile
-from Inventory import Inventory
-from Inventory import Wetboard
-import Items
-from Items import ItemFactory
-from Items import Firearm
-from Items import Weapon
-from Util import do_d10_roll
-from Util import do_dN
+from .Agent import BaseAgent
+from .Agent import STD_ENERGY_COST
+from .BaseTile import BaseTile
+from .Inventory import Inventory
+from .Inventory import Wetboard
+from . import Items
+from .Items import ItemFactory
+from .Items import Firearm
+from .Items import Weapon
+from .Util import do_d10_roll
+from .Util import do_dN
+from functools import reduce
 
 class PlayerStats:
     def __init__(self):

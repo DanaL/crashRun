@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-import profile
-from Terrain import TerrainFactory
-from Terrain import FLOOR
-from Terrain import WALL
-from Terrain import PERM_WALL
-from Terrain import UP_STAIRS
-from Terrain import DOWN_STAIRS
-from Terrain import OCEAN
+#import profile
+from .Terrain import TerrainFactory
+from .Terrain import FLOOR
+from .Terrain import WALL
+from .Terrain import PERM_WALL
+from .Terrain import UP_STAIRS
+from .Terrain import DOWN_STAIRS
+from .Terrain import OCEAN
 from random import randrange
-from DisjointSet import DSNode
-from DisjointSet import union
-from DisjointSet import find
-from DisjointSet import split_sets
+from .DisjointSet import DSNode
+from .DisjointSet import union
+from .DisjointSet import find
+from .DisjointSet import split_sets
 
 class CA_CaveFactory:
     def __init__(self,length,width,initial_open=0.40):
@@ -86,8 +86,8 @@ class CA_CaveFactory:
                 if ch == ' ':
                     ch = '#'
 
-                print ch,
-            print
+                print(ch, end=' ')
+            print()
 
     def __adj_wall_count(self,sr,sc):
         count = 0
@@ -138,7 +138,7 @@ class CA_CaveFactory:
             
         all_caves = split_sets(_nodes)
         
-        for cave in all_caves.keys():
+        for cave in list(all_caves.keys()):
             self.join_points(all_caves[cave][0].value)
             
     def join_points(self,pt1):

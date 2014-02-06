@@ -55,13 +55,13 @@ def union(n1, n2):
 def split_sets(_nodes):
     _sets = {}
     for _n in _nodes:
-        _keys = _sets.keys()
+        _keys = list(_sets.keys())
         if _n.parent.value in _keys:
             _sets[_n.parent.value].append(_n)
         else:
             _p = find(_n)
 
-            if not _p.value in _sets.keys():
+            if not _p.value in list(_sets.keys()):
                 _sets[_p.value] = [_p] 
             _sets[_p.value].append(_n)
             

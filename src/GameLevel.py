@@ -15,27 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from CombatResolver import MeleeResolver
-import Agent
-import Items
-from Items import ItemFactory
-import Terrain
-from Terrain import TerrainFactory
-from Terrain import DOOR
-from Terrain import FLOOR
-from Terrain import WALL
-from Terrain import PERM_WALL
-from Terrain import TREE
-from Terrain import GRASS
-from Terrain import ROAD
-from Terrain import UP_STAIRS
-from Terrain import DOWN_STAIRS
-from pq import PriorityQueue
-from FieldOfView import Shadowcaster
-from Terrain import TerrainTile
-import MonsterFactory
-from Util import calc_distance
-from Util import do_d10_roll
+from .CombatResolver import MeleeResolver
+from . import Agent
+from . import Items
+from .Items import ItemFactory
+from . import Terrain
+from .Terrain import TerrainFactory
+from .Terrain import DOOR
+from .Terrain import FLOOR
+from .Terrain import WALL
+from .Terrain import PERM_WALL
+from .Terrain import TREE
+from .Terrain import GRASS
+from .Terrain import ROAD
+from .Terrain import UP_STAIRS
+from .Terrain import DOWN_STAIRS
+from .PriorityQueue import PriorityQueue
+from .FieldOfView import Shadowcaster
+from .Terrain import TerrainTile
+from . import MonsterFactory
+from .Util import calc_distance
+from .Util import do_d10_roll
 
 from random import choice
 from random import random
@@ -121,7 +121,7 @@ class ItemChart:
         
     def get_item(self, level):
         _chart = self.__pick_chart()            
-        _pick = _chart[choice(_chart.keys())]
+        _pick = _chart[choice(list(_chart.keys()))]
     
         _if = ItemFactory()
         if _pick[1] > 0:

@@ -17,7 +17,7 @@
 
 from random import randrange
 
-from Util import get_correct_article
+from .Util import get_correct_article
 
 _verbs = {
     'miss': {True:'miss', False:'misses'}, 

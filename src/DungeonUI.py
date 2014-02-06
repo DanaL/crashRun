@@ -18,19 +18,19 @@
 import os
 import platform
 
-from BaseTile import BaseTile
+from .BaseTile import BaseTile
 from random import randrange
 import math,pygame
 from pygame.locals import *
 from string import digits
-from string import letters
+from string import ascii_letters
 
-from GamePersistence import get_preferences
-from GamePersistence import read_scores
-from GamePersistence import save_preferences
-from Util import EmptyInventory
-from Util import get_direction_tuple
-from Util import NonePicked
+from .GamePersistence import get_preferences
+from .GamePersistence import read_scores
+from .GamePersistence import save_preferences
+from .Util import EmptyInventory
+from .Util import get_direction_tuple
+from .Util import NonePicked
 
 # Handy constants
 NUM_A = ord('a')
@@ -39,7 +39,7 @@ NUM_CA = ord('A')
 NUM_CZ = ord('Z')
 NUM_ESC = 27
 CHR_ESC = chr(NUM_ESC) # The numeric value for the Escape key (on Win32)
-VALID_CH = letters + digits + ' ' + '-'
+VALID_CH = ascii_letters + digits + ' ' + '-'
 SHIFT = 304
 CTRL = 306
 ALT = 308
@@ -81,7 +81,7 @@ class MessageMemory(object):
         for _message in self.__message_memory:
             _row = _message[0]
             if _message[1] > 1:
-                _row += ' (x' + `_message[1]` + ')'
+                _row += ' (x' + str(_message[1]) + ')'
             _messages.append(_row)
         
         _messages.reverse()
@@ -116,7 +116,7 @@ class DungeonUI(object):
 
         self.screen = pygame.display.set_mode((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
         pygame.display.set_caption('crashRun ' + version)
-        pygame.key.set_repeat(500,30)
+        pygame.key.set_repeat(500, 30)
 
     # Expects menu to be in the form of:
     #   [(key0,q0,response0),(key1,q1,response1),...]
@@ -449,7 +449,7 @@ class DungeonUI(object):
         
         while True:
             _menu = []
-            _keys = _prefs.keys()
+            _keys = list(_prefs.keys())
             _keys.sort()
             for j in range(len(_keys)):
                 _letter = chr(ord('a') + j)
@@ -551,7 +551,7 @@ class DungeonUI(object):
             menu = []
             j = 1
             for c in player.skills.get_categories():
-                menu.append( (`j`,c,c) )
+                menu.append( (str(j),c,c) )
                 j += 1
                 
             _continue = True
@@ -655,12 +655,12 @@ class DungeonUI(object):
         if self.cc.get_lvl_width() < self.display_cols:
             self.map_c = 0
         else:
-            self.map_c = c - self.display_cols / 2
+            self.map_c = c - self.display_cols // 2
 
         if self.cc.get_lvl_length() < self.display_rows:
             self.map_r = -1
         else:
-            self.map_r = r - self.display_rows / 2 + 1
+            self.map_r = r - self.display_rows // 2 + 1
 
     def show_recent_messages(self):
         self.write_screen(self.__message_memory.messages(), True, True)
@@ -687,11 +687,11 @@ class DungeonUI(object):
         info = self.cc.get_status_bar_info()
 
         line = info.name
-        line += '     AC: ' + `info.ac`
-        line += '  HP: ' + `info.hp` + '(' + `info.max_hp` + ')'
+        line += '     AC: ' + str(info.ac)
+        line += '  HP: ' + str(info.hp) + '(' + str(info.max_hp) + ')'
 
         l = len(line)
-        levelSection = 'Dungeon Level: ' + `info.level`
+        levelSection = 'Dungeon Level: ' + str(info.level)
 
         for j in range(l, self.display_cols - len(levelSection)-1):
             line += ' '
@@ -701,7 +701,7 @@ class DungeonUI(object):
         elif info.lvl_type == 'cyberspace':
             line += 'Cyberspace'
         else:
-            line += 'Complex Level: ' + `info.level`
+            line += 'Complex Level: ' + str(info.level)
 
         text = pygame.Surface((self.fwidth * self.display_cols,self.fheight))
         text.fill(colour_table['black'])
@@ -749,7 +749,7 @@ class DungeonUI(object):
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
     def __write_sqr(self,tile,fg,bg,r,c,update=True):
-        if self.__tile_cache.has_key((tile,fg,bg)):
+        if (tile,fg,bg) in self.__tile_cache:
             ch = self.__tile_cache[(tile,fg,bg)]
         elif tile == ' ':
             ch = pygame.Surface((self.fwidth,self.fheight))
@@ -823,19 +823,19 @@ class DungeonUI(object):
     def __draw_char_sheet(self):
         _player = self.cc.get_player()
         msg = ['Information for ' + _player.get_name()]
-        msg.append('  Strength:  ' + `_player.stats.get_strength()`)
-        msg.append('  Co-ordination:  ' + `_player.stats.get_coordination()`)
-        msg.append('  Toughness:  ' + `_player.stats.get_toughness()`)
-        msg.append('  Intuition:  ' + `_player.stats.get_intuition()`)
-        msg.append('  Chutzpah:  ' + `_player.stats.get_chutzpah()`)
+        msg.append('  Strength:  ' + str(_player.stats.get_strength()))
+        msg.append('  Co-ordination:  ' + str(_player.stats.get_coordination()))
+        msg.append('  Toughness:  ' + str(_player.stats.get_toughness()))
+        msg.append('  Intuition:  ' + str(_player.stats.get_intuition()))
+        msg.append('  Chutzpah:  ' + str(_player.stats.get_chutzpah()))
         msg.append(' ')
-        msg.append('  AC:  ' + `_player.get_curr_ac()`)
+        msg.append('  AC:  ' + str(_player.get_curr_ac()))
         msg.append(' ')
-        msg.append('  Max  HP:  ' + `_player.max_hp`)
-        msg.append('  Curr HP:  ' + `_player.curr_hp`)
+        msg.append('  Max  HP:  ' + str(_player.max_hp))
+        msg.append('  Curr HP:  ' + str(_player.curr_hp))
         msg.append(' ')
-        msg.append('  Curr XP:  ' + `_player.get_curr_xp()`)
-        msg.append('  Level:  ' + `_player.level`)
+        msg.append('  Curr XP:  ' + str(_player.get_curr_xp()))
+        msg.append('  Level:  ' + str(_player.level))
         msg.append(' ')
         msg.append(_player.background)
         while len(msg) < 22:

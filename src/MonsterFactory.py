@@ -19,10 +19,10 @@ from random import choice
 from random import random
 from random import randrange
 
-import Items
-from Agent import *
-import Behaviour
-from Software import get_software_by_name
+from . import Items
+from .Agent import *
+from . import Behaviour
+from .Software import get_software_by_name
 
 def _basicNinja(dm, row, col):
     _n = Ninja(vision_radius=8, ac=20, hp_low=20, hp_high=30, dmg_dice=4, dmg_rolls=3, ab=0,

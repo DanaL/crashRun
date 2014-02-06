@@ -17,12 +17,12 @@
 
 from random import randrange
 
-import Items
-from Items import BatteryPowered
-from Items import Weapon
-from MessageResolver import MessageResolver
-from Util import do_d10_roll
-from Util import get_rnd_direction_tuple
+from . import Items
+from .Items import BatteryPowered
+from .Items import Weapon
+from .MessageResolver import MessageResolver
+from .Util import do_d10_roll
+from .Util import get_rnd_direction_tuple
 
 class CombatResolver(object):
     def __init__(self, dm, dui):

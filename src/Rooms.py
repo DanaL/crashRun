@@ -19,11 +19,11 @@ from random import choice
 from random import random
 from random import randrange
 
-from Agent import MoreauBot6000
-import Items
-from Items import ItemFactory
-import MonsterFactory
-from Terrain import Terminal
+from .Agent import MoreauBot6000
+from . import Items
+from .Items import ItemFactory
+from . import MonsterFactory
+from .Terrain import Terminal
 
 def place_item(room, level, item):
     while True:
@@ -248,7 +248,7 @@ def check_for_moreau_room(dm,level):
         
 def make_science_complex_room(dm, rooms, level):
     for j in range(randrange(1,4)):
-        _key = choice(rooms.keys())
+        _key = choice(list(rooms.keys()))
         _room = rooms[_key]
         del rooms[_key] # don't want to use the same room twice!
 

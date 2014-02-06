@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from cPickle import Pickler
-from cPickle import Unpickler
+from pickle import Pickler
+from pickle import Unpickler
 import datetime
 from os import listdir
 from os import path
 from os import remove
 import tarfile
 
-class NoSaveFileFound:
+class NoSaveFileFound(Exception):
     pass
 
 def save_preferences(prefs):
-    _file = file("prefs.txt", "w")
+    _file = open("prefs.txt", "w")
     for _key in prefs:
         _file.write("%s : %s\n" % (_key, str(prefs[_key])))
     _file.close()
@@ -38,7 +38,7 @@ def get_preferences():
         save_preferences(_prefs)
     else:
         _prefs = {}
-        _file = file("prefs.txt", "r")
+        _file = open("prefs.txt", "r")
         for _line in _file.readlines():
             _parts = _line.split(":")
             _prefs[_parts[0].strip()] = _parts[1].strip().lower() == "true"
@@ -85,7 +85,6 @@ def get_level_from_save_obj(level, obj):
             
 def get_save_file_name(username):
     _filename = username + '.crsf'
-    _filename = _filename.encode()
     
     return _filename
         
@@ -100,7 +99,7 @@ def clean_up_files(username, save_file):
     
 def load_level(username, level_num):
     try:
-        f = open(username + '_' + `level_num`,'r')
+        f = open(username + '_' + str(level_num), 'rb')
         up = Unpickler(f)
         _lvl_obj = up.load()
         f.close()
@@ -113,7 +112,7 @@ def load_saved_game(username):
     try:
         unpack_files(username)
         
-        f = open(username + '.crsf','r')
+        f = open(username + '.crsf','rb')
         up = Unpickler(f)
         stuff = up.load()
         f.close()
@@ -122,13 +121,9 @@ def load_saved_game(username):
         
     return stuff
             
-# The encode business is due to a bug in python 2.5
-# (but not previous versions) with tar-ing a file
-# that has a unicode name.  This *seems* to take care
-# of it, and I think the bug has been fixed for 2.6
 def pack_files(username):
     _tf = tarfile.open(username + '.crsg','w:gz')
-    _filename = get_save_file_name(username)    
+    _filename = get_save_file_name(username)
     _tf.add(_filename)
     
     for _file in listdir('.'):
@@ -164,7 +159,7 @@ def read_scores():
 
 def write_score(version, score, message):
     _dt = datetime.date.today()
-    _date = "%s-%s-%s" % (`_dt.year`,`_dt.month`,`_dt.day`)
+    _date = "%s-%s-%s" % (str(_dt.year), str(_dt.month), str(_dt.day))
     _lines = read_scores()
     _new = []
     
@@ -193,7 +188,7 @@ def write_score(version, score, message):
     return _score
     
 def save_game(username, save_obj):
-    f = open(username + '.crsf','w')
+    f = open(username + '.crsf','wb')
     p = Pickler(f)
     p.dump(save_obj)
     f.close()
@@ -201,14 +196,13 @@ def save_game(username, save_obj):
     pack_files(username)
     
 def save_level(username, level_num, save_obj):
-    f = open(username + '_' + `level_num`,'w')
+    f = open(username + '_' + str(level_num),'wb')
     p = Pickler(f)
     p.dump(save_obj)
     f.close()
 
 def unpack_files(username):
     _filename = username + '.crsg'
-    _filename = _filename.encode()
     
     _tf = tarfile.open(_filename,'r:gz')
     _tf.extractall()

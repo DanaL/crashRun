@@ -69,7 +69,7 @@ def calc_lit_list(radius):
                 _list[(_pts[_p][0],_col)] = 0
     _list[_pts[-1]] = 0
     
-    return _list.keys()
+    return list(_list.keys())
 
 def get_lit_list(radius):
     if radius not in lit_matrix:

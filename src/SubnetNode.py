@@ -18,8 +18,8 @@
 from random import choice
 from random import randrange
 
-from Terrain import TerrainTile
-from Terrain import SUBNET_NODE
+from .Terrain import TerrainTile
+from .Terrain import SUBNET_NODE
 
 class SubnetNode(TerrainTile):
     def __init__(self):

@@ -18,23 +18,23 @@
 from random import choice
 from random import randrange
 
-from Agent import Roomba3000
-from ca_cave import CA_CaveFactory
-from GameLevel import GameLevel
-from GameLevel import ItemChart
-import MonsterFactory
-from NewComplexFactory import NewComplexFactory
-from Rooms import add_science_complex_rooms
-from Terrain import SpecialDoor
-from Terrain import SecurityCamera
-from Terrain import Terminal
-from Terrain import TerrainFactory
-from Terrain import DOOR
-from Terrain import FLOOR
-from Terrain import OCEAN
-from Terrain import PERM_WALL
-from Terrain import UP_STAIRS
-from Terrain import WALL
+from .Agent import Roomba3000
+from .ca_cave import CA_CaveFactory
+from .GameLevel import GameLevel
+from .GameLevel import ItemChart
+from . import MonsterFactory
+from .NewComplexFactory import NewComplexFactory
+from .Rooms import add_science_complex_rooms
+from .Terrain import SpecialDoor
+from .Terrain import SecurityCamera
+from .Terrain import Terminal
+from .Terrain import TerrainFactory
+from .Terrain import DOOR
+from .Terrain import FLOOR
+from .Terrain import OCEAN
+from .Terrain import PERM_WALL
+from .Terrain import UP_STAIRS
+from .Terrain import WALL
 
 class MiniBoss1Level(GameLevel):
     def __init__(self, dm, level_num, length, width):
@@ -68,7 +68,7 @@ class MiniBoss1Level(GameLevel):
                 
     def __translate_rooms(self, _ncf):
         self.rooms = {}
-        for _key in _ncf.rooms.keys():
+        for _key in list(_ncf.rooms.keys()):
             self.rooms.setdefault(_key,[])
             for _floor in _ncf.rooms[_key]:
                 self.rooms[_key].append((_floor[0]+5, _floor[1]+5))

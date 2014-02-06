@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from Util import get_correct_article
+from .Util import get_correct_article
 
 class BaseTile(object):
     def __init__(self, ch, fg, bg, lit, name):

@@ -19,8 +19,8 @@ from copy import deepcopy
 from random import choice
 from random import randrange
 
-from Items import BaseItem
-from RumourFactory import RumourFactory
+from .Items import BaseItem
+from .RumourFactory import RumourFactory
 
 _artists = {0:'the Postal Service', 1:'ABBA', 2:'the Be Good Tanyas', 3:'R.E.M.', 
                 4:'Me First & The Gimme Gimmes',5:'Social Distortion', 5:'the Rheostatics',
@@ -96,7 +96,7 @@ class MP3(Software):
         dm.alert_player(agent.row, agent.col, "It's just an mp3 of " + self.artist + ".")
         
     def __get_artist(self):
-        return _artists[choice(_artists.keys())]
+        return _artists[choice(list(_artists.keys()))]
             
 class DataFile(Software):
     def __init__(self, level):
@@ -134,12 +134,11 @@ def get_software_by_name(name, level):
         return DataFile(level)
             
 if __name__ == '__main__':
-    _s = get_software_by_name('ipfw')
-    print _s.get_name()
+    _s = get_software_by_name('ipfw', 1)
+    print(_s.get_name())
     
-    _s = get_software_by_name('Ono-Sendai ICE Breaker Pro 1.0')
-    print _s.get_name()
+    _s = get_software_by_name('Ono-Sendai ICE Breaker Pro 1.0', 1)
+    print(_s.get_name())
     
-    _s = get_software_by_name('mp3')
-    print _s.get_name()
-    _s.execute('')
+    _s = get_software_by_name('mp3', 1)
+    print(_s.get_name())
