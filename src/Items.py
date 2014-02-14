@@ -23,22 +23,22 @@ from .Util import do_d10_roll
 from .Util import do_dN
 
 # These classes are just exceptions to throw
-class ItemDoesNotExist:
+class ItemDoesNotExist(Exception):
     pass
 
-class StackItemsMustBeIdentical:
+class StackItemsMustBeIdentical(Exception):
     pass
 
-class FirearmHasAmmo:
+class FirearmHasAmmo(Exception):
     pass
 
-class IncompatibleAmmo:
+class IncompatibleAmmo(Exception):
     pass
 
-class EmptyFirearm:
+class EmptyFirearm(Exception):
     pass
 
-class ItemHasEffects:
+class ItemHasEffects(Exception):
     pass
 
 # Real class definitions begin
