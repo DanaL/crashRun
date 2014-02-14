@@ -550,17 +550,20 @@ class DungeonMaster:
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
                 
     def save_and_exit(self):
-        self.dui.display_message('Saving...')
-        self.player.dm = ''
+        if self.dui.query_yes_no('Are you sure you wish to save') == 'y':        
+            self.dui.display_message('Saving...')
+            self.player.dm = ''
         
-        _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
-        save_game(self.player.get_name(), _save_obj)
-        self.dui.display_high_scores(5)
-        self.dui.clear_msg_line()
-        self.dui.display_message('Be seeing you...', True)
+            _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
+            save_game(self.player.get_name(), _save_obj)
+            self.dui.display_high_scores(5)
+            self.dui.clear_msg_line()
+            self.dui.display_message('Be seeing you...', True)
         
-        raise GameOver()
-            
+            raise GameOver()
+        else:
+            self.dui.display_message('Nevermind...')
+
     def is_clear(self,r,c):
         return self.curr_lvl.is_clear(r,c)
     
