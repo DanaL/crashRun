@@ -416,7 +416,7 @@ class MeatspaceCC(CommandContext):
         
         msg = ['Your current inventory:'] + msg
         self.dui.write_screen(msg, True)
-        self.dui.redraw_screen()
+        self.dui.draw_screen()
         
     def throw_item(self):
         try:
@@ -644,7 +644,7 @@ class CyberspaceCC(CommandContext):
 
     def show_inventory(self):
         self.display_software(as_menu=True)
-        self.dui.redraw_screen()
+        self.dui.draw_screen()
         
     def throw_item(self):
         self.not_in_cyberspace()

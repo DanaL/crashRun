@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import platform
-
 from .BaseTile import BaseTile
 from random import randrange
-import math,pygame
-from pygame.locals import *
+import math
 from string import digits
 from string import ascii_letters
 
+from .DisplayGuts import CHR_ESC
+from .DisplayGuts import DisplayGuts
+from .DisplayGuts import ENTER
+from .DisplayGuts import K_BACKSPACE
+from .DisplayGuts import K_RETURN
+from .DisplayGuts import NUM_ESC
 from .GamePersistence import get_preferences
 from .GamePersistence import read_scores
 from .GamePersistence import save_preferences
@@ -32,27 +34,8 @@ from .Util import EmptyInventory
 from .Util import get_direction_tuple
 from .Util import NonePicked
 
-# Handy constants
-NUM_A = ord('a')
-NUM_Z = ord('z')
-NUM_CA = ord('A')
-NUM_CZ = ord('Z')
-NUM_ESC = 27
-CHR_ESC = chr(NUM_ESC) # The numeric value for the Escape key (on Win32)
 VALID_CH = ascii_letters + digits + ' ' + '-'
-SHIFT = 304
-CTRL = 306
-ALT = 308
-ENTER = 13 # Probably system dependent but need to test on windows
-
 MESS_HIST_SIZE = 100
-
-# RGB values for colours used in system
-colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
-    'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87), 
-    'brown':(153,0,0), 'lightbrown':(153,51,0), 'blue':(0,0,221), 'darkblue':(0,0,153), 
-    'yellow':(255,255,0), 'yellow-orange':(255,200,0), 'orange':(255,165,0), 'orchid':(218,112,214), 
-    'plum':(221,160,221), 'bright pink':(255,105,180), 'pink':(255,20,147)}
 
 directions = {'MOVE_NORTH':'n', 'MOVE_SOUTH':'s', 'MOVE_WEST':'w', 
     'MOVE_EAST':'e', 'MOVE_SOUTHWEST':'sw', 'MOVE_SOUTHEAST':'se',
@@ -88,36 +71,11 @@ class MessageMemory(object):
         return _messages
         
 class DungeonUI(object):
-    display_rows = 24
-    display_cols = 80
-    font_size = 18
-    __tile_cache = {}
-    
-    # ***********************************************************************
-    # *** PUBLIC METHODS ***
     def __init__(self, version, keymap):
         self.__message_memory = MessageMemory(MESS_HIST_SIZE)
-        self.__msg_cursor = 0
         self.keymap = keymap
-
-        if platform.system() == "Windows":
-            os.environ['SDL_VIDEODRIVER'] = 'windib'
+        self.guts = DisplayGuts(24, 80, 18, 'crashRun ' + version, self)
         
-        pygame.init()
-
-        self.map_r = ''
-        self.map_c = ''
-        self.font = pygame.font.Font("VeraMono.ttf",self.font_size)
-        self.c_font = pygame.font.Font("VeraMono.ttf",self.font_size)
-        self.c_font.set_underline(True)
-        self.fsize = self.font.size("@")
-        self.fheight = self.font.get_linesize()
-        self.fwidth = self.fsize[0]
-
-        self.screen = pygame.display.set_mode((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-        pygame.display.set_caption('crashRun ' + version)
-        pygame.key.set_repeat(500, 30)
-
     # Expects menu to be in the form of:
     #   [(key0,q0,response0),(key1,q1,response1),...]
     # and blurb/footer to be in the form:
@@ -136,13 +94,13 @@ class DungeonUI(object):
         
         [msg.append(item) for item in footer]
 
-        self.write_screen(msg, False)
+        self.guts.write_screen(msg, False)
 
         ch = ''
         while ch not in keys:
-            ch = self.wait_for_key_input()
+            ch = self.guts.wait_for_key_input()
 
-        self.redraw_screen()
+        self.guts.redraw_screen()
         return bindings[ch]
 
     # Expects menu to be in the form of:
@@ -181,79 +139,25 @@ class DungeonUI(object):
                         picked = ' - '
                     msg.append(' ' + item[0] + picked + item[1]) 
             
-            self.write_screen(h+msg+f, False)
-            ch = self.wait_for_key_input()
+            self.guts.write_screen(h+msg+f, False)
+            ch = self.guts.wait_for_key_input()
 
             if ch in keys:
                 bindings[ch][0] = (bindings[ch][0] + 1) % 2 # toggle it!
             elif ch == CHR_ESC:
-                self.redraw_screen()
+                self.guts.redraw_screen()
                 return []
 
         picks = [bindings[k][1] for k in keys if bindings[k][0]]
-        self.redraw_screen()
+        self.guts.redraw_screen()
         
         return picks
-
-    def check_screen_pos(self):
-        # where is the player in relation to the map?
-        _pl = self.cc.get_player_loc()
-        r = _pl[0] - self.map_r
-        c = _pl[1] - self.map_c
-        redraw = False
-        
-        # we only need to be concerned about re-drawing the screen if there is a chance
-        # the player could move out of the visible area.  So, if the number of rows or
-        # cols for the dungeon level <= the available display area, don't event check
-        # for a redraw, otherwise re-draw if the player is within three of the edge.
-        if self.display_rows <= self.cc.get_lvl_length():
-            if r < 3 and self.map_r > -1:
-                self.map_r = _pl[0] - self.display_rows + 5
-                if self.map_r < 1:
-                    self.map_r = -1
-                redraw = True
-            elif self.map_r <= self.cc.get_lvl_length() - self.display_rows and r >= self.display_rows - 5:
-                self.map_r = _pl[0] - 5
-                if self.map_r + self.display_rows > self.cc.get_lvl_length():
-                    self.map_r = self.cc.get_lvl_length() - self.display_rows + 1
-                redraw = True
-
-        if self.display_cols <= self.cc.get_lvl_width():
-            if self.map_c > 0 and c < 3:
-                self.map_c = _pl[1] - self.display_cols + 5
-                if self.map_c < 1:
-                    self.map_c = 0
-                redraw = True
-            elif self.map_c <= self.cc.get_lvl_width() - self.display_cols and c >= self.display_cols - 5:
-                self.map_c = _pl[1] - 5
-                if self.map_c + self.display_cols > self.cc.get_lvl_width():
-                    self.map_c = self.cc.get_lvl_width() - self.display_cols
-                redraw = True
-
-        if redraw: self.redraw_screen()
     
     def clear_message_memory(self):
         self.__message_memory = MessageMemory(MESS_HIST_SIZE)
         
-    def clear_msg_line(self):
-        msg_line = pygame.Surface((self.fwidth * self.display_cols,self.fheight))
-        msg_line.fill(colour_table['black'])
-        self.screen.blit(msg_line,(0,0))
-        pygame.display.update(pygame.Rect((0,0),(self.fwidth * self.display_cols,self.fheight)))
-        self.__msg_cursor = 0
-
-    def clear_screen(self,fullscreen):
-        if fullscreen:
-            blank = pygame.Surface((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-            start_row = 0 
-        else:
-            blank = pygame.Surface((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-            start_row = self.fheight
-
-        blank.fill(colour_table['black'])
-        self.screen.blit(blank,(0,start_row))
-        pygame.display.flip()
-
+    def clear_screen(self, fullscreen):
+        self.guts.clear_screen(fullscreen)
 
     def format_score(self, score):
         _score = str(score[0]) + ' points, '
@@ -277,54 +181,34 @@ class DungeonUI(object):
             _msg.append(' ')
             _msg.append('You scored #%d on the top score list with %d points.' % (score[0], score[1][0]))
             
-        self.write_screen(_msg, True)
-        self.redraw_screen()
+        self.guts.write_screen(_msg, True)
+        self.guts.redraw_screen()
         
     def display_message(self, msg, pause_for_more=False):
+        self.guts.clear_msg_line()
         if not msg.startswith('iCannon'):
             # what I won't do for a joke...
             message = msg[0].capitalize() + msg[1:]
         else:
             message = msg
         self.__message_memory.append(message)
-        self.__write_message(message + ' ', pause_for_more)
+        self.guts.write_message(message + ' ', pause_for_more)
             
-    def __msg_overflow(self,message):
-        return len(message) + self.__msg_cursor >= self.display_cols - 10
-        
     def __split_message(self, message, pause_for_more):
         self.__msg_cursor = 0
-        _index = message[:self.display_cols - 12].rfind(" ")
-        self.__write_message(message[:_index].strip(), True)
-        self.__write_message(message[_index:].strip(), pause_for_more)
-        
-    def __write_message(self, message, pause_for_more):
-        if len(message) > self.display_cols - 12:
-            self.__split_message(message, pause_for_more)    
-            return
-                
-        if self.__msg_overflow(message):
-            self.__pause_for_more()
-
-        text = self.font.render(message,True,colour_table['white'],colour_table['black'])
-        self.screen.blit(text,(self.__msg_cursor * self.fwidth,0))
-
-        pygame.display.update(pygame.Rect((self.__msg_cursor * self.fwidth,0),(self.fwidth * self.display_cols,self.fheight)))
-
-        self.__msg_cursor += len(message)
-
-        if pause_for_more:
-            self.__pause_for_more()
-
+        _index = message[:self.guts.display_cols - 12].rfind(" ")
+        self.guts.write_message(message[:_index].strip(), True)
+        self.guts.write_message(message[_index:].strip(), pause_for_more)
+            
     def get_direction(self, show_prompt=True):
         _dir = ''
         if show_prompt: 
-            self.clear_msg_line()
-            self.__write_message('What direction? ', False)
+            self.guts.clear_msg_line()
+            self.guts.write_message('What direction? ', False)
 
         while _dir == '':
-            d = self.wait_for_key_input(True)
-            self.clear_msg_line()
+            d = self.guts.wait_for_key_input(True)
+            self.guts.clear_msg_line()
 
             if d[0] == NUM_ESC:
                 return ''
@@ -339,13 +223,7 @@ class DungeonUI(object):
         return _dir
 
     def get_player_command(self):
-        while True:
-            event = pygame.event.wait()
-            if event.type == QUIT:
-                raise GameOver
-            elif event.type == KEYDOWN and event.key not in (SHIFT,ALT,CTRL):
-                self.keystroke(event)
-                break
+        self.guts.get_player_command(self)
     
     def translate_keystroke(self, keystroke):
         if keystroke != '':
@@ -356,7 +234,7 @@ class DungeonUI(object):
                 
     def keystroke(self, event):
         # Map the keystroke to a particular command in the game
-        self.clear_msg_line()
+        self.guts.clear_msg_line()
         _cmd = self.translate_keystroke(event.unicode)
         if _cmd != '':
             self.translate_cmd(_cmd)
@@ -365,7 +243,7 @@ class DungeonUI(object):
         _dir = self.translate_dir(cmd)
         if _dir != '':
             self.cc.move(_dir)
-            self.check_screen_pos()
+            self.guts.check_screen_pos()
             return
             
         if cmd == 'PASS':
@@ -429,11 +307,11 @@ class DungeonUI(object):
             
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
-        self.__write_message(msg + ' ', False)
+        self.guts.write_message(msg + ' ', False)
         _ch = ''
         
         while _ch not in _letters:
-            _ch = self.wait_for_key_input()
+            _ch = self.guts.wait_for_key_input()
         
             if _ch == CHR_ESC: 
                 raise NonePicked
@@ -474,11 +352,11 @@ class DungeonUI(object):
             self.__write_message('You aren\'t carrying anything.', False)
             raise EmptyInventory
 
-        self.__write_message(msg + ' ', False)
+        self.guts.write_message(msg + ' ', False)
 
         _ch = ''
         while _ch == '':
-            _ch = self.wait_for_key_input()      
+            _ch = self.guts.wait_for_key_input()      
             if _ch == CHR_ESC:
                 raise NonePicked
         
@@ -500,21 +378,14 @@ class DungeonUI(object):
             player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
             player.skill_points -= 1
             return False
-            
-    def write_cursor(self, row, col, tile):
-        r = row - self.map_r
-        c = col - self.map_c
-        ch = self.c_font.render(tile,True,colour_table['yellow'],colour_table['black']) 
-        self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
-        pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
-        
+                
     def examine(self):
-        self.__write_message('Move cursor to view squares.  ESC to end.', True)
+        self.guts.write_message('Move cursor to view squares.  ESC to end.', True)
         _pl = self.cc.get_player_loc()
         _row = _pl[0]
         _col = _pl[1]
-        _max_r = self.display_rows-1
-        _max_c = self.display_cols-1
+        _max_r = self.guts.display_rows - 1
+        _max_c = self.guts.display_cols - 1
         
         while True:
             _dir = self.get_direction(False)
@@ -524,29 +395,29 @@ class DungeonUI(object):
                 break
             _dt = get_direction_tuple(_dir)
             
-            _sr = _row - self.map_r
-            _sc = _col - self.map_c
+            _sr = _row - self.guts.map_r
+            _sc = _col - self.guts.map_c
             if _sr + _dt[0] >= 0 and _sr + _dt[0] < _max_r and _sc + _dt[1] >= 0 and _sc + _dt[1] <= _max_c:
-                self.update_view(self.cc.get_sqr_info(_row, _col))
+                self.guts.update_view(self.cc.get_sqr_info(_row, _col))
             
                 _row += _dt[0]
                 _col += _dt[1]
             
                 _sqr = self.cc.get_tile_info(_row, _col)
                 if _sqr.remembered:
-                    self.write_cursor(_row, _col, _sqr.get_ch())
+                    self.guts.write_cursor(_row, _col, _sqr.get_ch())
                     self.display_message('You see ' + _sqr.name)
                 else:
-                    self.write_cursor(_row, _col, ' ')
+                    self.guts.write_cursor(_row, _col, ' ')
                     self.display_message('You see nothing.')
         
-        self.update_view(self.cc.get_sqr_info(_row, _col))
-        self.clear_msg_line()
+        self.guts.update_view(self.cc.get_sqr_info(_row, _col))
+        self.guts.clear_msg_line()
         
     def practice_skills(self, player):
         _sp = player.skill_points
         if _sp == 0:
-            self.__write_message('You have no skill points to spend.', False)
+            self.guts.write_message('You have no skill points to spend.', False)
         else:
             menu = []
             j = 1
@@ -583,8 +454,8 @@ class DungeonUI(object):
             elif _ch[1] in digits: 
                 _answer += _ch[1]
             
-            self.clear_msg_line()
-            self.__write_message('How many? (Enter for all) ' + _answer + ' ', False)
+            self.guts.clear_msg_line()
+            self.guts.write_message('How many? (Enter for all) ' + _answer + ' ', False)
             _ch = self.wait_for_key_input(True)
             if _ch[0] == NUM_ESC:
                 raise NonePicked
@@ -602,22 +473,22 @@ class DungeonUI(object):
             elif ch[0] in range(256) and ch[1] in VALID_CH: 
                 answer += ch[1]
             
-            self.clear_msg_line()
-            self.__write_message(question + ' ' + answer + ' ', False)
-            ch = self.wait_for_key_input(True)
+            self.guts.clear_msg_line()
+            self.guts.write_message(question + ' ' + answer + ' ', False)
+            ch = self.guts.wait_for_key_input(True)
 
     def query_for_answer_in_set(self, question, answers, allow_esc):
         if allow_esc:
             answers.append(CHR_ESC)
             
         while True:
-            self.clear_msg_line()
-            self.__write_message(question, False)
-            _answer = self.wait_for_key_input()
+            self.guts.clear_msg_line()
+            self.guts.write_message(question, False)
+            _answer = self.guts.wait_for_key_input()
             if _answer in answers:
                 break
 
-        self.clear_msg_line()
+        self.guts.clear_msg_line()
         
         if _answer == CHR_ESC:
             _answer = ''
@@ -628,196 +499,31 @@ class DungeonUI(object):
         _q = question + '? (y/n) '
         return self.query_for_answer_in_set(_q, ['y', 'n'], False)
 
-    def redraw_screen(self):
-        if self.map_r != '' and self.map_c != '':
-            section = self.cc.get_section(self.map_r,self.map_c,self.map_r+self.display_rows-1,self.map_c+self.display_cols)
-            self.clear_screen(1)
-
-            for _row in section:
-                for _col in _row:
-                    if _col.remembered:
-                        actual_r = _col.r - self.map_r
-                        actual_c = _col.c - self.map_c
-                        
-                        # only update square if it's actually visible on screen
-                        # (ie, avoid printing torch light when near edges of screen
-                        if actual_r >= 1 and actual_r < self.display_rows and actual_c >= 0 and actual_c < self.display_cols:
-                            colours = _col.get_fg_bg()
-                            self.__write_sqr(_col.get_ch(),colours[0],colours[1],actual_r,actual_c,False)
-
-            pygame.display.update(pygame.Rect((0,self.fheight),(self.display_cols * self.fwidth, self.display_rows * self.fheight)))
-            self.update_status_bar()
-
     def set_command_context(self, context):
         self.cc = context
-        
-    def set_r_c(self,r,c):
-        if self.cc.get_lvl_width() < self.display_cols:
-            self.map_c = 0
-        else:
-            self.map_c = c - self.display_cols // 2
-
-        if self.cc.get_lvl_length() < self.display_rows:
-            self.map_r = -1
-        else:
-            self.map_r = r - self.display_rows // 2 + 1
-
+        self.guts.cc = context
+    
     def show_recent_messages(self):
-        self.write_screen(self.__message_memory.messages(), True, True)
-        self.redraw_screen()
+        self.guts.write_screen(self.__message_memory.messages(), True, True)
+        self.guts.redraw_screen()
 
     def get_target(self):
         while True:
-            event = pygame.event.wait()
-            if event.type == QUIT:
-                raise GameOver
-            elif event.type == KEYDOWN and event.key not in (SHIFT,ALT,CTRL):   
-                _key = self.translate_keystroke(event.unicode)
-                _dir = self.translate_dir(_key)
-                if _dir in ('<', '>', '.'):
-                    continue
-                if _dir != '': 
-                    return _dir    
-                if event.unicode == ' ':
-                    return ' '
-                if event.key == ENTER:
-                    return 'home'
-        
-    def update_status_bar(self):
-        info = self.cc.get_status_bar_info()
-
-        line = info.name
-        line += '     AC: ' + str(info.ac)
-        line += '  HP: ' + str(info.hp) + '(' + str(info.max_hp) + ')'
-
-        l = len(line)
-        levelSection = 'Dungeon Level: ' + str(info.level)
-
-        for j in range(l, self.display_cols - len(levelSection)-1):
-            line += ' '
-        
-        if info.lvl_type == 'prologue':
-            line += 'Outside'
-        elif info.lvl_type == 'cyberspace':
-            line += 'Cyberspace'
-        else:
-            line += 'Complex Level: ' + str(info.level)
-
-        text = pygame.Surface((self.fwidth * self.display_cols,self.fheight))
-        text.fill(colour_table['black'])
-        self.screen.blit(text, (0,self.display_rows * self.fheight))
-
-        text = self.font.render(line,True,colour_table['white'],colour_table['black'])
-        self.screen.blit(text, (0,self.display_rows * self.fheight))
-        pygame.display.update( pygame.Rect((0, self.display_rows * self.fheight),(self.fwidth * self.display_cols,self.fheight * (self.display_rows+1))))
-
-    # Should separate the pygame-specific stuff
-    def update_block(self,block):
-        _low_actual_r = self.display_rows
-        _high_actual_r = 0
-        _low_actual_c = self.display_cols
-        _high_actual_c = 0
+            ch = self.guts.wait_for_key_input()
+            k = self.translate_keystroke(ch)
+            d = self.translate_dir(k)
             
-        for sqr in block:
-            actual_r = sqr.r - self.map_r
-            actual_c = sqr.c - self.map_c
-
-            if actual_r < _low_actual_r: _low_actual_r = actual_r
-            if actual_r > _high_actual_r: _high_actual_r = actual_r
-            if actual_c < _low_actual_c: _low_actual_c = actual_c
-            if actual_c > _high_actual_c: _high_actual_c = actual_c
-            
-            if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
-                colours = sqr.get_fg_bg()
-                self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,False)
-        _ur = pygame.Rect((_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),
-                          (_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
-        pygame.display.update(_ur)
-        
-    def update_view(self, sqr):
-        actual_r = sqr.r - self.map_r
-        actual_c = sqr.c - self.map_c
-
-        # only update square if it's actually visible on screen
-        # (ie, avoid printing torch light when near edges of screen
-        # Note that the first and last rows are reserved for the message bar and status bar
-        if actual_r >= 0 and actual_r < self.display_rows and actual_c >= 0 and actual_c < self.display_cols:
-            colours = sqr.get_fg_bg()
-            self.__write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,True)
-            
-    # need to improve cache to handle tile homonyms
-    # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
-    # be able to do it in a batch.
-    def __write_sqr(self,tile,fg,bg,r,c,update=True):
-        if (tile,fg,bg) in self.__tile_cache:
-            ch = self.__tile_cache[(tile,fg,bg)]
-        elif tile == ' ':
-            ch = pygame.Surface((self.fwidth,self.fheight))
-            ch.fill(self.__fetch_colour(bg))
-            self.__tile_cache[(' ',fg,bg)] = ch
-        else:
-            ch = self.font.render(tile,True,self.__fetch_colour(fg),self.__fetch_colour(bg))
-            self.__tile_cache[(tile,fg,bg)] = ch    
-           
-        self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
-        if update:
-            pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
-
-    # Geez, this is ugly!
-    def wait_for_key_input(self, raw=False):
-        while True:
-            event = pygame.event.wait()
-
-            if event.type == QUIT:
-                raise GameOver
-            elif event.type == KEYDOWN:
-                if raw:
-                    return (event.key,event.unicode)
-                else:
-                    return event.unicode
-
-    # This method is used to display a full screen of text.
-    # 'lines' should be a list of successive lines to display
-    # TO BE ADDED: support for lines too large for one row, scrolling up/down on multiple pages of text
+            if d in ('<', '>', '.'):
+                continue
+            if d != '':
+                return d
+            if ch == ' ':
+                return ' '
+            if ch in ('\n', '\r', '\f'):
+                return 'home'
+                   
     def write_screen(self, raw_lines, pause_at_end, allow_esc = False):
-        # Split lines that contain newlines
-        _lines = []
-        for _line in raw_lines:
-            _lines += _line.split("\n")
-            
-        j = 0
-        while j < len(_lines):
-            self.clear_screen(1)
-            curr_row = 0
-        
-            for k in range(j,j + self.display_rows - 1):
-                if k >= len(_lines):
-                    break
-                else:
-                    text = self.font.render(_lines[k],True,colour_table['white'],colour_table['black'])
-                    self.screen.blit(text,(0,curr_row))
-                    curr_row += self.font.get_linesize()
-                
-            j += self.display_rows - 1
-
-            if j < len(_lines):
-                text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
-                self.screen.blit(text,(0,curr_row + self.font.get_linesize()))
-                _msg = '-- more -- Press any key to continue'
-                text = self.font.render(_msg,True,colour_table['white'],colour_table['black'])
-                self.screen.blit(text,(0,curr_row + self.font.get_linesize() * 2))
-                pygame.display.flip()
-                _ch = self.wait_for_key_input(True)
-                if allow_esc and _ch[0] == NUM_ESC:
-                    return
-            else:
-                if pause_at_end:
-                    text = self.font.render('Press any key to continue',True,colour_table['white'],colour_table['black'])
-                    self.screen.blit(text,(0,self.display_rows * self.font.get_linesize()))
-                    pygame.display.flip()
-                    self.wait_for_key_input()
-                else:
-                    pygame.display.flip()
+        self.guts.write_screen(raw_lines, pause_at_end, allow_esc)
 
     # *** PRIVATE METHODS ***
     def __draw_char_sheet(self):
@@ -850,59 +556,40 @@ class DungeonUI(object):
             msg.append(' ')
         msg += self.cc.get_software_list(False)
         
-        self.write_screen(msg, True, True)
+        self.guts.write_screen(msg, True, True)
+        self.guts.redraw_screen()
         
-        self.redraw_screen()
-        
-    def __fetch_colour(self,colour):
-        return colour_table[colour]
-
-    def __pause_for_more(self):
-        msg = self.font.render('-- more --',True,colour_table['white'],colour_table['black'])
-        self.screen.blit(msg,(self.__msg_cursor * self.fwidth,0))
-        pygame.display.update(pygame.Rect((self.__msg_cursor * self.fwidth,0),(self.fwidth * self.display_cols,self.fheight)))
-        self.wait_for_key_input()
-        self.clear_msg_line()
-
     def __show_help(self):
         f = open('help.txt','r')
         lines = [line.rstrip() for line in f.readlines()]
-        self.write_screen(lines, True, True)
-        self.redraw_screen()
+        self.guts.write_screen(lines, True, True)
+        self.guts.redraw_screen()
         
+    def clear_msg_line(self):
+        self.guts.clear_msg_line()
+
+    def draw_screen(self):
+        self.guts.redraw_screen()
+        
+    def set_r_c(self, r, c):
+        self.guts.set_r_c(r, c)
+
+    def show_vision(self, vision):
+        self.guts.show_vision(vision)
+
     def translate_dir(self, cmd):
         if not cmd in directions:
             return ''
         return directions[cmd]
-        
-    # Show a player a vision of something (ie., security camera feed).  This is different from displaying a screen of 
-    # of text becasue the vision will likely consist of tiles and such, not just text.  Need to draw each tile.
-    # Vision is a list of DungeonSqrInfo objects
 
-    # **** Currently not handling visions that are larger than display rows or cols.  Don't send one that is bigger.
-    # **** Scrolling would be nice!
-    def show_vision(self,vision):
-        self.clear_screen(False)
+    def update_block(self, block):
+        self.guts.update_block(block)
+    
+    def update_status_bar(self):
+        self.guts.update_status_bar()
 
-        # The DungeonSqrInfo objects contain the actual map rows and columns, we need to translate that into a nice,
-        # centered display.  Row is easy, we start it at the top, we want to try to center the vision as best we can,
-        # though.
-        baseRow = vision[0].r
-        baseCol = vision[0].c
-        maxCol = 0
-        for tile in vision:
-            if tile.r < baseRow:
-                baseRow = tile.r
-            if tile.c < baseCol:
-                baseCol = tile.c
-            if tile.c > maxCol:
-                maxCol = tile.c
-        width = maxCol - baseCol
+    def update_view(self, sqr):
+        self.guts.update_view(sqr)
 
-        columnOffset = self.display_cols / 2 - width / 2
-
-        for tile in vision:
-            fgbg = tile.get_fg_bg()
-            self.__write_sqr(tile.get_ch(),fgbg[0],fgbg[1],tile.r - baseRow + 1,tile.c - baseCol + columnOffset,False)
-
-        pygame.display.update(pygame.Rect((0,self.fheight),(self.display_cols * self.fwidth, self.display_rows * self.fheight)))
+    def wait_for_input(self):
+        return self.guts.wait_for_key_input(False)

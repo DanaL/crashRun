@@ -24,10 +24,10 @@ from math import sqrt
 from random import choice
 from random import randrange
 
-class EmptyInventory:
+class EmptyInventory(Exception):
     pass
     
-class NonePicked:
+class NonePicked(Exception):
     pass
 
 # Pretty much directly the opitmized version

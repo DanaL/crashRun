@@ -290,7 +290,7 @@ class DungeonMaster:
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
         self.dui.set_r_c(self.player.row,self.player.col)
         self.dui.clear_screen(1)
-        self.dui.redraw_screen()
+        self.dui.draw_screen()
         self.refresh_player_view()
         self.dui.update_status_bar()
         
@@ -344,7 +344,7 @@ class DungeonMaster:
             self.dui.clear_screen(1)
             self.refresh_player_view()
             self.dui.update_status_bar()
-            self.dui.redraw_screen()
+            self.dui.draw_screen()
             return True
         except NoSaveFileFound:
             return False
@@ -437,7 +437,7 @@ class DungeonMaster:
         self.mr = MessageResolver(self, self.dui)
         msg = ['Welcome to crashRun!','  Copyright 2010 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
         self.dui.write_screen(msg, False)
-        self.dui.wait_for_key_input()
+        self.dui.wait_for_input()
         self.dui.clear_screen(True)
         
         game = self.dui.query_user('What is your name?').strip()
@@ -445,7 +445,7 @@ class DungeonMaster:
         try:
             self.__load_saved_game(game)
             self.dui.set_r_c(self.player.row, self.player.col)
-            self.dui.redraw_screen()
+            self.dui.draw_screen()
         except NoSaveFileFound:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             self.begin_new_game(game)
@@ -518,7 +518,6 @@ class DungeonMaster:
         return _item
     
     def __load_saved_game(self,game):
-        self.dui.clear_msg_line()
         self.dui.display_message('Loading saved game...')
         self.dui.clear_message_memory()
         
