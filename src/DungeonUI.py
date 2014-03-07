@@ -474,7 +474,6 @@ class DungeonUI(object):
             self.guts.clear_msg_line()
             self.guts.write_message(question + ' ' + answer + ' ', False)
             ch = self.guts.wait_for_key_input()
-            print('foo ', answer, ch)
 
     def query_for_answer_in_set(self, question, answers, allow_esc):
         if allow_esc:

@@ -257,13 +257,12 @@ class DisplayGuts(object):
         else:
             line += 'Complex Level: ' + str(info.level)
 
-        text = pygame.Surface((self.fwidth * self.display_cols,self.fheight))
-        text.fill(colour_table['black'])
-        self.screen.blit(text, (0,self.display_rows * self.fheight))
-
-        text = self.font.render(line,True,colour_table['white'],colour_table['black'])
-        self.screen.blit(text, (0,self.display_rows * self.fheight))
-        pygame.display.update( pygame.Rect((0, self.display_rows * self.fheight),(self.fwidth * self.display_cols,self.fheight * (self.display_rows+1))))
+        pr = SDL_Rect(0, self.fheight * self.display_rows - self.fheight, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, line, colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+        SDL_UpdateWindowSurface(self.window)
 
     def update_view(self, sqr):
         actual_r = sqr.r - self.map_r
