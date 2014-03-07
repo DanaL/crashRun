@@ -24,8 +24,6 @@ from string import ascii_letters
 from .DisplayGuts import CHR_ESC
 from .DisplayGuts import DisplayGuts
 from .DisplayGuts import ENTER
-from .DisplayGuts import K_BACKSPACE
-from .DisplayGuts import K_RETURN
 from .DisplayGuts import NUM_ESC
 from .GamePersistence import get_preferences
 from .GamePersistence import read_scores
@@ -463,19 +461,20 @@ class DungeonUI(object):
     # need to add check for user typing too much in
     def query_user(self, question):
         answer = ''
-        ch = (255,'&')
+        ch = ''
 
-        while 1:
-            if ch[0] == K_BACKSPACE:
+        while True:
+            if ch == "backspace":
                 answer = answer[:-1]
-            elif ch[0] == K_RETURN:
+            elif ch == "return":
                 return answer
-            elif ch[0] in range(256) and ch[1] in VALID_CH: 
-                answer += ch[1]
+            elif ch in VALID_CH: 
+                answer += ch
             
             self.guts.clear_msg_line()
             self.guts.write_message(question + ' ' + answer + ' ', False)
-            ch = self.guts.wait_for_key_input(True)
+            ch = self.guts.wait_for_key_input()
+            print('foo ', answer, ch)
 
     def query_for_answer_in_set(self, question, answers, allow_esc):
         if allow_esc:

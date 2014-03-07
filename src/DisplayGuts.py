@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+import ctypes
 import os
-import platform
-import pygame
-from pygame.locals import *
+
+from sdl2 import *
+import sdl2.sdlttf as sdlttf
 
 from .DungeonMaster import GameOver
 
@@ -33,8 +34,6 @@ SHIFT = 304
 CTRL = 306
 ALT = 308
 ENTER = 13 # Probably system dependent but need to test on windows
-K_BACKSPACE = pygame.locals.K_BACKSPACE
-K_RETURN = pygame.locals.K_RETURN
 
 # RGB values for colours used in system
 colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
@@ -51,25 +50,29 @@ class DisplayGuts(object):
         self.display_cols = dc
         self.font_size = fs
         self.__msg_cursor = 0
-        self.dui = dui
-
-        if platform.system() == "Windows":
-            os.environ['SDL_VIDEODRIVER'] = 'windib'
-        
-        pygame.init()
-
+        self.dui = dui                
         self.map_r = ''
         self.map_c = ''
-        self.font = pygame.font.Font("VeraMono.ttf",self.font_size)
-        self.c_font = pygame.font.Font("VeraMono.ttf",self.font_size)
-        self.c_font.set_underline(True)
-        self.fsize = self.font.size("@")
-        self.fheight = self.font.get_linesize()
-        self.fwidth = self.fsize[0]
 
-        self.screen = pygame.display.set_mode((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-        pygame.display.set_caption(window_title)
-        pygame.key.set_repeat(500, 30)
+        sdlttf.TTF_Init()
+        self.font = sdlttf.TTF_OpenFont(str.encode("VeraMono.ttf"), 18)
+        self.u_font = sdlttf.TTF_OpenFont(str.encode("VeraMono.ttf"), 18)
+        sdlttf.TTF_SetFontStyle(self.u_font, sdlttf.TTF_STYLE_UNDERLINE)
+
+        w = ctypes.c_int(0)
+        h = ctypes.c_int(0)
+        sdlttf.TTF_SizeUTF8(self.font, str.encode("@"), w, h)
+        pi0 = ctypes.pointer(w)
+        self.fwidth = pi0[0]
+        pi1 = ctypes.pointer(h)
+        self.fheight = pi1[0]
+
+        SDL_Init(SDL_INIT_VIDEO)
+        self.window = SDL_CreateWindow(str.encode(window_title), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                              self.fwidth * self.display_cols, self.fheight * self.display_rows, SDL_WINDOW_SHOWN)
+        
+        self.screen = SDL_GetWindowSurface(self.window)
+        #pygame.key.set_repeat(500, 30)
 
     def check_screen_pos(self):
         # where is the player in relation to the map?
@@ -109,23 +112,24 @@ class DisplayGuts(object):
         if redraw: self.redraw_screen()
     
     def clear_msg_line(self):
-        msg_line = pygame.Surface((self.fwidth * self.display_cols,self.fheight))
-        msg_line.fill(colour_table['black'])
-        self.screen.blit(msg_line,(0,0))
-        pygame.display.update(pygame.Rect((0,0),(self.fwidth * self.display_cols,self.fheight)))
-        self.__msg_cursor = 0
+        SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
 
     def clear_screen(self, fullscreen):
-        if fullscreen:
-            blank = pygame.Surface((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-            start_row = 0 
-        else:
-            blank = pygame.Surface((self.fwidth * self.display_cols,self.fheight * self.display_rows + self.fheight))
-            start_row = self.fheight
+        blank = SDL_Rect(self.display_cols * self.fwidth, self.display_rows + self.fheight)
+        start_row = 0 if fullscreen else self.fheight
 
-        blank.fill(colour_table['black'])
-        self.screen.blit(blank,(0,start_row))
-        pygame.display.flip()
+        width = self.display_cols * self.fwidth
+        height = self.display_rows * self.fheight
+        SDL_FillRect(self.screen, SDL_Rect(0, start_row, width, height), 0)
+        SDL_UpdateWindowSurface(self.window)
+
+    def display_on_msg_line(self, message):
+        pr = SDL_Rect(0, 0, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(message), colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+        SDL_UpdateWindowSurface(self.window)
 
     def fetch_colour(self,colour):
         return colour_table[colour]
@@ -143,9 +147,7 @@ class DisplayGuts(object):
         return len(message) + self.__msg_cursor >= self.display_cols - 10
         
     def pause_for_more(self):
-        msg = self.font.render('-- more --',True,colour_table['white'],colour_table['black'])
-        self.screen.blit(msg,(self.__msg_cursor * self.fwidth,0))
-        pygame.display.update(pygame.Rect((self.__msg_cursor * self.fwidth,0),(self.fwidth * self.display_cols,self.fheight)))
+        self.display_on_msg_line('-- more --')
         self.wait_for_key_input()
         self.clear_msg_line()
 
@@ -277,16 +279,22 @@ class DisplayGuts(object):
     # Geez, this is ugly!
     def wait_for_key_input(self, raw=False):
         while True:
-            event = pygame.event.wait()
-
-            if event.type == QUIT:
-                raise GameOver
-            elif event.type == KEYDOWN:
-                if raw:
-                    return (event.key, event.unicode)
-                else:
-                    return event.unicode
-
+            event = SDL_Event()
+            while SDL_PollEvent(ctypes.byref(event)) != 0:
+                if event.type == SDL_QUIT:
+                    raise GameOver
+                if event.type == SDL_KEYDOWN:
+                    if raw:
+                        return (event.key, SDL_GetKeyName(event.key.keysym.sym))
+                    else:
+                        c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
+                        if event.key.keysym.sym == SDLK_SPACE:
+                            return ' '
+                        elif event.key.keysym.mod in (1, 2):
+                            return c
+                        else:
+                            return c.lower()
+             
     def write_cursor(self, row, col, tile):
         r = row - self.map_r
         c = col - self.map_c
@@ -299,19 +307,15 @@ class DisplayGuts(object):
             self.__split_message(message, pause)    
             return
                 
-        if self.msg_overflow(message):
-            self.pause_for_more()
+        #if self.msg_overflow(message):
+        #    self.pause_for_more()
 
-        text = self.font.render(message,True,colour_table['white'],colour_table['black'])
-        self.screen.blit(text,(self.__msg_cursor * self.fwidth,0))
-
-        pygame.display.update(pygame.Rect((self.__msg_cursor * self.fwidth,0),(self.fwidth * self.display_cols,self.fheight)))
+        self.display_on_msg_line(message)
 
         self.__msg_cursor += len(message)
 
         if pause:
             self.pause_for_more()
-
 
     # This method is used to display a full screen of text.
     # 'lines' should be a list of successive lines to display
@@ -327,34 +331,39 @@ class DisplayGuts(object):
             self.clear_screen(1)
             curr_row = 0
         
-            for k in range(j,j + self.display_rows - 1):
+            for k in range(j, j + self.display_rows - 1):
                 if k >= len(_lines):
                     break
                 else:
-                    text = self.font.render(_lines[k],True,colour_table['white'],colour_table['black'])
-                    self.screen.blit(text,(0,curr_row))
-                    curr_row += self.font.get_linesize()
+                    pr = SDL_Rect(0, curr_row, 0, 0)
+                    colour = SDL_Color(255, 255, 255)
+                    txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(_lines[k]), colour)
+                    SDL_BlitSurface(txt, None, self.screen, pr)
+                    SDL_FreeSurface(txt)                                  
+                    curr_row += self.fheight
                 
             j += self.display_rows - 1
 
-            if j < len(_lines):
-                text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
-                self.screen.blit(text,(0,curr_row + self.font.get_linesize()))
-                _msg = '-- more -- Press any key to continue'
-                text = self.font.render(_msg,True,colour_table['white'],colour_table['black'])
-                self.screen.blit(text,(0,curr_row + self.font.get_linesize() * 2))
-                pygame.display.flip()
-                _ch = self.wait_for_key_input(True)
-                if allow_esc and _ch[0] == NUM_ESC:
-                    return
-            else:
-                if pause_at_end:
-                    text = self.font.render('Press any key to continue',True,colour_table['white'],colour_table['black'])
-                    self.screen.blit(text,(0,self.display_rows * self.font.get_linesize()))
-                    pygame.display.flip()
-                    self.wait_for_key_input()
-                else:
-                    pygame.display.flip()
+        SDL_UpdateWindowSurface(self.window)
+        #self.wait_for_key_input()
+            #if j < len(_lines):
+            #    text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
+            #    self.screen.blit(text,(0,curr_row + self.font.get_linesize()))
+            #    _msg = '-- more -- Press any key to continue'
+            #    text = self.font.render(_msg,True,colour_table['white'],colour_table['black'])
+            #    self.screen.blit(text,(0,curr_row + self.font.get_linesize() * 2))
+            #    pygame.display.flip()
+            #    _ch = self.wait_for_key_input(True)
+            #    if allow_esc and _ch[0] == NUM_ESC:
+            #        return
+            #else:
+            #    if pause_at_end:
+            #        text = self.font.render('Press any key to continue',True,colour_table['white'],colour_table['black'])
+            #        self.screen.blit(text,(0,self.display_rows * self.font.get_linesize()))
+            #        pygame.display.flip()
+            #        self.wait_for_key_input()
+            #    else:
+            #        pygame.display.flip()
 
     # need to improve cache to handle tile homonyms
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
