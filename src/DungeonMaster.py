@@ -556,7 +556,7 @@ class DungeonMaster:
             _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
             save_game(self.player.get_name(), _save_obj)
             self.dui.display_high_scores(5)
-            self.dui.clear_msg_line()
+            self.dui.clear_msg_line() 
             self.dui.display_message('Be seeing you...', True)
         
             raise GameOver()

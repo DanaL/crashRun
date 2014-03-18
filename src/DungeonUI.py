@@ -352,7 +352,7 @@ class DungeonUI(object):
             self.__write_message('You aren\'t carrying anything.', False)
             raise EmptyInventory
 
-        self.guts.write_message(msg + ' ', False)
+        self.display_message(msg + ' ')
 
         _ch = ''
         while _ch == '':

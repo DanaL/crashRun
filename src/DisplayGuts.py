@@ -204,7 +204,6 @@ class DisplayGuts(object):
 
         pygame.display.update(pygame.Rect((0, self.fheight),(self.display_cols * self.fwidth, self.display_rows * self.fheight)))
 
-    # Should separate the pygame-specific stuff
     def update_block(self, block):
         _low_actual_r = self.display_rows
         _high_actual_r = 0
