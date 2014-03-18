@@ -278,23 +278,20 @@ class DisplayGuts(object):
         return ch
 
     # Geez, this is ugly!
-    def wait_for_key_input(self, raw=False):
+    def wait_for_key_input(self):
         while True:
             event = SDL_Event()
             while SDL_PollEvent(ctypes.byref(event)) != 0:
                 if event.type == SDL_QUIT:
                     raise GameOver
                 if event.type == SDL_KEYDOWN:
-                    if raw:
-                        return (event.key, SDL_GetKeyName(event.key.keysym.sym))
+                    c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
+                    if event.key.keysym.sym == SDLK_SPACE:
+                        return ' '
+                    elif event.key.keysym.mod in (1, 2):
+                        return self.handle_special_keys(event.key.keysym.mod, c)
                     else:
-                        c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
-                        if event.key.keysym.sym == SDLK_SPACE:
-                            return ' '
-                        elif event.key.keysym.mod in (1, 2):
-                            return self.handle_special_keys(event.key.keysym.mod, c)
-                        else:
-                            return c.lower()
+                        return c.lower()
              
     def write_cursor(self, row, col, tile):
         r = row - self.map_r

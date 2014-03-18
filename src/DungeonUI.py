@@ -205,13 +205,13 @@ class DungeonUI(object):
             self.guts.write_message('What direction? ', False)
 
         while _dir == '':
-            d = self.guts.wait_for_key_input(True)
+            d = self.guts.wait_for_key_input()
             self.guts.clear_msg_line()
 
-            if d[0] == NUM_ESC:
+            if d == "escape":
                 return ''
             else:
-                _key = self.translate_keystroke(d[1])
+                _key = self.translate_keystroke(d)
                 # Make '.' a synonym for '>' when selecting direction (this might 
                 # need to be finer-grained at some point depending if I need to differentiate
                 # betwen "Use item on self" or "Use item on floor"
@@ -221,7 +221,7 @@ class DungeonUI(object):
         return _dir
 
     def get_player_command(self):
-        self.keystroke(self.guts.wait_for_key_input(False))
+        self.keystroke(self.guts.wait_for_key_input())
     
     def translate_keystroke(self, keystroke):
         if len(keystroke) == 1:
@@ -592,4 +592,4 @@ class DungeonUI(object):
         self.guts.update_view(sqr)
 
     def wait_for_input(self):
-        return self.guts.wait_for_key_input(False)
+        return self.guts.wait_for_key_input()
