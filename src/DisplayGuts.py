@@ -137,13 +137,14 @@ class DisplayGuts(object):
         return colour_table[colour]
 
     def get_player_command(self, dui):
-        while True:
-            event = pygame.event.wait()
-            if event.type == QUIT:
-                raise GameOver
-            elif event.type == KEYDOWN and event.key not in (SHIFT,ALT,CTRL):
-                self.dui.keystroke(event)
-                break
+        self.dui.keystroke(self.wait_for_key_input(False))
+        #while True:
+        #    event = SDL_Event()
+        #    if event.type == SQL_QUIT:
+        #        raise GameOver
+        #    elif event.type == SDL_KEYDOWN and event.key not in (SHIFT,ALT,CTRL):
+        #        self.dui.keystroke(event)
+        #        break
     
     def msg_overflow(self,message):
         return len(message) + self.__msg_cursor >= self.display_cols - 10

@@ -230,10 +230,10 @@ class DungeonUI(object):
                 return self.keymap[_key]
         return ''
                 
-    def keystroke(self, event):
+    def keystroke(self, key):
         # Map the keystroke to a particular command in the game
         self.guts.clear_msg_line()
-        _cmd = self.translate_keystroke(event.unicode)
+        _cmd = self.translate_keystroke(key)
         if _cmd != '':
             self.translate_cmd(_cmd)
     
