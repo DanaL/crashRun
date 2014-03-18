@@ -18,6 +18,8 @@
 import ctypes
 import os
 
+os.environ["PYSDL2_DLL_PATH"] = "C:\\dana\\crashRun\\sdl\\"
+
 from sdl2 import *
 import sdl2.sdlttf as sdlttf
 
@@ -168,9 +170,9 @@ class DisplayGuts(object):
                             colours = _col.get_fg_bg()
                             self.write_sqr(_col.get_ch(), colours[0], colours[1], actual_r, actual_c, False)
 
-            pygame.display.update(pygame.Rect((0,self.fheight),(self.display_cols * self.fwidth, self.display_rows * self.fheight)))
+            SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
-
+            
     def set_r_c(self, r, c):
         if self.cc.get_lvl_width() < self.display_cols:
             self.map_c = 0
@@ -233,9 +235,10 @@ class DisplayGuts(object):
             if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
                 colours = sqr.get_fg_bg()
                 self.write_sqr(sqr.get_ch(), colours[0], colours[1], actual_r, actual_c, False)
-        _ur = pygame.Rect((_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),
-                          (_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
-        pygame.display.update(_ur)
+        #_ur = pygame.Rect((_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),
+        #                  (_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
+        #pygame.display.update(_ur)
+        SDL_UpdateWindowSurface(self.window)
 
     def update_status_bar(self):
         info = self.cc.get_status_bar_info()
@@ -259,7 +262,7 @@ class DisplayGuts(object):
 
         pr = SDL_Rect(0, self.fheight * self.display_rows - self.fheight, 0, 0)
         colour = SDL_Color(255, 255, 255)
-        txt = sdlttf.TTF_RenderText_Solid(self.font, line, colour)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(line), colour)
         SDL_BlitSurface(txt, None, self.screen, pr)
         SDL_FreeSurface(txt)
         SDL_UpdateWindowSurface(self.window)
@@ -368,6 +371,7 @@ class DisplayGuts(object):
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
     def write_sqr(self, tile, fg, bg, r, c, update=True):
+        # ** I'm not sure the __tile_cache really makes sense anymore
         #if (tile,fg,bg) in self.__tile_cache:
         #    ch = self.__tile_cache[(tile,fg,bg)]
         #elif tile == ' ':
@@ -377,13 +381,13 @@ class DisplayGuts(object):
         #else:
         #    ch = self.font.render(tile,True,self.fetch_colour(fg),self.fetch_colour(bg))
         #    self.__tile_cache[(tile,fg,bg)] = ch    
-        
-        #SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
-        #colour = SDL_Color(255, 255, 255)
-        #txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(_lines[k]), colour)
-        #SDL_BlitSurface(txt, None, self.screen, pr)
-        #SDL_FreeSurface(txt)                                  
-        #SDL_UpdateWindowSurface(self.window)
-        #self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
-        #if update:
-        #    pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
+        clr = self.fetch_colour(fg)
+        color = SDL_Color(clr[0], clr[1], clr[2])
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(tile), color)
+        position_rect = SDL_Rect(c * self.fwidth, r * self.fheight, 0, 0);
+        SDL_BlitSurface(txt, None, self.screen, position_rect)
+        SDL_FreeSurface(txt)
+
+        if update:
+            SDL_UpdateWindowSurface(self.window)
+
