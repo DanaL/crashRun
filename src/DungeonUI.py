@@ -221,13 +221,16 @@ class DungeonUI(object):
         return _dir
 
     def get_player_command(self):
-        self.guts.get_player_command(self)
+        self.keystroke(self.guts.wait_for_key_input(False))
     
     def translate_keystroke(self, keystroke):
-        if keystroke != '':
-            _key = ord(keystroke)
-            if _key in self.keymap:
-                return self.keymap[_key]
+        print(keystroke)
+        if len(keystroke) == 1:
+            k = ord(keystroke)
+
+            if k in self.keymap:
+                return self.keymap[k]
+
         return ''
                 
     def keystroke(self, key):
@@ -474,7 +477,7 @@ class DungeonUI(object):
             self.guts.clear_msg_line()
             self.guts.write_message(question + ' ' + answer + ' ', False)
             ch = self.guts.wait_for_key_input()
-
+            
     def query_for_answer_in_set(self, question, answers, allow_esc):
         if allow_esc:
             answers.append(CHR_ESC)

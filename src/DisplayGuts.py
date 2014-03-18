@@ -74,8 +74,7 @@ class DisplayGuts(object):
                               self.fwidth * self.display_cols, self.fheight * self.display_rows, SDL_WINDOW_SHOWN)
         
         self.screen = SDL_GetWindowSurface(self.window)
-        #pygame.key.set_repeat(500, 30)
-
+        
     def check_screen_pos(self):
         # where is the player in relation to the map?
         _pl = self.cc.get_player_loc()
@@ -135,9 +134,6 @@ class DisplayGuts(object):
 
     def fetch_colour(self,colour):
         return colour_table[colour]
-
-    def get_player_command(self, dui):
-        self.dui.keystroke(self.wait_for_key_input(False))
             
     def msg_overflow(self,message):
         return len(message) + self.__msg_cursor >= self.display_cols - 10
@@ -178,7 +174,7 @@ class DisplayGuts(object):
         else:
             self.map_r = r - self.display_rows // 2 + 1
 
-# Show a player a vision of something (ie., security camera feed).  This is different from displaying a screen of 
+    # Show a player a vision of something (ie., security camera feed).  This is different from displaying a screen of 
     # of text becasue the vision will likely consist of tiles and such, not just text.  Need to draw each tile.
     # Vision is a list of DungeonSqrInfo objects
 
@@ -229,9 +225,7 @@ class DisplayGuts(object):
             if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
                 colours = sqr.get_fg_bg()
                 self.write_sqr(sqr.get_ch(), colours[0], colours[1], actual_r, actual_c, False)
-        #_ur = pygame.Rect((_low_actual_c * self.fwidth, _low_actual_r * self.fheight + self.fheight),
-        #                  (_high_actual_c * self.fwidth + 1, _high_actual_r * self.fheight + self.fheight))
-        #pygame.display.update(_ur)
+        
         SDL_UpdateWindowSurface(self.window)
 
     def update_status_bar(self):
@@ -272,6 +266,19 @@ class DisplayGuts(object):
             colours = sqr.get_fg_bg()
             self.write_sqr(sqr.get_ch(),colours[0],colours[1],actual_r,actual_c,True)
 
+    # From what I can tell so far, SDL gives you the raw key pressed and any modifier keys, so for letters you get
+    # 'A', 'B' etc so I cast them to lowercase if a shift key isn't being pressed. But I also need to check for characters
+    # like '@', '*', '?' etc. This is keyboard-specific and I presume there would be a way to detect which keyboard you have
+    # but for the moment I'm going to only worry about American-style keyboards. 
+    def handle_special_keys(self, mod, ch):
+        if ch == '2': return '@'
+        elif ch == ',': return '<'
+        elif ch == '.': return '>'
+        elif ch == '/': return '?'
+        elif ch == '8': return '*'
+        
+        return ch
+
     # Geez, this is ugly!
     def wait_for_key_input(self, raw=False):
         while True:
@@ -284,10 +291,11 @@ class DisplayGuts(object):
                         return (event.key, SDL_GetKeyName(event.key.keysym.sym))
                     else:
                         c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
+                        print(c,event.key.keysym.sym)
                         if event.key.keysym.sym == SDLK_SPACE:
                             return ' '
                         elif event.key.keysym.mod in (1, 2):
-                            return c
+                            return self.handle_special_keys(event.key.keysym.mod, c)
                         else:
                             return c.lower()
              
@@ -341,6 +349,10 @@ class DisplayGuts(object):
             j += self.display_rows - 1
 
         SDL_UpdateWindowSurface(self.window)
+
+        if pause_at_end:
+            self.wait_for_key_input()
+            
         #self.wait_for_key_input()
             #if j < len(_lines):
             #    text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
