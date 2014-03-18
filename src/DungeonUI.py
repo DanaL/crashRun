@@ -224,7 +224,6 @@ class DungeonUI(object):
         self.keystroke(self.guts.wait_for_key_input(False))
     
     def translate_keystroke(self, keystroke):
-        print(keystroke)
         if len(keystroke) == 1:
             k = ord(keystroke)
 

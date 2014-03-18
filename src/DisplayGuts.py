@@ -45,8 +45,6 @@ colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 's
     'plum':(221,160,221), 'bright pink':(255,105,180), 'pink':(255,20,147)}
 
 class DisplayGuts(object):
-    __tile_cache = {}
-
     def __init__(self, dr, dc, fs, window_title, dui):
         self.display_rows = dr
         self.display_cols = dc
@@ -291,7 +289,6 @@ class DisplayGuts(object):
                         return (event.key, SDL_GetKeyName(event.key.keysym.sym))
                     else:
                         c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
-                        print(c,event.key.keysym.sym)
                         if event.key.keysym.sym == SDLK_SPACE:
                             return ' '
                         elif event.key.keysym.mod in (1, 2):
@@ -345,49 +342,19 @@ class DisplayGuts(object):
                     SDL_BlitSurface(txt, None, self.screen, pr)
                     SDL_FreeSurface(txt)                                  
                     curr_row += self.fheight
-                
+            
+            #break
+            #self.wait_for_key_input()
+            SDL_UpdateWindowSurface(self.window) 
+            if pause_at_end:
+                self.wait_for_key_input()
             j += self.display_rows - 1
 
         SDL_UpdateWindowSurface(self.window)
 
-        if pause_at_end:
-            self.wait_for_key_input()
-            
-        #self.wait_for_key_input()
-            #if j < len(_lines):
-            #    text = self.font.render(' ',True,colour_table['white'],colour_table['black'])
-            #    self.screen.blit(text,(0,curr_row + self.font.get_linesize()))
-            #    _msg = '-- more -- Press any key to continue'
-            #    text = self.font.render(_msg,True,colour_table['white'],colour_table['black'])
-            #    self.screen.blit(text,(0,curr_row + self.font.get_linesize() * 2))
-            #    pygame.display.flip()
-            #    _ch = self.wait_for_key_input(True)
-            #    if allow_esc and _ch[0] == NUM_ESC:
-            #        return
-            #else:
-            #    if pause_at_end:
-            #        text = self.font.render('Press any key to continue',True,colour_table['white'],colour_table['black'])
-            #        self.screen.blit(text,(0,self.display_rows * self.font.get_linesize()))
-            #        pygame.display.flip()
-            #        self.wait_for_key_input()
-            #    else:
-            #        pygame.display.flip()
-
-    # need to improve cache to handle tile homonyms
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
     def write_sqr(self, tile, fg, bg, r, c, update=True):
-        # ** I'm not sure the __tile_cache really makes sense anymore
-        #if (tile,fg,bg) in self.__tile_cache:
-        #    ch = self.__tile_cache[(tile,fg,bg)]
-        #elif tile == ' ':
-        #    ch = pygame.Surface((self.fwidth,self.fheight))
-        #    ch.fill(self.fetch_colour(bg))
-        #    self.__tile_cache[(' ',fg,bg)] = ch
-        #else:
-        #    ch = self.font.render(tile,True,self.fetch_colour(fg),self.fetch_colour(bg))
-        #    self.__tile_cache[(tile,fg,bg)] = ch    
-        
         # Clear the square
         SDL_FillRect(self.screen, SDL_Rect(c * self.fwidth, self.fheight * r, self.fwidth, self.fheight), 0)
         clr = self.fetch_colour(fg)
@@ -399,4 +366,3 @@ class DisplayGuts(object):
 
         if update:
             SDL_UpdateWindowSurface(self.window)
-
