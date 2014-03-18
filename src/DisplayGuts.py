@@ -112,9 +112,9 @@ class DisplayGuts(object):
     
     def clear_msg_line(self):
         SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
+        SDL_UpdateWindowSurface(self.window)
 
     def clear_screen(self, fullscreen):
-        blank = SDL_Rect(self.display_cols * self.fwidth, self.display_rows + self.fheight)
         start_row = 0 if fullscreen else self.fheight
 
         width = self.display_cols * self.fwidth
