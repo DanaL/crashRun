@@ -367,17 +367,23 @@ class DisplayGuts(object):
     # need to improve cache to handle tile homonyms
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
-    def write_sqr(self,tile,fg,bg,r,c,update=True):
-        if (tile,fg,bg) in self.__tile_cache:
-            ch = self.__tile_cache[(tile,fg,bg)]
-        elif tile == ' ':
-            ch = pygame.Surface((self.fwidth,self.fheight))
-            ch.fill(self.fetch_colour(bg))
-            self.__tile_cache[(' ',fg,bg)] = ch
-        else:
-            ch = self.font.render(tile,True,self.fetch_colour(fg),self.fetch_colour(bg))
-            self.__tile_cache[(tile,fg,bg)] = ch    
-           
-        self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
-        if update:
-            pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
+    def write_sqr(self, tile, fg, bg, r, c, update=True):
+        #if (tile,fg,bg) in self.__tile_cache:
+        #    ch = self.__tile_cache[(tile,fg,bg)]
+        #elif tile == ' ':
+        #    ch = pygame.Surface((self.fwidth,self.fheight))
+        #    ch.fill(self.fetch_colour(bg))
+        #    self.__tile_cache[(' ',fg,bg)] = ch
+        #else:
+        #    ch = self.font.render(tile,True,self.fetch_colour(fg),self.fetch_colour(bg))
+        #    self.__tile_cache[(tile,fg,bg)] = ch    
+        
+        #SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
+        #colour = SDL_Color(255, 255, 255)
+        #txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(_lines[k]), colour)
+        #SDL_BlitSurface(txt, None, self.screen, pr)
+        #SDL_FreeSurface(txt)                                  
+        #SDL_UpdateWindowSurface(self.window)
+        #self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
+        #if update:
+        #    pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
