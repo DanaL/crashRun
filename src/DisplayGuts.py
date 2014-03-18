@@ -138,14 +138,7 @@ class DisplayGuts(object):
 
     def get_player_command(self, dui):
         self.dui.keystroke(self.wait_for_key_input(False))
-        #while True:
-        #    event = SDL_Event()
-        #    if event.type == SQL_QUIT:
-        #        raise GameOver
-        #    elif event.type == SDL_KEYDOWN and event.key not in (SHIFT,ALT,CTRL):
-        #        self.dui.keystroke(event)
-        #        break
-    
+            
     def msg_overflow(self,message):
         return len(message) + self.__msg_cursor >= self.display_cols - 10
         
@@ -382,6 +375,9 @@ class DisplayGuts(object):
         #else:
         #    ch = self.font.render(tile,True,self.fetch_colour(fg),self.fetch_colour(bg))
         #    self.__tile_cache[(tile,fg,bg)] = ch    
+        
+        # Clear the square
+        SDL_FillRect(self.screen, SDL_Rect(c * self.fwidth, self.fheight * r, self.fwidth, self.fheight), 0)
         clr = self.fetch_colour(fg)
         color = SDL_Color(clr[0], clr[1], clr[2])
         txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(tile), color)
