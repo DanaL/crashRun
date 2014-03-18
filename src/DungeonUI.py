@@ -380,7 +380,7 @@ class DungeonUI(object):
             return False
                 
     def examine(self):
-        self.guts.write_message('Move cursor to view squares.  ESC to end.', True)
+        self.display_message('Move cursor to view squares.  ESC to end.')
         _pl = self.cc.get_player_loc()
         _row = _pl[0]
         _col = _pl[1]

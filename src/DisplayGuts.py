@@ -296,10 +296,8 @@ class DisplayGuts(object):
     def write_cursor(self, row, col, tile):
         r = row - self.map_r
         c = col - self.map_c
-        ch = self.c_font.render(tile,True,colour_table['yellow'],colour_table['black']) 
-        self.screen.blit(ch,(c * self.fwidth, r * self.fheight + self.fheight))
-        pygame.display.update(pygame.Rect((c * self.fwidth, r * self.fheight + self.fheight),(self.fwidth,self.fheight)))
-
+        self.write_sqr(tile, 'yellow', 'black', r, c, True)
+        
     def write_message(self, message, pause):
         if len(message) > self.display_cols - 12:
             self.__split_message(message, pause)    
