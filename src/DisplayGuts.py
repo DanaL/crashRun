@@ -169,7 +169,7 @@ class DisplayGuts(object):
     # **** Currently not handling visions that are larger than display rows or cols.  Don't send one that is bigger.
     # **** Scrolling would be nice!
     def show_vision(self, vision):
-        self.guts.clear_screen(False)
+        self.clear_screen(False)
 
         # The DungeonSqrInfo objects contain the actual map rows and columns, we need to translate that into a nice,
         # centered display.  Row is easy, we start it at the top, we want to try to center the vision as best we can,
@@ -192,7 +192,7 @@ class DisplayGuts(object):
             fgbg = tile.get_fg_bg()
             self.write_sqr(tile.get_ch(), fgbg[0], fgbg[1], tile.r - baseRow + 1, tile.c - baseCol + columnOffset, False)
 
-        pygame.display.update(pygame.Rect((0, self.fheight),(self.display_cols * self.fwidth, self.display_rows * self.fheight)))
+        SDL_UpdateWindowSurface(self.window)
 
     def update_block(self, block):
         _low_actual_r = self.display_rows

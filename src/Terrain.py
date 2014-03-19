@@ -169,7 +169,7 @@ class Terminal(Equipment):
         dui.clear_msg_line()
         dui.display_message('Accessing security feed...')
         dui.show_vision(vision)
-        dui.wait_for_key_input()
+        dui.wait_for_input()
         
     def use_security_cameras(self, dm, dui):
         if not dm.curr_lvl.cameras_active:
