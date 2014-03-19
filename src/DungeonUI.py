@@ -183,7 +183,6 @@ class DungeonUI(object):
         self.guts.redraw_screen()
         
     def display_message(self, msg, pause_for_more=False):
-        self.guts.clear_msg_line()
         if not msg.startswith('iCannon'):
             # what I won't do for a joke...
             message = msg[0].capitalize() + msg[1:]

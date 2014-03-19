@@ -113,6 +113,7 @@ class DisplayGuts(object):
     def clear_msg_line(self):
         SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
         SDL_UpdateWindowSurface(self.window)
+        self.__msg_cursor = 0
 
     def clear_screen(self, fullscreen):
         start_row = 0 if fullscreen else self.fheight
@@ -122,20 +123,9 @@ class DisplayGuts(object):
         SDL_FillRect(self.screen, SDL_Rect(0, start_row, width, height), 0)
         SDL_UpdateWindowSurface(self.window)
 
-    def display_on_msg_line(self, message):
-        pr = SDL_Rect(0, 0, 0, 0)
-        colour = SDL_Color(255, 255, 255)
-        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(message), colour)
-        SDL_BlitSurface(txt, None, self.screen, pr)
-        SDL_FreeSurface(txt)
-        SDL_UpdateWindowSurface(self.window)
-
     def fetch_colour(self,colour):
         return colour_table[colour]
-            
-    def msg_overflow(self,message):
-        return len(message) + self.__msg_cursor >= self.display_cols - 10
-        
+                    
     def pause_for_more(self):
         self.display_on_msg_line('-- more --')
         self.wait_for_key_input()
@@ -298,17 +288,27 @@ class DisplayGuts(object):
         r = row - self.map_r
         c = col - self.map_c
         self.write_sqr(tile, 'yellow', 'black', r, c, True)
-        
+
+    def display_on_msg_line(self, message):
+        pr = SDL_Rect( self.__msg_cursor * self.fwidth, 0, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(message), colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+        SDL_UpdateWindowSurface(self.window)
+
+    def msg_overflow(self,message):
+        return len(message) + self.__msg_cursor >= self.display_cols - 10
+
     def write_message(self, message, pause):
         if len(message) > self.display_cols - 12:
             self.__split_message(message, pause)    
             return
-                
-        #if self.msg_overflow(message):
-        #    self.pause_for_more()
+        
+        if self.msg_overflow(message):
+            self.pause_for_more()
 
         self.display_on_msg_line(message)
-
         self.__msg_cursor += len(message)
 
         if pause:
