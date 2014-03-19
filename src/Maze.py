@@ -64,19 +64,19 @@ class Maze(object):
         _nc = node.value[1]
         
         if self.in_bounds(_nr - 2, _nc) and self.map[_nr-1][_nc].get_type() == CYBERSPACE_WALL:
-            _c_node = self.__ds_nodes[_nr/2-1][_nc/2]
+            _c_node = self.__ds_nodes[_nr//2-1][_nc//2]
             if find(_c_node) != find(node):
                 _candidates.append((_c_node, _nr-1, _nc))
         if self.in_bounds(_nr + 2, _nc) and self.map[_nr+1][_nc].get_type() == CYBERSPACE_WALL:
-            _c_node = self.__ds_nodes[_nr/2+1][_nc/2]
+            _c_node = self.__ds_nodes[_nr//2+1][_nc//2]
             if find(_c_node) != find(node):
                 _candidates.append((_c_node, _nr+1, _nc))
         if self.in_bounds(_nr, _nc - 2) and self.map[_nr][_nc-1].get_type() == CYBERSPACE_WALL:
-            _c_node = self.__ds_nodes[_nr/2][_nc/2-1]
+            _c_node = self.__ds_nodes[_nr//2][_nc//2-1]
             if find(_c_node) != find(node):
                 _candidates.append((_c_node, _nr, _nc-1))
         if self.in_bounds(_nr, _nc + 2) and self.map[_nr][_nc+1].get_type() == CYBERSPACE_WALL:
-            _c_node = self.__ds_nodes[_nr/2][_nc/2+1]
+            _c_node = self.__ds_nodes[_nr//2][_nc//2+1]
             if find(_c_node) != find(node):
                 _candidates.append((_c_node, _nr, _nc+1))
         
