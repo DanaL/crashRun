@@ -558,7 +558,7 @@ class DungeonMaster:
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 
             self.dui.display_message('Be seeing you...', True)
-        
+
             raise GameOver()
         else:
             self.dui.display_message('Nevermind...')

@@ -18,7 +18,7 @@
 import ctypes
 import os
 
-os.environ["PYSDL2_DLL_PATH"] = "C:\\dana\\crashRun\\sdl\\"
+#os.environ["PYSDL2_DLL_PATH"] = "C:\\dana\\crashRun\\sdl\\"
 
 from sdl2 import *
 import sdl2.sdlttf as sdlttf
@@ -245,6 +245,8 @@ class DisplayGuts(object):
         else:
             line += 'Complex Level: ' + str(info.level)
 
+        #Clear the line first
+        SDL_FillRect(self.screen, SDL_Rect(0, self.fheight * self.display_rows - self.fheight, self.display_cols * self.fwidth, self.fheight), 0)
         pr = SDL_Rect(0, self.fheight * self.display_rows - self.fheight, 0, 0)
         colour = SDL_Color(255, 255, 255)
         txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(line), colour)
