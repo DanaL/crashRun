@@ -249,7 +249,7 @@ class Inventory:
 
             if isinstance(self.__inv[slot][0], ItemStack):
                 # zero indicates remove all items
-                if count == 0:
+                if count == 0 or count > len(self.__inv[slot][0]):
                     count = len(self.__inv[slot][0])
 
                 item = self.__inv[slot][0].remove_item(count)
