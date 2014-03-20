@@ -605,7 +605,7 @@ class AltPredator(BaseMonster):
             fg, bg, lit, name, row, col, xp_value, gender, level):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab,
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
-        self.__state = ''
+        self.state = ''
 
     def perform_action(self):
         if self.attitude == 'inactive':
@@ -622,9 +622,9 @@ class AltPredator(BaseMonster):
             else:
                 self.move_to(_player_loc)
         except MoraleCheckFailed:
-            if self.__state != 'scared':
+            if self.state != 'scared':
                 self.dm.alert_player(self.row,self.col,'The ' + self.get_name() +' turns to flee!')
-                self.__state = 'scared'
+                self.state = 'scared'
             
             if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
                 self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25, self)
@@ -637,19 +637,19 @@ class AltPredator(BaseMonster):
     def __check_morale(self):
         fear_factor = float(self.curr_hp) / float(self.max_hp)
         if fear_factor > 0.1 and self.curr_hp > 2:
-            self.__state == ''
+            self.state == ''
             return
             
-        if self.__state == 'scared':
+        if self.state == 'scared':
             fear_factor -= 0.25
 
         if random() > fear_factor:
             raise MoraleCheckFailed
         else:
-            if self.__state == 'scared':
+            if self.state == 'scared':
                 self.dm.alert_player(self.row,self.col,"".join(['The ',self.get_name(),' turns to fight!']))
 
-            self.__state = ''
+            self.state = ''
 
 class HumanFoe(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
@@ -691,7 +691,7 @@ class Junkie(HumanFoe):
         if randint(1, 10) == 1:
             self.dazed('', 1)
         super().perform_action()
-        
+
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
