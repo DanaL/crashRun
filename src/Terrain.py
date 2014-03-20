@@ -215,7 +215,7 @@ class Door(TerrainTile):
             
     def get_ch(self):
         if self.__open:
-            return '-'
+            return '/'
         else:
             return '+'
 
