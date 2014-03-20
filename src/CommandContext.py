@@ -235,7 +235,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message("Hmm?")
             
     def door_action(self, sqr, row, col, lvl):
-        if not sqr.is_open():
+        if not sqr.broken and not sqr.is_open():
             self.dm.open_door(sqr, row, col)
             return
         
