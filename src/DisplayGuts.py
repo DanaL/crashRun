@@ -17,8 +17,10 @@
 
 import ctypes
 import os
+import platform
 
-#os.environ["PYSDL2_DLL_PATH"] = "C:\\dana\\crashRun\\sdl\\"
+if platform.system() == "Windows":
+    os.environ["PYSDL2_DLL_PATH"] = os.getcwd() + "\\sdl\\"
 
 from sdl2 import *
 import sdl2.sdlttf as sdlttf
