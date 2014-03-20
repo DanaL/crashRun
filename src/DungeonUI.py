@@ -80,8 +80,8 @@ class DungeonUI(object):
     #   [line0,line1,...]
     def ask_menued_question(self,blurb,menu,footer = []):
         msg = []
-        keys = [CHR_ESC]
-        bindings = {CHR_ESC:''}
+        keys = ['escape']
+        bindings = { 'escape' : '' }
 
         [msg.append(item) for item in blurb]
 
@@ -99,6 +99,7 @@ class DungeonUI(object):
             ch = self.guts.wait_for_key_input()
 
         self.guts.redraw_screen()
+
         return bindings[ch]
 
     # Expects menu to be in the form of:
@@ -371,6 +372,7 @@ class DungeonUI(object):
             j += 1
             
         choice = self.ask_menued_question(header,menu)
+
         if choice == '':
             return True
         else:
