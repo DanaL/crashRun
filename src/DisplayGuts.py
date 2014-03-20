@@ -27,18 +27,6 @@ import sdl2.sdlttf as sdlttf
 
 from .DungeonMaster import GameOver
 
-# Handy constants
-NUM_A = ord('a')
-NUM_Z = ord('z')
-NUM_CA = ord('A')
-NUM_CZ = ord('Z')
-NUM_ESC = 27
-CHR_ESC = chr(NUM_ESC) # The numeric value for the Escape key (on Win32)
-SHIFT = 304
-CTRL = 306
-ALT = 308
-ENTER = 13 # Probably system dependent but need to test on windows
-
 # RGB values for colours used in system
 colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
     'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87), 

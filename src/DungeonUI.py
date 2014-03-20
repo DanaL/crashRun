@@ -21,10 +21,7 @@ import math
 from string import digits
 from string import ascii_letters
 
-from .DisplayGuts import CHR_ESC
 from .DisplayGuts import DisplayGuts
-from .DisplayGuts import ENTER
-from .DisplayGuts import NUM_ESC
 from .GamePersistence import get_preferences
 from .GamePersistence import read_scores
 from .GamePersistence import save_preferences
@@ -143,7 +140,7 @@ class DungeonUI(object):
 
             if ch in keys:
                 bindings[ch][0] = (bindings[ch][0] + 1) % 2 # toggle it!
-            elif ch == CHR_ESC:
+            elif ch == 'escape':
                 self.guts.redraw_screen()
                 return []
 
@@ -313,7 +310,7 @@ class DungeonUI(object):
         while _ch not in _letters:
             _ch = self.guts.wait_for_key_input()
         
-            if _ch == CHR_ESC: 
+            if _ch == 'escape': 
                 raise NonePicked
             elif _ch == '*':
                 _ch = self.ask_menued_question([msg], items)
@@ -357,7 +354,7 @@ class DungeonUI(object):
         _ch = ''
         while _ch == '':
             _ch = self.guts.wait_for_key_input()      
-            if _ch == CHR_ESC:
+            if _ch == 'escape':
                 raise NonePicked
         
         return _ch
@@ -444,21 +441,22 @@ class DungeonUI(object):
                     self.__select_category(category, player)
                     
     def query_for_amount(self):
-        _ch = ('', '')
-        _answer = ""
+        ch = ''
+        _answer = ''
         while True:
-            if _ch[0] == K_BACKSPACE:
+            if ch == 'backspace':
                 _answer = _answer[:-1]
-            elif _ch[0] == K_RETURN:
+            elif ch == 'return':
                 self.clear_msg_line()
                 return _answer
-            elif _ch[1] in digits: 
-                _answer += _ch[1]
+            elif ch in digits: 
+                _answer += ch
             
             self.guts.clear_msg_line()
             self.guts.write_message('How many? (Enter for all) ' + _answer + ' ', False)
-            _ch = self.wait_for_key_input(True)
-            if _ch[0] == NUM_ESC:
+            ch = self.guts.wait_for_key_input()
+
+            if ch == 'escape':
                 raise NonePicked
 
     # need to add check for user typing too much in
@@ -480,7 +478,7 @@ class DungeonUI(object):
             
     def query_for_answer_in_set(self, question, answers, allow_esc):
         if allow_esc:
-            answers.append(CHR_ESC)
+            answers.append('escape')
             
         while True:
             self.guts.clear_msg_line()
@@ -491,7 +489,7 @@ class DungeonUI(object):
 
         self.guts.clear_msg_line()
         
-        if _answer == CHR_ESC:
+        if _answer == 'escape':
             _answer = ''
             
         return _answer
