@@ -19,6 +19,7 @@ from copy import copy
 from random import choice
 from random import randrange
 from random import random
+from random import randint
 
 from .BaseTile import BaseTile
 from . import Behaviour
@@ -285,8 +286,9 @@ class BaseAgent(BaseTile):
             
         return damage
             
-    def dazed(self, source):
-        _effect = (('dazed', 0, randrange(1,11) + self.dm.turn), source)
+    def dazed(self, source, duration=0):
+        _dur = duration if duration > 0 else randrange(1, 11)
+        _effect = (('dazed', 0, _dur + self.dm.turn), source)
         self.apply_effect(_effect, False)
     
     def get_articled_name(self):
@@ -676,6 +678,19 @@ class HumanFoe(AltPredator):
             self.calc_ac()
         else:
             AltPredator.perform_action(self)
+
+class Junkie(HumanFoe):
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
+            fg, bg, lit, name, row, col, xp_value, gender, level):
+        HumanFoe.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+
+    # Druggie-tyep monsters occasionally move erratically. Basically, when they try to move,
+    # occasionally treat them as though they were dazed.
+    def perform_action(self):
+        if randint(1, 10) == 1:
+            self.dazed('', 1)
+        super().perform_action()
         
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
