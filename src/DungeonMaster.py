@@ -865,7 +865,7 @@ class DungeonMaster:
         if isinstance(tile, Terrain.SpecialDoor):
             self.curr_lvl.check_special_door(tile)
                      
-        if tile.is_locked():
+        if tile.locked:
             if self.prefs["auto unlock doors"]:
                 self.__attempt_to_unlock_door(tile)
             else:    
@@ -874,7 +874,7 @@ class DungeonMaster:
                     self.__attempt_to_unlock_door(tile)
             self.player.energy -= STD_ENERGY_COST # player uses a turn because he has to try the door to see if it is locked
         else:
-            tile.open()
+            tile.opened = True
             self.dui.display_message('You open the door')
             self.player.energy -= STD_ENERGY_COST
             

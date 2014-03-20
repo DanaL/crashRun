@@ -207,46 +207,30 @@ class Door(TerrainTile):
     def __init__(self):
         TerrainTile.__init__(self,'+','brown','black','lightbrown',0,0,0,0,'door',DOOR)
         
-        self.__open = False
+        self.opened = False
         self.locked = False
         self.broken = False
         self.lock_difficulty = 1
         self.damagePoints = randrange(5,20)
             
     def get_ch(self):
-        if self.__open:
-            return '/'
-        else:
-            return '+'
+        return '/' if self.opened else '+'
 
     def is_passable(self):
-        return self.__open
+        return self.opened
 
     def is_opaque(self):
-        return not self.__open
-
-    def is_open(self):
-        return self.__open
-
-    def is_locked(self):
-        return self.locked
-
-    def open(self):
-        self.__open = True
-
-    def close(self):
-        self.__open = False
+        return not self.opened
 
     def smash(self):
         self.broken = True
-        self.__open = True
+        self.opened = True
 
     def lock(self):
         self.locked = True
 
     def unlock(self):
         self.locked = False
-
         
 class SpecialDoor(Door):
     def __init__(self):
