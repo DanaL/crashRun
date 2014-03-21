@@ -256,6 +256,7 @@ class DisplayGuts(object):
         elif ch == '.': return '>'
         elif ch == '/': return '?'
         elif ch == '8': return '*'
+        elif ch == '3': return '#'
         
         return ch
 
