@@ -734,8 +734,12 @@ class DungeonMaster:
             elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
-            elif self.__should_attempt_to_open(_tile):     
-                self.open_door(_tile, _next_r, _next_c)
+            elif self.__should_attempt_to_open(_tile):
+                if self.player.has_condition('dazed'):
+                    self.dui.display_message('You stagger into ' + _tile.get_name() + '!')
+                    self.player.energy -= STD_ENERGY_COST
+                else:
+                    self.open_door(_tile, _next_r, _next_c)
             elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.FIREWALL:
                 self.player_tries_moving_through_firewall(_p, _next_r, _next_c, _dt)
             else:

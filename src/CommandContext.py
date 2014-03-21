@@ -191,6 +191,10 @@ class MeatspaceCC(CommandContext):
             
     def do_action(self):
         _p = self.dm.player
+        if _p.has_condition('dazed'):
+            self.dui.display_message("You are not in the right headspace right now.")
+            return
+
         _lvl = self.dm.curr_lvl
         
         _sqr = self.find_actionable_sqrs(_p.row, _p.col)
