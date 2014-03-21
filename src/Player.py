@@ -18,6 +18,7 @@
 from random import randrange
 
 from .Agent import BaseAgent
+from .Agent import AgentMemory
 from .Agent import STD_ENERGY_COST
 from .BaseTile import BaseTile
 from .Inventory import Inventory
@@ -99,7 +100,7 @@ class MeatspaceStats(object):
         self.light_r = light_r
         self.vision_r = vision_r
         
-class Player(BaseAgent):
+class Player(BaseAgent, AgentMemory):
     def __init__(self,stats,background,name,row,col,dm):
         self.dm = dm
         self.__xp = 0
@@ -117,12 +118,12 @@ class Player(BaseAgent):
         self.temp_bonus_hp = 0
         
         self.background = background
+        AgentMemory.__init__(self)
         BaseAgent.__init__(self,12,10,1,2,'@','white','black','white',name,row,col,'')
     
         self.__calc_initial_hp()
         self.calc_ac()
         self.__calc_next_level()
-        self.events = []
         self.software = Wetboard(3,10)
         self.weapon_configs = {}
         self.reload_memory = None

@@ -191,7 +191,7 @@ class MiniBoss1Level(GameLevel):
     
     def check_special_door(self, tile):
         _player = self.dm.player
-        if "the Roomba 3000 killed" in _player.events:
+        if _player.has_memory("the Roomba 3000 killed"):
             tile.unlock()
         else:
             tile.lock()

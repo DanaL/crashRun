@@ -294,9 +294,9 @@ class DungeonMaster:
         self.refresh_player_view()
         self.dui.update_status_bar()
         
-        if 'enter complex' not in self.player.events:
+        if not self.player.has_memory('enter complex'):
             self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
-            self.player.events.append('enter complex')
+            self.player.remember('enter complex')
 
     # This might result in really stupid behaviour if the stairs were surrounded by a gigantic field of monsters
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)

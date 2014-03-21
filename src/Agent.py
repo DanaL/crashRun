@@ -60,7 +60,27 @@ class DamageDesc(object):
         if self.desc == 'brain damage': 
             return self.desc            
         return self.get_correct_article() + self.desc
-        
+
+# Simple class to track memory of events in game. Currently only tracking
+# simple strings, no meta-data like source of event or game term it occurred
+# on (but I might later if that becomes useful)
+class AgentMemory:
+    def __init__(self):
+        self.events = []
+
+    def has_memory(self, memory):
+        return memory in self.events
+
+    def remember(self, memory):
+        if not self.has_memory(memory):
+            self.events.append(memory)
+
+    def forget(self, memory):
+        try:
+            self.events.remove(memory)
+        except ValueError:
+            pass # Don't really care that it wasn't in the memory
+
 class AStarPathFactory: 
     def __init__(self,dm,start,goal):
         self.__start = start
@@ -1340,7 +1360,7 @@ class SurveillanceDrone(CleanerBot):
 # to have an ability to group the uniques.
 class Unique(object):
     def killed(self, dm):
-        dm.player.events.append(self.get_name() + ' killed')
+        dm.player.remember(self.get_name() + ' killed')
         
 # Unique monsters
 class TemporarySquirrel(AltPredator, Unique):

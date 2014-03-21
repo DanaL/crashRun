@@ -159,7 +159,7 @@ class OldComplexLevel(GameLevel):
         _odds = float(self.level_num - 2) / 4
         _r = random()
         if _r < _odds:
-            self.dm.player.events.append('EHID41K')
+            self.dm.player.remember('EHID41K')
             _droid = ExperimentalHoboInfiltrationDroid41K(self.dm, 0, 0)
             GameLevel.add_monster(self, _droid)
                             
@@ -188,7 +188,7 @@ class OldComplexLevel(GameLevel):
             _downstairs = self.exits[0][0]
             self.map[_downstairs[0]][_downstairs[1]].activated = False
 
-        if 'EHID41K' not in self.dm.player.events:
+        if not self.dm.player.has_memory('EHID41K'):
             self.add_EHID41K()
     
     def dispatch_security_bots(self):
