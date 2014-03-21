@@ -94,7 +94,7 @@ class OldComplexLevel(GameLevel):
             rnd = randrange(4, 20)
             
         if rnd in range(0,2):
-            return MonsterFactory.get_monster_by_name(self.dm,'rabid dog', 0, 0)
+            return MonsterFactory.get_monster_by_name(self.dm,'feral dog', 0, 0)
         elif rnd in range(2,4):
             return MonsterFactory.get_monster_by_name(self.dm,'junkie', 0, 0)
         elif rnd in range(4,6):

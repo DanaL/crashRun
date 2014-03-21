@@ -143,6 +143,11 @@ def _extraLargeCockroach(dm,row,col):
             dm=dm, ch='c', fg='brown', bg='black', lit='red', name='extra large cockroach',
             row=row, col=col, xp_value=4, gender='male', level=3)
 
+def _feralDog(dm,row,col):
+    return AltPredator(vision_radius=8, ac=14, hp_low=3, hp_high=10, dmg_dice=8, dmg_rolls=1, ab=0,
+            dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='feral dog', row=row,
+            col=col, xp_value=3, gender='male', level=1)
+
 def _giantBat(dm,row,col):
     _gb = AltPredator(vision_radius=8, ac=17, hp_low=10, hp_high=20, dmg_dice=4, dmg_rolls=2, ab=0,
             dm=dm, ch='b', fg='brown', bg='black', lit='brown', name='giant bat', row=row,
@@ -235,11 +240,6 @@ def _pigoon(dm, row, col):
             dm=dm, ch='p', fg='brown', bg='black', lit='lightbrown', name='pigoon', row=row,
             col=col, xp_value=25, gender='male', level=6)
             
-def _rabidDog(dm,row,col):
-    return AltPredator(vision_radius=8, ac=14, hp_low=3, hp_high=10, dmg_dice=8, dmg_rolls=1, ab=0,
-            dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='rabid dog', row=row,
-            col=col, xp_value=3, gender='male', level=1)
-
 def _reanimatedMailroomClerk(dm, row, col):
     _rp = RelentlessPredator(vision_radius=7, ac=15, hp_low=10, hp_high=20, dmg_dice=10, dmg_rolls=1,
             ab=0, dm=dm, ch='z', fg='brown', bg='black', lit='red',
@@ -367,6 +367,7 @@ _monster_dict['dust head'] = _dusthead
 _monster_dict['ed-209'] = _ed209
 _monster_dict['enhanced mole'] = _enhancedMole
 _monster_dict['extra large cockroach'] = _extraLargeCockroach
+_monster_dict['feral dog'] = _feralDog
 _monster_dict['giant bat'] = _giantBat
 _monster_dict['grid bug'] = _gridBug
 _monster_dict['gun turret'] = _gunTurret
@@ -381,7 +382,6 @@ _monster_dict['naive garbage collector'] = _naiveGarbageCollector
 _monster_dict['ninja'] = _basicNinja
 _monster_dict['pensky antiviral mark I'] = _penksyAntiViralMarkI
 _monster_dict['pigoon'] = _pigoon
-_monster_dict['rabid dog'] = _rabidDog
 _monster_dict['repair bot'] = _repairBot
 _monster_dict['roomba'] = _roomba
 _monster_dict['script kiddie'] = _scriptKiddie

@@ -45,7 +45,7 @@ class Prologue(GameLevel):
         elif rnd == 1:
             _m = MonsterFactory.get_monster_by_name(self.dm,'junkie', 0, 0)
         else:
-            _m = MonsterFactory.get_monster_by_name(self.dm,'rabid dog', 0, 0)
+            _m = MonsterFactory.get_monster_by_name(self.dm,'feral dog', 0, 0)
         GameLevel.add_monster(self, _m)
         
     def set_start_loc_for_player(self):
