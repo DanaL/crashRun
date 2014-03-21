@@ -223,7 +223,7 @@ class DungeonMaster:
         self.dui.set_command_context(MeatspaceCC(self, self.dui))
 
         if _hp_delta_cyberspace > 1 or exit_dmg > 0:
-            _dmg = _hp_delta_cyberspace / 5 + exit_dmg
+            _dmg = _hp_delta_cyberspace // 5 + exit_dmg
             self.player.damaged(self, self.curr_lvl, _dmg, '', ['brain damage'])
             self.dui.display_message(self.get_meatspace_dmg_msg(_dmg, self.player.curr_hp), True)
             

@@ -699,11 +699,12 @@ class HumanFoe(AltPredator):
         else:
             AltPredator.perform_action(self)
 
-class Junkie(HumanFoe):
+class Junkie(HumanFoe, AgentMemory):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
         HumanFoe.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+        AgentMemory.__init__(self)
 
     # Druggie-tyep monsters occasionally move erratically. Basically, when they try to move,
     # occasionally treat them as though they were dazed.
@@ -711,6 +712,12 @@ class Junkie(HumanFoe):
         if randint(1, 10) == 1:
             self.dazed('', 1)
         super().perform_action()
+
+    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
+        self.attitude = 'hostile'
+        if attacker == dm.player:
+            self.remember('damaged by player')            
+        super(BaseMonster, self).damaged(dm, level, damage, attacker, attack_type)
 
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
