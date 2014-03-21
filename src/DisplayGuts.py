@@ -23,6 +23,7 @@ if platform.system() == "Windows":
     os.environ["PYSDL2_DLL_PATH"] = os.getcwd() + "\\sdl\\"
 
 from sdl2 import *
+import sdl2.ext as sdl2ext
 import sdl2.sdlttf as sdlttf
 
 from .DungeonMaster import GameOver
@@ -260,9 +261,10 @@ class DisplayGuts(object):
 
     # Geez, this is ugly!
     def wait_for_key_input(self):
+        event = SDL_Event()
         while True:
-            event = SDL_Event()
-            while SDL_PollEvent(ctypes.byref(event)) != 0:
+            events = sdl2ext.get_events()
+            for event in events:
                 if event.type == SDL_QUIT:
                     raise GameOver
                 if event.type == SDL_KEYDOWN:
@@ -273,6 +275,7 @@ class DisplayGuts(object):
                         return self.handle_special_keys(event.key.keysym.mod, c)
                     else:
                         return c.lower()
+            SDL_Delay(25)
              
     def write_cursor(self, row, col, tile):
         r = row - self.map_r
