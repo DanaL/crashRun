@@ -212,11 +212,15 @@ class Player(BaseAgent, AgentMemory):
         if effect[0][0] in ('infrared', 'light', 'blind'):
             self.dm.refresh_player_view()
         self.dm.dui.update_status_bar()
+
+    def remove_effect(self, effect, source):
+        BaseAgent.remove_effect(self, effect, source)        
+        if effect[0] == 'dazed' and not self.has_condition('dazed'):
+            self.dm.alert_player(self.row, self.col, "You shake off your daze. ")
+        self.dm.dui.update_status_bar()
         
-    def check_for_expired_conditions(self):
-        _expired = BaseAgent.check_for_expired_conditions(self)
-        for _e in _expired:
-            self.remove_effect(_e[0], _e[1])
+    def check_for_expired_conditions(self):        
+        for _e in BaseAgent.check_for_expired_conditions(self):
             if _e[1] == 'high':
                 self.dm.alert_player(self.row, self.col, 'You are coming down a bit.')
             elif _e[1] == 'blind':
@@ -314,13 +318,6 @@ class Player(BaseAgent, AgentMemory):
     def get_meatspace_stats(self):
         return MeatspaceStats(self.curr_hp, self.max_hp, self.light_radius, self.vision_radius)
     
-    def remove_effect(self, effect, source):
-        BaseAgent.remove_effect(self, effect, source)
-        
-        if effect[0] == 'dazed' and not self.has_condition('dazed'):
-            self.dm.alert_player(self.row, self.col, "You shake off your daze.")
-        self.dm.dui.update_status_bar()
-        
     def remove_effects(self, source):
         BaseAgent.remove_effects(self, source)
         self.dm.refresh_player_view()
