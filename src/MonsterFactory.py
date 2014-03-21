@@ -144,7 +144,7 @@ def _extraLargeCockroach(dm,row,col):
             row=row, col=col, xp_value=4, gender='male', level=3)
 
 def _feralDog(dm,row,col):
-    return AltPredator(vision_radius=8, ac=14, hp_low=3, hp_high=10, dmg_dice=8, dmg_rolls=1, ab=0,
+    return FeralDog(vision_radius=8, ac=14, hp_low=3, hp_high=10, dmg_dice=8, dmg_rolls=1, ab=0,
             dm=dm, ch='d', fg='darkgrey', bg='black', lit='grey', name='feral dog', row=row,
             col=col, xp_value=3, gender='male', level=1)
 

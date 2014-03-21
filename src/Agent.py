@@ -81,6 +81,11 @@ class AgentMemory:
         except ValueError:
             pass # Don't really care that it wasn't in the memory
 
+    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
+        self.attitude = 'hostile'
+        if attacker == dm.player:
+            self.remember('damaged by player')            
+        
 class AStarPathFactory: 
     def __init__(self,dm,start,goal):
         self.__start = start
@@ -671,6 +676,35 @@ class AltPredator(BaseMonster):
 
             self.state = ''
 
+class FeralDog(AltPredator, AgentMemory):
+    def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
+            fg, bg, lit, name, row, col, xp_value, gender, level):
+        AltPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
+            dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
+        AgentMemory.__init__(self)
+
+    def perform_action(self):
+        # If they see the player and he hasn't hurt them before, they will ignore him
+        # if he's wearing fatigues
+        if not self.has_memory('damaged by player') and self.is_player_visible():
+            suit = self.dm.player.inventory.get_armour_in_location('suit');
+            if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
+                self.attitude = 'passive'
+                x = randint(1, 10)
+                if x == 1:
+                    self.dm.alert_player(self.row, self.col, self.get_name() + " whines.")
+                elif x == 2:
+                    self.dm.alert_player(self.row, self.col, self.get_name() + " growls.")
+                self.make_random_move()
+                self.energy -= STD_ENERGY_COST
+                return
+            
+        super().perform_action()
+
+    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
+        AgentMemory.damaged(self, dm, level, damage, attacker, attack_type)
+        AltPredator.damaged(self, dm, level, damage, attacker, attack_type)
+
 class HumanFoe(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
@@ -706,19 +740,34 @@ class Junkie(HumanFoe, AgentMemory):
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         AgentMemory.__init__(self)
 
-    # Druggie-tyep monsters occasionally move erratically. Basically, when they try to move,
-    # occasionally treat them as though they were dazed.
     def perform_action(self):
+        # Druggie-tyep monsters occasionally move erratically. Basically, when they try to move,
+        # occasionally treat them as though they were dazed.
         if randint(1, 10) == 1:
             self.dazed('', 1)
+
+        # If they see the player and he hasn't hurt them before, they will ignore him
+        # if he's wearing fatigues
+        if not self.has_memory('damaged by player') and self.is_player_visible():
+            suit = self.dm.player.inventory.get_armour_in_location('suit');
+            if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
+                self.attitude = 'passive'
+                x = randint(1, 10)
+                if x == 1:
+                    self.dm.alert_player(self.row, self.col, self.get_name() + " babbles.")
+                elif x == 2:
+                    pronoun = 'his' if self.get_gender() == 'male' else 'her'                    
+                    self.dm.alert_player(self.row, self.col, self.get_name() + " scratches " + pronoun + " arms.")
+                self.make_random_move()
+                self.energy -= STD_ENERGY_COST
+                return
+            
         super().perform_action()
 
     def damaged(self, dm, level, damage, attacker, attack_type='melee'):
-        self.attitude = 'hostile'
-        if attacker == dm.player:
-            self.remember('damaged by player')            
-        super(BaseMonster, self).damaged(dm, level, damage, attacker, attack_type)
-
+        AgentMemory.damaged(self, dm, level, damage, attacker, attack_type)         
+        HumanFoe.damaged(self, dm, level, damage, attacker, attack_type)
+    
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
