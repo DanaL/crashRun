@@ -45,8 +45,10 @@ class ScienceComplexLevel(GameLevel):
         self._ncf = NewComplexFactory(self.lvl_length, self.lvl_width, False, False)
         self.map = self._ncf.gen_map()
         self._ncf.remove_up_stairs_from_rooms()
-        self.entrances.append([self._ncf.upStairs, None])
-        self.exits.append([self._ncf.downStairs, None])
+        self.upStairs = self._ncf.upStairs
+        self.downStairs = self._ncf.downStairs
+        self.entrances.append([self.upStairs, None])
+        self.exits.append([self.downStairs, None])
     
     def add_monster(self):
         _monster = self.__get_monster()
