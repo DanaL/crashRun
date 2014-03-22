@@ -189,12 +189,6 @@ class DungeonUI(object):
         self.__message_memory.append(message)
         self.guts.write_message(message + ' ', pause_for_more)
             
-    def __split_message(self, message, pause_for_more):
-        self.__msg_cursor = 0
-        _index = message[:self.guts.display_cols - 12].rfind(" ")
-        self.guts.write_message(message[:_index].strip(), True)
-        self.guts.write_message(message[_index:].strip(), pause_for_more)
-            
     def get_direction(self, show_prompt=True):
         _dir = ''
         if show_prompt: 
