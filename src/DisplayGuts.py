@@ -333,11 +333,12 @@ class DisplayGuts(object):
                     SDL_FreeSurface(txt)                                  
                     curr_row += self.fheight
             
-            #break
-            #self.wait_for_key_input()
             SDL_UpdateWindowSurface(self.window) 
             if pause_at_end:
-                self.wait_for_key_input()
+                ch = self.wait_for_key_input()
+                if ch == 'escape' and allow_esc:
+                    break
+                    
             j += self.display_rows - 1
 
         SDL_UpdateWindowSurface(self.window)
