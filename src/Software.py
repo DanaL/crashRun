@@ -112,8 +112,8 @@ class DataFile(Software):
             
         dm.dui.display_message('You are able to decrypt part of the file:', True)
         dm.dui.write_screen(self.txt, False)
-        dm.dui.wait_for_key_input()
-        dm.dui.redraw_screen()
+        dm.dui.wait_for_input()
+        dm.dui.draw_screen()
         
 _software = {}
 _software['Norton Anti-Virus 27.4'] = Antiviral('Norton Anti-Virus 27.4', 1, True, 3)
