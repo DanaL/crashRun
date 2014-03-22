@@ -23,7 +23,6 @@ from random import randrange
 from random import choice
 import string
 
-#import Agent
 from .Agent import BaseAgent
 from .Agent import BaseMonster
 from .Agent import IllegalMonsterMove
@@ -1764,7 +1763,6 @@ class DungeonMaster:
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
-        self.tell_player_about_sqr(self.player.row, self.player.col)
         self.check_ground_effects(self.player, self.player.row, self.player.col)
         
     def monster_killed(self, level, r, c, by_player):
