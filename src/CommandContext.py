@@ -239,7 +239,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message("Hmm?")
             
     def door_action(self, sqr, row, col, lvl):
-        if not sqr.broken and not sqr.is_open():
+        if not sqr.broken and not sqr.opened:
             self.dm.open_door(sqr, row, col)
             return
         
@@ -249,10 +249,10 @@ class MeatspaceCC(CommandContext):
         elif sqr.broken:
             self.dui.display_message('The door is broken.')
             self.dm.player.energy -= STD_ENERGY_COST
-        elif not sqr.is_open():
+        elif not sqr.opened:
             self.dui.display_message('The door is already closed!')
         else:
-            sqr.close()
+            sqr.opened = False
             self.dm.update_sqr(lvl, row, col)
             self.dm.refresh_player_view()
             self.dui.display_message('You close the door')
