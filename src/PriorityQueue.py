@@ -41,9 +41,9 @@ class PriorityQueue(object):
         self.__queue.append((data,priority))
         hole = len(self.__queue)
 
-        while hole > 1 and priority < self.__queue[hole/2-1][1]:
-            self.__queue[hole-1] = self.__queue[hole/2-1]
-            hole /= 2
+        while hole > 1 and priority < self.__queue[hole//2-1][1]:
+            self.__queue[hole-1] = self.__queue[hole//2-1]
+            hole //= 2
 
         self.__queue[hole-1] = (data,priority)
     
