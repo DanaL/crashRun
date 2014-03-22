@@ -294,6 +294,12 @@ class DisplayGuts(object):
     def msg_overflow(self,message):
         return len(message) + self.__msg_cursor >= self.display_cols - 10
 
+    def split_message(self, message, pause_for_more):
+        self.__msg_cursor = 0
+        _index = message[:self.display_cols - 12].rfind(" ")
+        self.write_message(message[:_index].strip(), True)
+        self.write_message(message[_index:].strip(), pause_for_more)
+
     def write_message(self, message, pause):
         if len(message) > self.display_cols - 12:
             self.__split_message(message, pause)    
@@ -338,7 +344,7 @@ class DisplayGuts(object):
                 ch = self.wait_for_key_input()
                 if ch == 'escape' and allow_esc:
                     break
-                    
+
             j += self.display_rows - 1
 
         SDL_UpdateWindowSurface(self.window)
