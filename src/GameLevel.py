@@ -273,7 +273,7 @@ class GameLevel:
     def end_of_turn(self):
         self.dm.meatspace_end_of_turn_cleanup()
         
-        if self.dm.turn % 20 == 0:
+        if self.dm.turn % 15 == 0:
             self.dm.player.add_hp(1)
             
         if self.dm.turn % 50 == 0:
