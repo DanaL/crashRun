@@ -1258,6 +1258,11 @@ class DungeonMaster:
 
             sleep(ANIMATION_PAUSE) # do I really want to bother doing this?
 
+        _glasses = self.player.inventory.get_armour_in_location('glasses')
+        if isinstance(_glasses, Items.TargetingWizard) and _glasses.charge > 0:
+            _glasses.charge -= 1
+            if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
+
         self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
         self.item_hits_ground(self.curr_lvl, item_row, item_col, item)
         self.update_sqr(self.curr_lvl, item_row, item_col)  
