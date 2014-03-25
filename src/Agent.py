@@ -685,7 +685,7 @@ class FeralDog(AltPredator, AgentMemory):
 
     def perform_action(self):
         # If they see the player and he hasn't hurt them before, they will ignore him
-        # if he's wearing fatigues
+        # if he's wearing fatigues (the just assume he's one of them)
         if not self.has_memory('damaged by player') and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
@@ -747,7 +747,7 @@ class Junkie(HumanFoe, AgentMemory):
             self.dazed('', 1)
 
         # If they see the player and he hasn't hurt them before, they will ignore him
-        # if he's wearing fatigues
+        # if he's wearing fatigues (they just assume he's one of them)
         if not self.has_memory('damaged by player') and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
@@ -1096,7 +1096,7 @@ class GunTurret(Shooter):
         
 class ZombieScientist(RelentlessPredator):
     def __init__(self, dm, row, col):
-        _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated programmer'))
+        _name = choice(('reanimated scientist', 'reanimated engineer', 'reanimated coder'))
         RelentlessPredator.__init__(self, vision_radius=8, ac=19, hp_low=15, hp_high=30, dmg_dice=5, dmg_rolls=2,
             ab=0, dm=dm, ch='z', fg='darkblue', bg='black', lit='blue',
             name=_name, row=row, col=col, xp_value=20, gender='male',
