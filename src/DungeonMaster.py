@@ -730,6 +730,10 @@ class DungeonMaster:
                 if isinstance(_occ, BaseAgent):
                     self.curr_lvl.melee.attack(self.player, _occ)           
                     self.player.energy -= STD_ENERGY_COST
+                    _glasses = self.player.inventory.get_armour_in_location('glasses')
+                    if isinstance(_glasses, Items.TargetingWizard) and _glasses.charge > 0:
+                        _glasses.charge -= 1
+                        if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
             elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
@@ -1074,6 +1078,11 @@ class DungeonMaster:
                 weapon.fire()
                 self.fire_weapon(self.player, self.player.row, self.player.col, _dir, weapon)
                 self.player.energy -= STD_ENERGY_COST
+
+                _glasses = self.player.inventory.get_armour_in_location('glasses')
+                if isinstance(_glasses, Items.TargetingWizard) and _glasses.charge > 0:
+                    _glasses.charge -= 1
+                    if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
             else:
                 self.dui.display_message('Never mind.')
     

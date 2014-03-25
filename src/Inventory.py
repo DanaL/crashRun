@@ -199,7 +199,7 @@ class Inventory:
             return False
                  
         return isinstance(self.__inv[slot][0], ItemStack)
-        
+    
     def drain_batteries(self):
         _drained = []
         for j in range(0,26):

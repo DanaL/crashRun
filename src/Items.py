@@ -82,8 +82,20 @@ class BaseItem(BaseTile):
     def get_signature(self):
         return (self.get_name(), self.category, self.__identified)
         
+# Currently I have items that drain charges in three different ways. 
+# Passive items that have an on/off switch. When they are on, they lose
+# a charge after each turn. (This is checked in the meatspace_end_of_turn_cleanup()
+# method in DungeonMaster) 
+#
+# Battery powered weapons like tasers and chainsaws are drained when they
+# are used in combat. (Tasers only drain a charge on a successful hit, chainsaws
+# on a hit or miss, the idea being they are running as you swing it around)
+# This is checked in the __attack_uke() method of the MeleeResolver class
+#
+# Targeting Wizards use a charge when the player does something to 'target'.
+# This means when a gun is fired or a monster attacked in melee. This is checked
+# in the player_fire_weapon() and cmd_move_player() methods of DungeonMaster. 
 class BatteryPowered:
-    # Passive indicates the battery will drain just by being used
     def __init__(self, maximum_charge, passive):
         self.charge = randrange(0, maximum_charge+1)
         self.maximum_charge = maximum_charge
@@ -519,7 +531,7 @@ class InfraRedGoggles(Armour, BatteryPowered):
 
 class TargetingWizard(Armour, BatteryPowered):
     def __init__(self):
-        BatteryPowered.__init__(self, 100, True)
+        BatteryPowered.__init__(self, 100, False)
         Armour.__init__(self, 'targeting wizard', 'glasses', 'darkblue', 
             'blue', 1, 0, 0, True)
         self.effects.append(('aim', 3, 0))
