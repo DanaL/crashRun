@@ -1444,7 +1444,7 @@ class DungeonMaster:
                 else:
                     self.dui.display_message('Huh?  Use it for what?')
             elif item.get_name() == 'the wristwatch':
-                self.__show_time()
+                self.show_time()
                 self.player.energy -= STD_ENERGY_COST
             elif item.get_category() == 'Pharmaceutical':
                 hit = self.player.inventory.remove_item(i,1)
@@ -2096,11 +2096,14 @@ class DungeonMaster:
         self.refresh_player_view()
         self.player.energy -= STD_ENERGY_COST
         
-    def __show_time(self):
-        _t = FINAL_TURN - self.turn
-        _msg = str(_t)
-        _msg += ' turns left until the DoD nukes the complex from orbit.'
-        self.dui.display_message(_msg)
+    def show_time(self):
+        if self.player.has_condition('blind'):
+            self.dui.display_message("You wish you'd sprung for a watch with a Braille interface.")
+        else:
+            _t = FINAL_TURN - self.turn
+            _msg = str(_t)
+            _msg += ' turns left until the DoD nukes the complex from orbit.'
+            self.dui.display_message(_msg)
         
     def get_player_loc(self):
         return (self.player.row,self.player.col)
