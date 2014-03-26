@@ -288,7 +288,6 @@ class DungeonMaster:
         self.curr_lvl = next_lvl         
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
         self.dui.set_r_c(self.player.row,self.player.col)
-        self.dui.clear_screen(1)
         self.dui.draw_screen()
         self.refresh_player_view()
         self.dui.update_status_bar()
@@ -340,7 +339,6 @@ class DungeonMaster:
 
             self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
             self.dui.set_r_c(self.player.row,self.player.col)
-            self.dui.clear_screen(1)
             self.refresh_player_view()
             self.dui.update_status_bar()
             self.dui.draw_screen()
