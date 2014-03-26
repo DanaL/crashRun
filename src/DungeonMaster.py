@@ -1765,14 +1765,6 @@ class DungeonMaster:
         self.curr_lvl.dungeon_loc[loc[0]][loc[1]].visited = True
         self.curr_lvl.dungeon_loc[loc[0]][loc[1]].lit = False
                         
-    # Yanked some duplicate code out of the movement functions.  After 
-    # calculating new player location, update LOS and alert the UI
-    def update_player(self):
-        self.refresh_player_view()
-    
-        if not self.player.has_condition('dazed'):
-            pass
-        
     def cmd_pass(self):
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
@@ -1806,7 +1798,7 @@ class DungeonMaster:
         self.__agent_moves_to_sqr(next_r, next_c, self.player)
         self.curr_lvl.dungeon_loc[next_r][next_c].temp_tile = ''
         self.curr_lvl.handle_stealth_check(self.player)
-        self.update_player()
+        self.refresh_player_view()
         self.tell_player_about_sqr(next_r, next_c)
         self.check_ground_effects(self.player, next_r, next_c)
         
