@@ -80,6 +80,9 @@ from .Terrain import SPECIAL_FLOOR
 from .Terrain import SUBNET_NODE
 from .Terrain import TOXIC_WASTE
 from .TowerFactory import TowerFactory
+from .Util import Alert
+from .Util import AudioAlert
+from .Util import VisualAlert
 from .Util import bresenham_line
 from .Util import calc_distance
 from .Util import do_d10_roll
@@ -1180,7 +1183,8 @@ class DungeonMaster:
         if door.damagePoints < 1:
             self.update_sqr(level, row, col)
             level.map[row][col].smash()
-            self.alert_player_to_event(row, col, level, 'The door is blown apart.', True)
+            alert = VisualAlert(row, col, 'The doors is blown to splinters.', '', level)
+            alert.show_alert(self, True)
             
     def throw_item_down(self, item):
         _p = self.player
@@ -1404,16 +1408,19 @@ class DungeonMaster:
     def player_uses_item_with_power_switch(self, item):
         if not item.on:
             if item.charge == 0:
-                self.alert_player_to_event(self.player.row, self.player.col,self.curr_lvl,'It has no juice.',False)
+                alert = Alert(self.player.row, self.player.col, 'It has no juice.', '', self.curr_lvl)
+                alert.show_alert(self, False)
             else:
                 item.toggle()
                 _msg = 'You flick on ' + item.get_name()
-                self.alert_player_to_event(self.player.row, self.player.col,self.curr_lvl,_msg,False)
+                alert = Alert(self.player.row, self.player.col, _msg, '', self.curr_lvl)
+                alert.show_alert(self, False)
                 [self.player.apply_effect((e ,item), False) for e in item.effects]
         else:
             item.toggle()
             _msg = 'You flick off ' + item.get_name()
-            self.alert_player_to_event(self.player.row, self.player.col,self.curr_lvl,_msg,False)
+            alert = Alert(self.player.row, self.player.col, _msg, '', self.curr_lvl)
+            alert.show_alert(self, False)
             self.player.remove_effects(item)
 
     def player_use_item(self, i):
@@ -1660,15 +1667,6 @@ class DungeonMaster:
     def can_player_see_location(self, r, c, level):
         return level == self.curr_lvl and (r,c) in self.sight_matrix
 
-    def alert_player_to_event(self, r, c, level, message, refresh):
-        if self.can_player_see_location(r, c, level):
-            message = message[0].upper() + message[1:]
-
-            # I'll probably change this to something else
-            self.dui.display_message(message)
-            if refresh:
-                self.refresh_player_view()
-
     # Update a monster's location, and update the player's view if necessary
     def move_monster(self, monster, h_move, v_move):
         if monster.has_condition('dazed'):
@@ -1885,7 +1883,10 @@ class DungeonMaster:
             level.add_item_to_sqr(r, c, item)
         
             if level.map[r][c].get_type() in [Terrain.OCEAN,Terrain.WATER]:
-                self.alert_player_to_event(r,c,level,'Splash!  The ' + item.get_full_name() + ' sinks into the water.', False)
+                msg = 'Splash!  The ' + item.get_full_name() + ' sinks into the water.'
+                alt = 'You hear a distance sploosh.'
+                alert = VisualAlert(r, c, msg, alt, level)
+                alert.show_alert(self, False)
                 self.update_sqr(self.curr_lvl, r, c)
             else:
                 if isinstance(item, Items.WithOffSwitch) and item.on and item.charge > 0:
@@ -1899,7 +1900,8 @@ class DungeonMaster:
             victim.damaged(self, level, dmg, '', ['explosion'])
             
     def handle_explosion(self, level, row, col, source):
-        self.alert_player_to_event(row, col, level, 'BOOM!!', False)
+        alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.', level)
+        alert.show_alert(self, False)
         explosive = source.explosive
         
         if explosive.get_name(1) == "C4 Charge":
@@ -2097,20 +2099,18 @@ class DungeonMaster:
         self.player.energy -= STD_ENERGY_COST
         
     def show_time(self):
-        if self.player.has_condition('blind'):
-            self.dui.display_message("You wish you'd sprung for a watch with a Braille interface.")
-        else:
-            _t = FINAL_TURN - self.turn
-            _msg = str(_t)
-            _msg += ' turns left until the DoD nukes the complex from orbit.'
-            self.dui.display_message(_msg)
+        _msg = str(FINAL_TURN - self.turn)
+        _msg += ' turns left until the DoD nukes the complex from orbit.'
+        _alt = 'You wish you\'d sprung for a watch with a Braille interface.'
+        alert = VisualAlert(self.player.row, self.player.col, _msg, _alt, self.curr_lvl)
+        alert.show_alert(self, False)
         
     def get_player_loc(self):
-        return (self.player.row,self.player.col)
+        return (self.player.row, self.player.col)
 
     def refresh_player(self):
         self.refresh_player_view()
-        sqr = self.get_sqr_info(self.player.row,self.player.col)
+        sqr = self.get_sqr_info(self.player.row, self.player.col)
         self.dui.update_view(sqr)
 
     def search(self):

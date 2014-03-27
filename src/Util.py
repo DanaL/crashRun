@@ -24,6 +24,48 @@ from math import sqrt
 from random import choice
 from random import randrange
 
+# Record-type class for events the player needs to be alerted
+# to. Base class is for basic narration-type alerts.
+class Alert:
+    def __init__(self, r, c, msg, alt, lvl):
+        self.row = r
+        self.col = c
+        self.message = msg
+        self.alternate = alt
+        self.level = lvl
+
+    def display_message(self, msg, dm, refresh):
+        _txt = msg[0].upper() + msg[1:]
+        dm.dui.display_message(_txt)
+        if refresh:
+            dm.refresh_player_view()
+
+    def show_alert(self, dm, refresh):
+        self.display_message(self.message, dm, refresh)
+
+class VisualAlert(Alert):
+    def show_alert(self, dm, refresh):
+        _txt = ''
+        if dm.player.has_condition("blind"):
+            _txt = self.alternate
+        elif not dm.can_player_see_location(self.row, self.col, self.level):
+            _txt = self.alternate
+        else:
+            _txt = self.message
+
+        if _txt != '':
+            self.display_message(_txt, dm, refresh)
+
+class AudioAlert(Alert):
+    def show_alert(self, dm, refresh):
+        d = calc_distance(self.row, self.col, dm.player.row, dm.player.col)
+
+        # picked arbitrarily
+        if d < 6:
+            self.display_message(self.message, dm, refresh)
+        elif self.alternate != '':
+            self.display_message(self.alternate, dm, refresh)
+
 class EmptyInventory(Exception):
     pass
     

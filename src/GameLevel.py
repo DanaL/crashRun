@@ -36,6 +36,7 @@ from .Terrain import TerrainTile
 from . import MonsterFactory
 from .Util import calc_distance
 from .Util import do_d10_roll
+from .Util import VisualAlert
 
 from random import choice
 from random import random
@@ -295,8 +296,10 @@ class GameLevel:
                 if isinstance(item, Items.LitFlare):
                     stack.remove(item)
                 _msg = light_source.get_name() + ' has gone out.'
-                self.dm.alert_player_to_event(light_source.row, light_source.col, self, _msg, True)
 
+                alert = VisualAlert(light_source.row, light_source.col, _msg, '', self.dm.curr_lvl)
+                alert.show_alert(self.dm, True)
+                
     # this could maybe be moved to GamePersistence?
     def generate_save_object(self):
         for m in self.monsters:

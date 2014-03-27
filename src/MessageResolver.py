@@ -18,6 +18,7 @@
 from random import randrange
 
 from .Util import get_correct_article
+from .Util import VisualAlert
 
 _verbs = {
     'miss': {True:'miss', False:'misses'}, 
@@ -54,8 +55,8 @@ class MessageResolver(object):
         else:
             _mess = _name + ' is killed.'
         
-        self.dm.alert_player_to_event(monster.row, monster.col, \
-                            self.dm.curr_lvl, _mess, False)
+        alert = VisualAlert(monster.row, monster.col, _mess, '', self.dm.curr_lvl)
+        alert.show_alert(self.dm, False)
         
     def parse(self, agent, verb):
         if verb not in _verbs:
@@ -74,8 +75,9 @@ class MessageResolver(object):
         if _art != '':
             _msg += _art + ' '
         _msg += _item + '.'
-            
-        self.dm.alert_player(agent.row, agent.col, _msg)
+        
+        alert = VisualAlert(agent.row, agent.col, _msg, '', self.dm.curr_lvl)
+        alert.show_alert(self.dm, False)
             
     def resolve_name(self, agent):
         if agent == self.dm.player:
@@ -90,8 +92,9 @@ class MessageResolver(object):
         _item = item.get_full_name()
         _msg += ' on the ' + item.get_full_name() + '.'
 
-        self.dm.alert_player(agent.row, agent.col, _msg)
-        
+        alert = VisualAlert(agent.row, agent.col, _msg, '', self.dm.curr_lvl)
+        alert.show_alert(self.dm, False)
+
     def simple_verb_action(self, subject, text, verbs, pause_for_more=False):
         verbs = tuple([self.parse(subject, v) for v in verbs])
         _name = self.resolve_name(subject)

@@ -27,6 +27,7 @@ from . import Items
 from .Items import ItemFactory
 from .Items import Firearm
 from .Items import Weapon
+from .Util import Alert
 from .Util import do_d10_roll
 from .Util import do_dN
 from functools import reduce
@@ -140,7 +141,8 @@ class Player(BaseAgent, AgentMemory):
         
         if _dmg < 1:
             _msg = 'The attack does no damage.'
-            self.dm.alert_player_to_event(self.row, self.col, level, _msg, False)
+            alert = Alert(self.row, self.col, _msg, '', level)
+            alert.show_alert(dm, False)
         
     def get_articled_name(self):
         return 'you'
