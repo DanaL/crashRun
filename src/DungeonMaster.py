@@ -1903,7 +1903,7 @@ class DungeonMaster:
             # in the explosion beecause I only want to destroy the lift when the bomb was
             # set direction on it.
             _sqr = self.curr_lvl.map[row][col]
-            if _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS:
+            if _sqr.get_type() == Terrain.DOWN_STAIRS or (hasattr(_sqr, 'previous_tile') and _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS):
                 alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '', level)
                 alert.show_alert(self, False)
                 _trap = Terrain.GapingHole()
