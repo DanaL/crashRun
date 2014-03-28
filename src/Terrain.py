@@ -20,6 +20,7 @@ from random import randrange
 from .BaseTile import BaseTile
 from .FieldOfView import Shadowcaster
 from .Items import ItemFactory
+from .Util import VisualAlert
 
 FLOOR = 0
 WALL = 1
@@ -84,6 +85,9 @@ class TerrainTile(BaseTile):
     def square_entered(self):
         pass
 
+    def handle_damage(self, dm, level, row, col, dmg):
+        pass
+
     # Check if sqr is a stair being hidden by a bomb
     def was_stairs(self):
         if not isinstance(self, Trap) or not hasattr(self, 'previous_tile'):
@@ -104,8 +108,12 @@ class Equipment(TerrainTile):
         TerrainTile.__init__(self,ch,fg,bg,lit,1,0,1,0,name,type)
         self.functional = functional
         
-    def broken(self):
+    def handle_damage(self, dm, level, row, col, dmg):
+        if dmg == 0: return
         self.functional = False
+        _msg = self.get_name() + ' is destroyed.'
+        alert = VisualAlert(row, col, _msg, '', level)
+        alert.show_alert(dm, False)
 
 class SecurityCamera(Equipment):
     def __init__(self, camera_range, functional=True):
@@ -227,7 +235,18 @@ class Door(TerrainTile):
 
     def unlock(self):
         self.locked = False
-        
+    
+    def handle_damage(self, dm, level, row, col, dmg):
+        if self.broken: return
+        self.damagePoints -= dmg
+                        
+        if self.damagePoints < 1:
+            dm.update_sqr(level, row, col)
+            self.smash()
+            _msg = self.get_name() + ' is blown to pieces.'
+            alert = VisualAlert(row, col, _msg, '', level)
+            alert.show_alert(dm, False)
+
 class SpecialDoor(Door):
     def __init__(self):
         Door.__init__(self)

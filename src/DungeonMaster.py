@@ -1159,9 +1159,9 @@ class DungeonMaster:
                         break
                     else:
                         self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
-                elif isinstance(self.curr_lvl.map[bullet_row][bullet_col],Terrain.Door):
-                    self.__handle_door_damage(self.curr_lvl, bullet_row,bullet_col,self.curr_lvl.map[bullet_row][bullet_col],gun.shooting_dmg_roll())
-                    self.update_sqr(self.curr_lvl, prev_r,prev_c)
+                elif isinstance(self.curr_lvl.map[bullet_row][bullet_col], Terrain.Door):
+                    door = self.curr_lvl.map[bullet_row][bullet_col]
+                    door.handle_damage(self, self.curr_lvl, bullet_row, bullet_col, gun.shooting_dmg_roll())
                     break
                 else:
                     self.update_sqr(self.curr_lvl, bullet_row,bullet_col)
@@ -1175,17 +1175,7 @@ class DungeonMaster:
                 sleep(ANIMATION_PAUSE) 
 
         self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile =  '' 
-
-    def __handle_door_damage(self, level, row, col, door, dmg):
-        if door.broken: return
-        door.damagePoints -= dmg
-                        
-        if door.damagePoints < 1:
-            self.update_sqr(level, row, col)
-            level.map[row][col].smash()
-            alert = VisualAlert(row, col, 'The doors is blown to splinters.', '', level)
-            alert.show_alert(self, True)
-            
+        
     def throw_item_down(self, item):
         _p = self.player
         self.dui.display_message("You toss it to the ground at your feet.")
@@ -1900,52 +1890,57 @@ class DungeonMaster:
             victim.damaged(self, level, dmg, '', ['explosion'])
             
     def handle_explosion(self, level, row, col, source):
-        alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.', level)
-        alert.show_alert(self, False)
-        explosive = source.explosive
-        
-        if explosive.get_name(1) == "C4 Charge":
-            _sqr = self.curr_lvl.map[row][col]
-            if _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS:
-                self.alert_player(row, col, "The lift is destroyed in the explosion")
-                _trap = Terrain.GapingHole()
-                self.curr_lvl.map[row][col] = _trap
-                
-        _noise = Noise(10, source, row, col, 'explosion')
-        self.curr_lvl.monsters_react_to_noise(explosive.blast_radius * 1.5, _noise)
+        explosive = source.explosive    
+        noise = Noise(10, source, row, col, 'explosion')
+        self.curr_lvl.monsters_react_to_noise(explosive.blast_radius * 1.5, noise)
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
-        
+        if dmg > 0:
+            alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.', level)
+            alert.show_alert(self, False)
+
+            # Kludgy -- handling this here instead of when I loop over the terrain tiles
+            # in the explosion beecause I only want to destroy the lift when the bomb was
+            # set direction on it.
+            _sqr = self.curr_lvl.map[row][col]
+            if _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS:
+                alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '', level)
+                alert.show_alert(self, False)
+                _trap = Terrain.GapingHole()
+                self.curr_lvl.map[row][col] = _trap
+
         bullet = Items.Bullet('*', 'white')
 
         # As a hack, I'm using the shadowcaster to calculate the area of effect.  Explosions
         # should fill a volume, of course, maybe I'll change that in some future version
         # This will also have a flaw if I ever add a 'see-through' wall (like a force-field)
         # Also, perhaps dmg should go down further from blast radius??
-        sc = Shadowcaster(self,explosive.blast_radius,row,col)
+        sc = Shadowcaster(self, explosive.blast_radius, row, col)
         areaOfEffect = sc.calc_visible_list()
-        areaOfEffect[(row,col)] = 0
+        areaOfEffect[(row, col)] = 0
 
         for key in list(areaOfEffect.keys()):
-            dSqr = level.dungeon_loc[key[0]][key[1]]
-            mSqr = level.map[key[0]][key[1]]
+            d_loc = level.dungeon_loc[key[0]][key[1]]
+            m_sqr = level.map[key[0]][key[1]]
+            m_sqr.handle_damage(self, level, key[0], key[1], dmg)
 
-            if mSqr.is_open():
+            # If a bomb was placed on a Terminal, the bomb replaces the Terminal
+            # on the map so we also need to check the previous_tile field, where
+            # it will have been stashed.
+            if (hasattr(m_sqr, 'previous_tile')):
+                m_sqr.previous_tile.handle_damage(self, level, key[0], key[1], dmg)
+
+            if m_sqr.is_open():
                 sleep(ANIMATION_PAUSE/10) 
                 level.dungeon_loc[key[0]][key[1]].temp_tile = bullet
                 self.update_sqr(level, key[0], key[1])
                         
-            if dSqr.occupant != '':
+            if d_loc.occupant != '':
                 try:
-                    self.explosive_effect(level, dSqr.occupant, dmg, explosive)
+                    self.explosive_effect(level, d_loc.occupant, dmg, explosive)
                 except TurnInterrupted:
                     # A monster was killed by the explosion, but we can ignore the exception
                     pass
-            elif isinstance(mSqr, Terrain.Door):
-                self.__handle_door_damage(level, key[0],key[1],mSqr,dmg)
-                self.update_sqr(level, key[0], key[1])      
-            elif isinstance(mSqr, Terrain.Equipment):
-                mSqr.functional = False
 
         for key in list(areaOfEffect.keys()):
             level.dungeon_loc[key[0]][key[1]].temp_tile = ''
