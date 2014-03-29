@@ -306,7 +306,7 @@ class DisplayGuts(object):
 
     def write_message(self, message, pause):
         if len(message) > self.display_cols - 12:
-            self.__split_message(message, pause)    
+            self.split_message(message, pause)    
             return
         
         if self.msg_overflow(message):
