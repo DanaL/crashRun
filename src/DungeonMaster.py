@@ -599,16 +599,18 @@ class DungeonMaster:
     
     def handle_mathematics_attack(self, attacker, victim):
         try:
-            _defence = victim.stats.get_intuition()
             _skill = victim.skills.get_skill('Crypto')        
-            _defence += _skill.get_rank()
+            _defence = round(victim.stats.get_intuition() * 0.67) + _skill.get_rank()
         except AttributeError:
             _defence = victim.level
             
         _roll = randrange(21)
         if _roll == 20 or _roll > _defence:
             victim.dazed(attacker)
-            
+            self.alert_player(attacker.row, attacker.col, "You are so confused.")
+        else:
+            self.alert_player(attacker.row, attacker.col, "Hmm that sort of made sense...")
+
     # I could/should move this and __agent_burnt to Agent.py
     def handle_attack_effects(self, attacker, victim, damage_types):
         for _method in damage_types:
