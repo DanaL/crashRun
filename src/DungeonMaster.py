@@ -2263,9 +2263,12 @@ class DungeonMaster:
             _words = cmd_text.split(' ')
             if _words[0] == 'add':
                 self.debug_add(_words[1:])
-            if _words[0] == 'maxhp':
+            elif _words[0] == 'maxhp':
                 self.player.add_hp(9999)
-
+            elif _words[0] == 'activate':
+                tile = self.curr_lvl.map[self.player.row][self.player.col]
+                if hasattr(tile, 'activated'):
+                    tile.activated = True
         except UnknownDebugCommand:
             self.dui.clear_msg_line()
             self.dui.display_message('Unknown debug command.')
