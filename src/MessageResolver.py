@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+from random import choice
 from random import randrange
 
 from .Util import get_correct_article
@@ -35,23 +36,14 @@ class MessageResolver(object):
         _name = self.resolve_name(monster)
         if by_player:
             if self.dm.curr_lvl.is_cyberspace():
-                _r = randrange(2)
-                if _r == 0:
-                    _mess = 'You delete ' + _name + '.'
-                else:
-                    _mess = 'You expunge ' + _name + '.'
+                options = ['delete', 'expunge']
             else:
-                _r = randrange(5)
-                if _r == 0:
-                    _mess = 'You wax ' + _name + '.'
-                elif _r == 1:
-                    _mess = 'You waste ' + _name + '.'
-                elif _r == 2:
-                    _mess = 'You dust ' + _name + '.'
-                elif _r == 3:
-                    _mess = 'You kill ' +_name + '.'
-                else:
-                    _mess = _name + ' is toast.'
+                options = ['waste', 'dust', 'kill']
+
+            if randrange(2) == 0:
+                _mess = _name + ' is toast.'
+            else:
+                _mess = 'You %s %s' % (choice(options), _name)
         else:
             _mess = _name + ' is killed.'
         
