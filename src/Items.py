@@ -19,8 +19,10 @@ from random import choice
 from random import randrange
 
 from .BaseTile import BaseTile
+from .MessageResolver import MessageResolver
 from .Util import do_d10_roll
 from .Util import do_dN
+from .Util import Alert, VisualAlert
 
 # These classes are just exceptions to throw
 class ItemDoesNotExist(Exception):
@@ -102,9 +104,22 @@ class BatteryPowered:
         self.passive = passive
         self.power_down_message = ""
 
-    def add_battery(self):
-        self.charge = self.maximum_charge
-        
+    def add_battery(self, battery, agent, dm):
+        if self.charge == self.maximum_charge:
+            dm.dui.display_message("It's already at full charge.")
+            agent.inventory.add_item(battery)
+        else:
+            self.charge = self.maximum_charge
+            mr = MessageResolver(dm, dm.dui)
+            verb = mr.parse(agent, 'change')
+            txt = "%s %s the batteries on %s." % (mr.resolve_name(agent), verb, self.get_name())
+            alert = VisualAlert(agent.row, agent.col, txt, txt, dm.curr_lvl)
+            alert.show_alert(dm, False)
+            if isinstance(self, WithOffSwitch) and self.on:
+                [agent.apply_effect((e, self), False) for e in self.effects]
+                alert = VisualAlert(agent.row, agent.col, "%s flickers back to life." % (self.get_name()), '', dm.curr_lvl)
+                alert.show_alert(dm, True)
+
     def get_power_down_message(self):
         _name = self.get_name()
         if self.power_down_message == "":

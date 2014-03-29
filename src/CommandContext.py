@@ -460,8 +460,11 @@ class MeatspaceCC(CommandContext):
                 
                     # Yes! I will definitely use three lines of code just for a bad joke!!
                     if isinstance(_item, Items.TargetingWizard):
-                        self.dui.display_message("It looks like you're wasting some foes!  Would you like help?")
-                    
+                        if _item.charge > 0:
+                            self.dui.display_message("It looks like you're wasting some foes!  Would you like help?")
+                        else:
+                            self.dui.display_message("The HUD briefly flickers, then fades.")                
+                            
                     self.dui.update_status_bar()
                     _player.energy -= STD_ENERGY_COST
                 except AlreadyWearingSomething:

@@ -2044,21 +2044,7 @@ class DungeonMaster:
         self.dui.clear_msg_line()
         
         return (_cursor.row, _cursor.col)
-    
-    def __add_battery_to_item(self, battery, item):
-        if self.player.inventory.is_readied(item):
-            self.dui.display_message("You can't change the batteries while it's equipped.")
-            self.player.inventory.add_item(battery)
-        elif item.charge == item.maximum_charge:
-            self.dui.display_message("It's already at full charge.")
-            self.player.inventory.add_item(battery)
-        else:
-            item.add_battery()
-            self.dui.display_message("You change the batteries on " + item.get_name())
-            if isinstance(item, Items.WithOffSwitch) and item.on:
-                [self.player.apply_effect((e ,item), False) for e in item.effects]
-                self.dui.display_message("%s flickers back to life." % (item.get_name()))
-            
+
     def __player_uses_battery(self, battery):
         try:
             _ch = self.dui.pick_inventory_item('Plug it into what?')
@@ -2071,7 +2057,7 @@ class DungeonMaster:
                 self.dui.display_message('That doesn\'t take batteries.')
                 self.player.inventory.add_item(battery)
             else:
-                self.__add_battery_to_item(battery, _item)
+                _item.add_battery(battery, self.player, self)
             self.player.energy -= STD_ENERGY_COST
         except NonePicked:
             self.dui.clear_msg_line()
