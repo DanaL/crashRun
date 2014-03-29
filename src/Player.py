@@ -459,9 +459,15 @@ class Player(BaseAgent, AgentMemory):
             elif _effect[0] == 'blind':
                 _duration =  randrange(_effect[2]) + 1
                 _drug_effect = ((_effect[0], _effect[1], self.dm.turn + _duration), 'blind')
+            elif _effect[0] == 'clear-head':
+                if self.has_condition('dazed'):
+                    _drug_effect = ((_effect[0], 0, 0), 'clear-head')
+                    self.dm.alert_player(self.row, self.col, "You feel clear-headed.")
+                else:
+                    continue
             else:
                 _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.dm.turn), 'high')
             
             self.apply_effect(_drug_effect, _instant)
-        self.dm.dui.display_message(hit.message)
+        self.dm.alert_player(self.row, self.col, hit.message)
     

@@ -612,7 +612,7 @@ class ItemFactory:
             'yellow-orange', 'yellow', [('hit', 0, 350)],
             'This stuff is kinda weak')
         self.__item_db['instant coffee'] = ('pharmaceutical', 'Instant Coffee', 'brown', 'lightbrown',
-            [('hit', 0, 250), ('co-ordination', 1, 100)], 'Refreshing!')
+            [('hit', 0, 250), ('co-ordination', 1, 100), ('clear-head', 1, 0)], 'Refreshing!')
         self.__item_db['medkit'] = ('pharmaceutical', 'Medkit', 'red', 'red',
             [('heal',25,0)], 'You feel a bit better.')
         self.__item_db['stimpak'] = ('pharmaceutical', 'Stimpak', 'white',

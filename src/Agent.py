@@ -252,6 +252,10 @@ class BaseAgent(BaseTile):
             # Don't want the light bonus from flashlights to stack!
             if self.can_apply_vision_effect(source):
                 self.light_radius += e[1]
+        elif e[0] == 'clear-head':
+            _dazed_effects = [d for d in self.conditions if d[0][0] == 'dazed']
+            for d in _dazed_effects:
+                self.remove_effect(d[0], d[1])
         elif e[0] == 'chutzpah' and hasattr(self, 'stats'):
             self.stats.change_stat('chutzpah',e[1])
         elif e[0] == 'co-ordination' and hasattr(self,'stats'):
