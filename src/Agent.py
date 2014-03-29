@@ -37,6 +37,7 @@ from .Util import convert_locations_to_dir
 from .Util import do_dN
 from .Util import do_d10_roll
 from .Util import get_correct_article
+from .Behaviour import has_ammo_for
 
 STD_ENERGY_COST = 12
 
@@ -164,7 +165,8 @@ def furthest_sqr(level, scary_thing, max_distance, agent):
     _checked = {}
     _check = deque()
     _check.append(scary_thing)
-    
+    _furthest = None
+
     # Flood-fill the map, calculating distances as we go.
     _max_d = 0
     while len(_check) > 0:
@@ -657,8 +659,15 @@ class AltPredator(BaseMonster):
             
             if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
                 self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25, self)
+            
+            if self.flee_to == None:
+                va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "", self.dm.curr_lvl)
+                va.show_alert(self.dm, False)
+                fled = False
+            else:
+                fled = self.move_to_unbound(self.flee_to)
                 
-            if not self.move_to_unbound(self.flee_to) and self.is_player_adjacent():
+            if not fled and self.is_player_adjacent():
                 self.attack(_player_loc)
             
         self.energy -= STD_ENERGY_COST
@@ -1050,7 +1059,7 @@ class Cyborg(Shooter):
             if self.weapon.current_ammo > 0:
                 Shooter.perform_action(self)
             else:
-                _letter = self.has_ammo_for(self.weapon)
+                _letter = has_ammo_for(self, self.weapon)
                 if _letter != '':
                     self.dm.add_ammo_to_gun(self, self.weapon, _letter)
                 else:

@@ -94,7 +94,7 @@ class MiniBoss1Level(GameLevel):
         self.__translate_rooms(_ncf)
         
     def __set_east_wall(self):
-        _sr = self.length / 2
+        _sr = self.length // 2
         _sc = self.width - 3
         
         for r in range(self.length):
