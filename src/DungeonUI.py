@@ -295,7 +295,12 @@ class DungeonUI(object):
             self.cc.save_weapon_config()
         elif cmd == 'TOGGLE_OPTIONS':
             self.toggle_options()
-            
+        elif cmd == 'CENTRE_VIEW':
+            _loc = self.cc.get_player_loc()
+            self.guts.set_r_c(_loc[0], _loc[1])
+            self.guts.redraw_screen()
+            #self.guts.centre_view()
+
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
         self.guts.write_message(msg + ' ', False)

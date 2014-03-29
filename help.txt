@@ -25,6 +25,7 @@ a - Action - Use a computer terminal, open/close a door. May required a
              direction. (Use > to access a computer terminal, if necessary)
 c - Configure Weapons - Save what weapons you are currently wielding for easy 
                         switching. (You have up to 9 slots)
+C - Centre View - redraw the screen with you in the centre of the view.
 d - Drop - Drop item from inventory.  
 f - Fire - Shoot a readied firearm.
 H - Hack - Hack an object in cyberspace (use to disarm logic bombs).
