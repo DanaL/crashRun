@@ -299,7 +299,6 @@ class DungeonUI(object):
             _loc = self.cc.get_player_loc()
             self.guts.set_r_c(_loc[0], _loc[1])
             self.guts.redraw_screen()
-            #self.guts.centre_view()
 
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
@@ -523,15 +522,23 @@ class DungeonUI(object):
     def write_screen(self, raw_lines, pause_at_end, allow_esc = False):
         self.guts.write_screen(raw_lines, pause_at_end, allow_esc)
 
+    def __stat_info(self, player, stat):
+        val = player.stats.get_stat(stat)
+        um = player.get_unmodified_stat(stat)
+        if val == um:
+            return str(val)
+        else:
+            return str(val) + ' (' + str(um) + ')'
+
     # *** PRIVATE METHODS ***
     def __draw_char_sheet(self):
         _player = self.cc.get_player()
         msg = ['Information for ' + _player.get_name()]
-        msg.append('  Strength:  ' + str(_player.stats.get_strength()))
-        msg.append('  Co-ordination:  ' + str(_player.stats.get_coordination()))
-        msg.append('  Toughness:  ' + str(_player.stats.get_toughness()))
-        msg.append('  Intuition:  ' + str(_player.stats.get_intuition()))
-        msg.append('  Chutzpah:  ' + str(_player.stats.get_chutzpah()))
+        msg.append('  Strength:  ' + self.__stat_info(_player, 'strength'))
+        msg.append('  Co-ordination:  ' + self.__stat_info(_player, 'co-ordination'))
+        msg.append('  Toughness:  ' + self.__stat_info(_player, 'toughness'))
+        msg.append('  Intuition:  ' + self.__stat_info(_player, 'intuition'))
+        msg.append('  Chutzpah:  ' + self.__stat_info(_player, 'chutzpah'))
         msg.append(' ')
         msg.append('  AC:  ' + str(_player.get_curr_ac()))
         msg.append(' ')

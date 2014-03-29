@@ -54,7 +54,7 @@ class PlayerStats:
         elif stat == 'chutzpah':
             self.__stats[4] += amount
 
-    def get_stat(self,stat):
+    def get_stat(self, stat):
         if stat == 'strength':
             return self.get_strength()
         elif stat == 'co-ordination':
@@ -470,4 +470,12 @@ class Player(BaseAgent, AgentMemory):
             
             self.apply_effect(_drug_effect, _instant)
         self.dm.alert_player(self.row, self.col, hit.message)
+
+    def get_unmodified_stat(self, stat):
+        _base = self.stats.get_stat(stat)
+        for c in self.conditions:
+            if c[0][0] == stat:
+                _base -= c[0][1]
+                
+        return _base
     

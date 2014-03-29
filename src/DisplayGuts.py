@@ -64,10 +64,6 @@ class DisplayGuts(object):
         
         self.screen = SDL_GetWindowSurface(self.window)
         
-    def centre_view(self):
-        _loc = self.cc.get_player_loc()
-        print(self.map_r, self.map_c, _loc[0], _loc[1])
-        
     def check_screen_pos(self):
         # where is the player in relation to the map?
         _pl = self.cc.get_player_loc()
