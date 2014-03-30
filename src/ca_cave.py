@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-#import profile
 from .Terrain import TerrainFactory
 from .Terrain import FLOOR
 from .Terrain import WALL

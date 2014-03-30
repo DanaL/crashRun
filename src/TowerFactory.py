@@ -382,7 +382,3 @@ class TowerFactory(object):
             else:
                 self.__do_v_split(start_r,start_c,length,width)
 
-if __name__ == "__main__":
-    tf = TowerFactory(20, 30, False, False)
-    tf.gen_map()
-    tf.print_grid()
