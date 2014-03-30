@@ -348,8 +348,8 @@ class TowerFactory(object):
 
     def __set_staircase(self,stairs):
         while 1:
-            r = randrange(0,self.__length)
-            c = randrange(0,self.__width)
+            r = randrange(self.__length)
+            c = randrange(self.__width)
 
             if self.map[r][c].get_type() == Terrain.FLOOR:
                 self.set_cell(r,c,stairs)

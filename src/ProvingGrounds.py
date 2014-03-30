@@ -284,7 +284,12 @@ class ProvingGroundsLevel(GameLevel):
             for _s in _b:
                 self.map[_s[0]][_s[1]] = _s[2]
             self.populate_building(_b)
-            
+        
+        if self.level_num == 14: 
+            upstairs_loc = choice([sqr for sqr in choice(_buildings) if sqr[2].get_type() == FLOOR])
+            stairs = self.tf.get_terrain_tile(UP_STAIRS)
+            self.map[upstairs_loc[0]][upstairs_loc[1]] = stairs
+
     def __get_monster(self):
         _rnd =  randrange(0, 16)
         if _rnd in range(0, 2):

@@ -377,9 +377,16 @@ class DungeonMaster:
         _exit_sqr = self.curr_lvl.map[exit_point[0]][exit_point[1]]
         _things_to_transfer = []
         if direction == 'up':
-            next_level_num = self.curr_lvl.level_num - 1
+            # After level 14, dungeon level increases as we go up.
+            if self.curr_lvl.level_num < 14:
+                next_level_num = self.curr_lvl.level_num - 1
+            else:
+                next_level_num = self.curr_lvl.level_num + 1
         else:
-            next_level_num = self.curr_lvl.level_num + 1
+            if self.curr_lvl.level_num < 14:
+                next_level_num = self.curr_lvl.level_num + 1
+            else:
+                next_level_num = self.curr_lvl.level_num - 1
             _things_to_transfer += self.curr_lvl.things_fallen_in_holes
             self.curr_lvl.things_fallen_in_holes = []
             
@@ -420,7 +427,7 @@ class DungeonMaster:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
             elif self.curr_lvl.level_num == 13:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
-        
+            
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
         # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
         if isinstance(_exit_sqr, Terrain.GapingHole):
