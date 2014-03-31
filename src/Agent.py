@@ -1364,7 +1364,7 @@ class Roomba(CleanerBot):
         _loc = self.dm.curr_lvl.dungeon_loc[self.row][self.col]
         if self.dm.curr_lvl.size_of_item_stack(self.row,self.col) > 0:
             _item = _loc.item_stack.pop()
-            self.dm.monster_picks_up(self, _item)
+            self.dm.pick_up_item(self, self.dm.curr_lvl, _item)
         else:
             self.move()
                 

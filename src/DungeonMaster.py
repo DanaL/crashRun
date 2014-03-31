@@ -965,7 +965,7 @@ class DungeonMaster:
             if agent == self.player:
                 self.dui.display_message('Out of diskspace error.')
                 
-    def __pick_up_item(self,agent,level,i):
+    def pick_up_item(self, agent, level, i):
         if isinstance(i, Software):
             self.__pick_up_software(agent, i)
             return
@@ -1029,10 +1029,7 @@ class DungeonMaster:
         _h = MonsterFactory.get_monster_by_name(self, monster_name, row, col)
         self.curr_lvl.add_monster_to_dungeon(_h, row, col)
         self.refresh_player_view()
-        
-    def monster_picks_up(self, monster, item):
-        self.__pick_up_item(monster, self.curr_lvl, item)
-        
+                
     # I'll have to eventually add code to check for being burderened, as well as special behaviour that
     # might occur to items being picked up.  (Perhaps the item classes could have a method 'on_handled()' that contains
     # that sort of code)
@@ -1052,7 +1049,7 @@ class DungeonMaster:
                 return
                 
             try:
-                self.__pick_up_item(self.player, self.curr_lvl, item)
+                self.pick_up_item(self.player, self.curr_lvl, item)
             except PickUpAborted:
                 return
         else:
@@ -1069,7 +1066,7 @@ class DungeonMaster:
             
                 try:
                     stack.pop(p)
-                    self.__pick_up_item(self.player,self.curr_lvl,item)
+                    self.pick_up_item(self.player,self.curr_lvl,item)
                 except PickUpAborted:
                     break
         

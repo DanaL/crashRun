@@ -301,13 +301,13 @@ class DisplayGuts(object):
         self.write_message(message[_index:].strip(), pause_for_more)
 
     def write_message(self, message, pause):
+        if self.msg_overflow(message):
+            self.pause_for_more()
+
         if len(message) > self.display_cols - 12:
             self.split_message(message, pause)    
             return
         
-        if self.msg_overflow(message):
-            self.pause_for_more()
-
         self.display_on_msg_line(message)
         self.__msg_cursor += len(message)
 
