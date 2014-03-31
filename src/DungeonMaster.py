@@ -981,6 +981,8 @@ class DungeonMaster:
                     level.douse_squares(i)
             elif isinstance(i, Items.LitFlare):
                 _msg = agent.get_name() + ' picks up the lit flare, which goes out.'
+                va = VisualAlert(agent.row, agent.col, _msg, '', self.curr_lvl)
+                va.show_alert(self, False)
                 level.douse_squares(i)
                 return
             
