@@ -37,6 +37,7 @@ from .Cyberspace import CyberspaceLevel
 from .Cyberspace import TrapSetOff
 from .FieldOfView import get_lit_list
 from .FieldOfView import Shadowcaster
+from .FinalComplex import FinalComplexLevel
 from .GameLevel import GameLevel
 from .GameLevel import Noise
 from .GamePersistence import clean_up_files
@@ -127,6 +128,8 @@ def GetGameFactoryObject(dm, level, length, width, category):
         return CyberspaceLevel(dm, level, length, width)
     elif category == 'proving grounds':
         return ProvingGroundsLevel(dm, level, length, width)
+    elif category == 'final complex':
+        return FinalComplexLevel(dm, level, length, width)
         
 # This is simply a wrapper for passing information about a square from the DM to the UI
 class DungeonSqrInfo:
@@ -427,7 +430,9 @@ class DungeonMaster:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
             elif self.curr_lvl.level_num == 13:
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point)
-            
+            else:
+                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex'), exit_point)
+
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
         # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
         if isinstance(_exit_sqr, Terrain.GapingHole):

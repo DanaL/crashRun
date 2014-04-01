@@ -342,7 +342,7 @@ class TerrainFactory:
         self.__terrain_cache[TOXIC_WASTE] = TerrainTile("{",'pink','black','bright pink',1,0,1,0,'toxic waste', TOXIC_WASTE)
         self.__terrain_cache[FIREWALL] = TerrainTile("=", "darkblue", "black", "blue",0,0,0,0,'firewall', FIREWALL)
 
-    def get_terrain_tile(self,type):
+    def get_terrain_tile(self, type):
         if type == DOOR:
             d = Door()
             randio = randrange(0,99)
