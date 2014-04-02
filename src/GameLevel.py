@@ -351,11 +351,13 @@ class GameLevel:
         
     def place_sqr(self, sqr, target_type):
         while True:
-            r = randrange(1,self.lvl_length-1)
-            c = randrange(1,self.lvl_width-1)
+            r = randrange(1, self.lvl_length-1)
+            c = randrange(1, self.lvl_width-1)
             
             if self.map[r][c].get_type() == target_type: break
         self.map[r][c] = sqr
+        
+        return (r, c)
         
     def remove_monster(self, monster, row, col):
         self.dungeon_loc[row][col].occupant = ''

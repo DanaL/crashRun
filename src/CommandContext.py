@@ -33,6 +33,7 @@ from .Terrain import UpStairs
 from .Terrain import DOOR
 from .Terrain import EXIT_NODE
 from .Terrain import SPECIAL_DOOR
+from .Terrain import SPECIAL_TERMINAL
 from .Terrain import TERMINAL
 from .Terrain import TRAP
 from .Util import EmptyInventory
@@ -227,7 +228,7 @@ class MeatspaceCC(CommandContext):
             self.open_box(_sqr, _sr, _sc)
         elif _sqr.get_type() in (DOOR, SPECIAL_DOOR):
             self.door_action(_sqr, _sr, _sc, _lvl)
-        elif _sqr.get_type() == TERMINAL and _sr == _p.row and _sc == _p.col:
+        elif _sqr.get_type() in (TERMINAL, SPECIAL_TERMINAL) and _sr == _p.row and _sc == _p.col:
             _sqr.jack_in(self.dm)
             self.dm.player.energy -= STD_ENERGY_COST
         elif isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
@@ -279,8 +280,9 @@ class MeatspaceCC(CommandContext):
             for c in (-1, 0, 1):
                 _sqr = _lvl.map[row+r][col+c]
                 _type = _sqr.get_type()
+                
                 if r == c == 0:
-                    if _type in (TERMINAL, TRAP):
+                    if _type in (TERMINAL, TRAP, SPECIAL_TERMINAL):
                         _sqrs.append((_sqr, (row, col)))
                 
                     _sqrs += self.get_boxes(_lvl, row, col)

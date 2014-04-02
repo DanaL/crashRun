@@ -51,10 +51,11 @@ SPECIAL_FLOOR = 25
 ACID_POOL = 26
 TOXIC_WASTE = 27
 FIREWALL = 28
+SPECIAL_TERMINAL = 29
 
 TERRAINS = (FLOOR,WALL,PERM_WALL,UP_STAIRS,DOWN_STAIRS,PILLAR,GRASS,TREE,OCEAN,ROAD,DOOR,MOUNTAIN,POOL,WATER,SAND,TERMINAL, 
         SECURITY_CAMERA, STEEL_DOOR, SPECIAL_DOOR, PUDDLE, CYBERSPACE_WALL, CYBERSPACE_FLOOR, EXIT_NODE, SUBNET_NODE,
-        SPECIAL_FLOOR, ACID_POOL, TOXIC_WASTE, FIREWALL)
+        SPECIAL_FLOOR, ACID_POOL, TOXIC_WASTE, FIREWALL, SPECIAL_TERMINAL)
 
 class TerrainTile(BaseTile):
     def __init__(self,ch,fg,bg,lit,passable,opaque,open,recepticle,name,type):
@@ -119,7 +120,7 @@ class SecurityCamera(Equipment):
     def __init__(self, camera_range, functional=True):
         Equipment.__init__(self,'"','grey','black','white','security camera',SECURITY_CAMERA,functional)
         self.camera_range = camera_range
-        
+
 class Terminal(Equipment):
     def __init__(self):
         Equipment.__init__(self,'?','grey','black','white','terminal',TERMINAL,True)
@@ -196,6 +197,14 @@ class Terminal(Equipment):
                 else:
                     _msg = 'Camera ' + str(a) + ' is not working.'
                     dui.display_message(_msg, 1)
+
+class BossTerminal(Terminal):
+    def __init__(self):
+        Equipment.__init__(self,'?','brown','black','red','terminal',SPECIAL_TERMINAL,True)
+
+    def jack_in(self, dm):
+        dm.alert_player(dm.player.row, dm.player.col, "You unplug the Master Mainframe. VICTORY!")
+        dm.alert_player(dm.player.row, dm.player.col, "You probably want to get back to the surface before the DoD nukes the joint.")
                              
 class UpStairs(TerrainTile):
     def __init__(self):

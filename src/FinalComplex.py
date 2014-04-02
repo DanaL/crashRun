@@ -19,8 +19,9 @@ from random import randrange
 
 from .GameLevel import GameLevel
 from .RLDungeonGenerator import RLDungeonGenerator
+from .Terrain import BossTerminal
 from .Terrain import TerrainFactory
-from .Terrain import DOWN_STAIRS
+from .Terrain import DOWN_STAIRS, UP_STAIRS
 from .Terrain import FLOOR
 
 class FinalComplexLevel(GameLevel):
@@ -38,13 +39,14 @@ class FinalComplexLevel(GameLevel):
         self.map = dg.map
 
     	# Add location of the down stairs
-        while True:
-            r = randrange(self.lvl_length)
-            c = randrange(self.lvl_width)            
-            if self.map[r][c].get_type() == FLOOR:
-                self.map[r][c] = tf.get_terrain_tile(DOWN_STAIRS)
-                self.entrances.append([(r, c), None])
-                break
+        p = self.place_sqr(tf.get_terrain_tile(DOWN_STAIRS), FLOOR)
+        self.entrances.append([p, None])
+
+        if self.level_num < 18:
+             p = self.place_sqr(tf.get_terrain_tile(UP_STAIRS), FLOOR)
+             self.exits.append([p, None])
+        else: 
+            self.place_sqr(BossTerminal(), FLOOR)
 
     def add_monster(self, monster=''):
         pass
