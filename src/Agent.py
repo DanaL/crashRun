@@ -1067,25 +1067,6 @@ class Cyborg(Shooter):
                     self.energy -= STD_ENERGY_COST
         else:
             RelentlessPredator.perform_action(self)
-            
-class ED209(Shooter):
-    def __init__(self, dm, row, col):
-        Shooter.__init__(self, vision_radius=5, ac=20, hp_low=30, hp_high=40, dmg_dice=4, dmg_rolls=3, ab=2,
-            dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
-            col=col, xp_value=50, gender='male', level=10)
-        self.weapon = Items.MachineGun('ED-209 Canon', 4, 3, 0, 0, 0)
-        self.attitude = 'hostile'
-        self.range = 5
-        
-    def perform_action(self):
-        if randrange(4) == 0:
-            if randrange(2) == 0:
-                self.dm.alert_player(self.row, self.col, "Drop your weapon!")
-            else:
-                self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
-        
-        self.weapon.current_ammo = 1 # The ED-209 never runs out of ammo
-        Shooter.perform_action(self)
 
 class GunTurret(Shooter):
     def __init__(self, dm, row, col):
@@ -1188,15 +1169,43 @@ class Ninja(RelentlessPredator):
         self.energy -= STD_ENERGY_COST
                   
 class BasicBot(RelentlessPredator):
-    pass
+    bot_number = 0
 
+    def __init__(self):
+        self.serial_number = BasicBot.bot_number
+        BasicBot.bot_number += 1
+
+    def get_serial_number(self):
+        return str(self.serial_number).zfill(10)
+        
     def robot_psych_check(self, player):
         _skill = player.skills.get_skill("Robot Psychology").get_rank() * 5
 
         return randrange(30) < _skill
+            
+class ED209(Shooter, BasicBot):
+    def __init__(self, dm, row, col):
+        BasicBot.__init__(self)
+        Shooter.__init__(self, vision_radius=5, ac=20, hp_low=30, hp_high=40, dmg_dice=4, dmg_rolls=3, ab=2,
+            dm=dm,ch='M', fg='darkgrey', bg='black', lit='grey', name='ED-209 Prototype', row=row,
+            col=col, xp_value=50, gender='male', level=10)
+        self.weapon = Items.MachineGun('ED-209 Canon', 4, 3, 0, 0, 0)
+        self.attitude = 'hostile'
+        self.range = 5
         
+    def perform_action(self):
+        if randrange(4) == 0:
+            if randrange(2) == 0:
+                self.dm.alert_player(self.row, self.col, "Drop your weapon!")
+            else:
+                self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
+        
+        self.weapon.current_ammo = 1 # The ED-209 never runs out of ammo
+        Shooter.perform_action(self)
+   
 class SecurityBot(BasicBot):
     def __init__(self, dm, row, col):
+        BasicBot.__init__(self)
         RelentlessPredator.__init__(self, vision_radius=10, ac=20, hp_low=15, hp_high=25, dmg_dice=4, dmg_rolls=2, ab=2,
             dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
             row=row, col=col, xp_value=20, gender='male', level=6)    
@@ -1216,6 +1225,7 @@ class SecurityBot(BasicBot):
 class PredatorDrone(BasicBot):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
+        BasicBot.__init__(self)
         RelentlessPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls,
             ab, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.missile_count = 6
@@ -1240,7 +1250,7 @@ class PredatorDrone(BasicBot):
         
 # These are bots that move more or less randomly and may not bother the player unless
 # attacked.
-class CleanerBot(BasicBot):
+class CleanerBot(BasicBot):    
     def move(self):
         r = randrange(-1,2)
         c = randrange(-1,2)
@@ -1260,8 +1270,9 @@ class CleanerBot(BasicBot):
             if player_loc in mv:
                 action()
 
-class DocBot(CleanerBot):
+class DocBot(CleanerBot):    
     def __init__(self, dm, row, col):
+        BasicBot.__init__(self)
         CleanerBot.__init__(self, vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=6, 
             dmg_rolls=2, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
@@ -1292,6 +1303,7 @@ class DocBot(CleanerBot):
 # Robot who repairs other robots
 class RepairBot(CleanerBot):
     def __init__(self,dm,row,col):
+        BasicBot.__init__(self)
         CleanerBot.__init__(self, vision_radius=6, ac=18, hp_low=15, hp_high=20, dmg_dice=6, 
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
@@ -1343,6 +1355,7 @@ class RepairBot(CleanerBot):
         
 class Roomba(CleanerBot):
     def __init__(self, dm, row, col):
+        BasicBot.__init__(self)
         CleanerBot.__init__(self, vision_radius=5, ac=18, hp_low=15, hp_high=20, dmg_dice=3, 
             dmg_rolls=1, ab=2, dm=dm, ch='o', fg='darkgrey', bg='black', lit='grey',
             name='roomba', row=row, col=col, xp_value=20, gender='male', level=5)
@@ -1380,6 +1393,7 @@ class Roomba(CleanerBot):
         
 class Incinerator(CleanerBot):
     def __init__(self, dm, row, col):
+        BasicBot.__init__(self)
         BaseMonster.__init__(self, vision_radius=5, ac=19, hp_low=10, hp_high=20, dmg_dice=3, 
             dmg_rolls=2, ab=2, dm=dm, ch='i', fg='red', bg='black', lit='red', 
             name='incinerator', row=row, col=col, xp_value=25, gender='male', level=5)
@@ -1419,7 +1433,8 @@ class SurveillanceDrone(CleanerBot):
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='blue', bg='black', lit='blue', 
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
         self.conditions.append((('flying', 0, 0), self))
-        
+        BasicBot.__init__(self)
+
     def perform_action(self):
         self.move()
         self.check_for_player(6, self.dm.curr_lvl.begin_security_lockdown)
