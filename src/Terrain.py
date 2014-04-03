@@ -78,6 +78,9 @@ class TerrainTile(BaseTile):
     def is_open(self):
         return self.__open
 
+    def is_toxic(self):
+        return self.get_type() in (ACID_POOL, TOXIC_WASTE)
+        
     def is_recepticle(self):
         return self.__recepticle
 

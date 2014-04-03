@@ -29,8 +29,6 @@ from .Items import ItemFactory
 from .Inventory import Inventory
 from .MessageResolver import MessageResolver
 from .PriorityQueue import PriorityQueue
-from .Terrain import ACID_POOL
-from .Terrain import TOXIC_WASTE
 from .Util import calc_angle_between
 from .Util import calc_distance
 from .Util import convert_locations_to_dir
@@ -108,9 +106,7 @@ class AStarPathFactory:
         return self.__open.pop(_t)[0]
     
     def not_passable(self, row, col):
-        if not self.dm.is_clear(row, col):
-            return True
-        if self.dm.curr_lvl.map[row][col].get_type() in (TOXIC_WASTE, ACID_POOL):
+        if not self.dm.is_clear(row, col) or self.dm.curr_lvl.map[row][col].is_toxic():
             return True
         
         return False

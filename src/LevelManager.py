@@ -24,7 +24,7 @@
 # when a player takes control of a robot. And cyberspace was kind of bolted-on
 # already. So there is a lot of stuff that will eventually need to get moved here.
 
-#from .Agent import BasicBot
+from .Agent import BasicBot
 from .GamePersistence import load_level
 from .GamePersistence import save_level
 
