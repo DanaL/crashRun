@@ -91,14 +91,14 @@ def _cyborgSergeant(dm, row, col):
     
     return _cy
           
-def _damagedSecurityBot(dm,row,col):
+def _damagedSecurityBot(dm, row, col):
     _if = Items.ItemFactory()
-    _bot = BasicBot(vision_radius=6, ac=15, hp_low=10, hp_high=16, dmg_dice=5, dmg_rolls=2, ab=2, 
+    _bot = RelentlessPredator(vision_radius=6, ac=15, hp_low=10, hp_high=16, dmg_dice=5, dmg_rolls=2, ab=2, 
         dm=dm,ch='i',fg='grey',bg='black', lit='grey',name='damaged security bot',row=row,
         col=col,xp_value=6,gender='male',level=4)
     
     if random() < 0.2:
-        _bot.inventory.add_item(_if.get_stack('battery',3))
+        _bot.inventory.add_item(_if.get_stack('battery', 3))
     
     return _bot
     

@@ -25,6 +25,7 @@ import string
 
 from .Agent import BaseAgent
 from .Agent import BaseMonster
+from .Agent import BasicBot
 from .Agent import IllegalMonsterMove
 from .Agent import STD_ENERGY_COST
 from .BaseTile import BaseTile
@@ -159,7 +160,7 @@ class DungeonMaster:
         self.virtual_turn = 0 # Time is kept seperately in cyberspace
         self.sight_matrix = {}
         last_sight_matrix = {}
-
+        
     def get_meatspace_dmg_msg(self, delta, curr_hp):
         _p = float(delta) / float(curr_hp)
         
@@ -465,7 +466,8 @@ class DungeonMaster:
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
-        
+            BasicBot.bot_number = 0
+
         self.__start_play()
         
     def begin_new_game(self,player_name):
@@ -539,7 +541,8 @@ class DungeonMaster:
         self.turn = stuff[0]
         self.virtual_turn = stuff[1]
         self.player = stuff[2]
-        
+        BasicBot.bot_number = stuff[4]
+
         self.curr_lvl = GetGameFactoryObject(self,stuff[3][6], len(stuff[3][0]), len(stuff[3][0][0]), stuff[3][5])
         get_level_from_save_obj(self.curr_lvl, stuff[3])
         
@@ -565,7 +568,7 @@ class DungeonMaster:
             self.dui.display_message('Saving...')
             self.player.dm = ''
         
-            _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object())
+            _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object(), BasicBot.bot_number)
             save_game(self.player.get_name(), _save_obj)
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 
