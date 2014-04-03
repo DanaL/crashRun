@@ -102,12 +102,12 @@ def load_level(username, level_num):
     try:
         f = open(username + '_' + str(level_num), 'rb')
         up = Unpickler(f)
-        _lvl_obj = up.load()
+        lvl_obj = up.load()
         f.close()
     except IOError:
         raise NoSaveFileFound()
         
-    return _lvl_obj
+    return lvl_obj
     
 def load_saved_game(username):
     try:
