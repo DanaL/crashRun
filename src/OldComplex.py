@@ -86,7 +86,9 @@ class OldComplexLevel(GameLevel):
             self.subnet_nodes.append(SubnetNode.StatBuilderNode()) 
         else:
             self.subnet_nodes.append(SubnetNode.get_skill_node())
-            
+        
+        self.subnet_nodes.append(SubnetNode.RobotGrandCentral())
+        
     def __get_monster(self, _monster_level):
         if _monster_level < 4:
             rnd = randrange(0, 8)

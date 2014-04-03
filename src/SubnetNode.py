@@ -50,6 +50,13 @@ class LameSubnetNode(SubnetNode):
         else:
             dm.alert_player(agent.row, agent.col, "You suffer through the same boring " + self.__topic)
             dm.alert_player(agent.row, agent.col, "You get even less out of it this time.")
+
+class RobotGrandCentral(SubnetNode):
+    def __init__(self):
+        TerrainTile.__init__(self,"'",'darkblue','black','blue',1,0,1,0,'subnet node',SUBNET_NODE)
+
+    def visit(self, dm, agent):
+        dm.alert_player(agent.row, agent.col, "Accessing directory of online robots.")
         
 def get_dance_node():
     _dn = SkillBuilderNode('Dancing', 'Miscellaneous')
