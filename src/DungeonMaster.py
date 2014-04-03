@@ -72,7 +72,7 @@ from .Prologue import Prologue
 from .ProvingGrounds import ProvingGroundsLevel
 from .ScienceComplex import ScienceComplexLevel
 from .Software import Software
-from . import Terrain
+from . import Terrain as T
 from .Terrain import TerrainTile
 from .Terrain import Trap
 from .Terrain import ACID_POOL
@@ -186,7 +186,6 @@ class DungeonMaster:
         _ms = self.player.meat_stats
         self.player.light_radius = _ms.light_r
         self.player.vision_radius = _ms.vision_r
-        _cameras = self.curr_lvl.cameras_active
         _security = self.curr_lvl.security_active
         
         # Calcuate player's HP on exit, and how much damage is transfered 
@@ -203,16 +202,15 @@ class DungeonMaster:
         _down = None
         for r in range(len(self.curr_lvl.map)):
             for c in range(len(self.curr_lvl.map[0])):
-                if self.curr_lvl.map[r][c].get_type() == Terrain.UP_STAIRS:
+                if self.curr_lvl.map[r][c].get_type() == T.UP_STAIRS:
                     _up = self.curr_lvl.map[r][c]
-                if self.curr_lvl.map[r][c].get_type() == Terrain.DOWN_STAIRS:
+                if self.curr_lvl.map[r][c].get_type() == T.DOWN_STAIRS:
                     _down = self.curr_lvl.map[r][c]
                 if _up != None and _down != None: break
         
         _nodes = self.curr_lvl.subnet_nodes
         self.__load_lvl(self.curr_lvl.level_num, None)
         self.curr_lvl.subnet_nodes = _nodes
-        self.curr_lvl.cameras_active = _cameras
         self.curr_lvl.security_active = _security
         if self.curr_lvl.security_lockdown and not _security:
             self.curr_lvl.end_security_lockdown()
@@ -272,7 +270,6 @@ class DungeonMaster:
             _down = None
         
         level.set_real_stairs(_up, _down)
-        level.set_camera_node(self.curr_lvl.cameras_active)
         level.security_active = self.curr_lvl.security_active
         if self.curr_lvl.security_active:
             level.activate_security_program()
@@ -394,7 +391,7 @@ class DungeonMaster:
             _things_to_transfer += self.curr_lvl.things_fallen_in_holes
             self.curr_lvl.things_fallen_in_holes = []
             
-        if not isinstance(_exit_sqr, Terrain.GapingHole):
+        if not isinstance(_exit_sqr, T.GapingHole):
             # Monsters don't jump into the hole after the player...
             _monsters = self.__check_for_monsters_surrounding_stairs()
             if len(_monsters) > 0:
@@ -436,8 +433,8 @@ class DungeonMaster:
 
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
         # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
-        if isinstance(_exit_sqr, Terrain.GapingHole):
-            self.curr_lvl.map[self.player.row][self.player.col] = Terrain.HoleInCeiling()
+        if isinstance(_exit_sqr, T.GapingHole):
+            self.curr_lvl.map[self.player.row][self.player.col] = T.HoleInCeiling()
         
         if _things_to_transfer:
             self.curr_lvl.things_fell_into_level(_things_to_transfer)
@@ -595,7 +592,7 @@ class DungeonMaster:
 
     # Hardcoded for now, I'm fixing how terrain types are stored soon enough.
     def is_trap(self,r,c):
-        return self.curr_lvl.map[r][c].get_type() == Terrain.TRAP and self.curr_lvl.map[r][c].revealed
+        return self.curr_lvl.map[r][c].get_type() == T.TRAP and self.curr_lvl.map[r][c].revealed
 
     # is a location a valid square in the current map
     def in_bounds(self,r,c):
@@ -682,10 +679,10 @@ class DungeonMaster:
        
     def player_moves_down_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, Terrain.Trap) and isinstance(sqr.previous_tile, Terrain.DownStairs):
+        if isinstance(sqr, T.Trap) and isinstance(sqr.previous_tile, T.DownStairs):
             sqr = sqr.previous_tile
 
-        if isinstance(sqr,Terrain.DownStairs):
+        if isinstance(sqr,T.DownStairs):
             if  sqr.activated:
                 self.__determine_next_level('down', (self.player.row, self.player.col))
                 self.player.energy -= STD_ENERGY_COST
@@ -696,15 +693,15 @@ class DungeonMaster:
 
     def player_moves_up_a_level(self):
         sqr = self.curr_lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, Terrain.Trap):
-            if isinstance(sqr, Terrain.HoleInCeiling):
+        if isinstance(sqr, T.Trap):
+            if isinstance(sqr, T.HoleInCeiling):
                 self.dui.display_message("You can't jump high enough.")
                 self.player.energy -= STD_ENERGY_COST
                 return
-            elif isinstance(sqr.previous_tile, Terrain.UpStairs):
+            elif isinstance(sqr.previous_tile, T.UpStairs):
                 sqr = sqr.previous_tile
 
-        if isinstance(sqr, Terrain.UpStairs):
+        if isinstance(sqr, T.UpStairs):
             if sqr.activated:
                 self.__determine_next_level('up', (self.player.row, self.player.col))
                 self.player.energy -= STD_ENERGY_COST
@@ -715,7 +712,7 @@ class DungeonMaster:
           
     def __should_attempt_to_open(self, sqr):
         if self.prefs["bump to open doors"]: 
-            if sqr.get_type() in (Terrain.DOOR, Terrain.SPECIAL_DOOR):
+            if sqr.get_type() in (T.DOOR, T.SPECIAL_DOOR):
                 if not sqr.is_open():
                     return True
         return False
@@ -752,7 +749,7 @@ class DungeonMaster:
                     if isinstance(_glasses, Items.TargetingWizard) and _glasses.charge > 0:
                         _glasses.charge -= 1
                         if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
-            elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.OCEAN:
+            elif self.curr_lvl.map[_next_r][_next_c].get_type() == T.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
             elif self.__should_attempt_to_open(_tile):
@@ -761,7 +758,7 @@ class DungeonMaster:
                     self.player.energy -= STD_ENERGY_COST
                 else:
                     self.open_door(_tile, _next_r, _next_c)
-            elif self.curr_lvl.map[_next_r][_next_c].get_type() == Terrain.FIREWALL:
+            elif self.curr_lvl.map[_next_r][_next_c].get_type() == T.FIREWALL:
                 self.player_tries_moving_through_firewall(_p, _next_r, _next_c, _dt)
             else:
                 if self.player.has_condition('dazed'):
@@ -780,11 +777,11 @@ class DungeonMaster:
         occupant = self.curr_lvl.dungeon_loc[door_r][door_c].occupant
         if occupant != '':
             self.dui.display_message('There is someone in the way!')
-        elif isinstance(tile, Terrain.Door):
+        elif isinstance(tile, T.Door):
             if tile.is_open():
                 self.__move_player(self.player.row,self.player.col,door_r,door_c,dt)
                 self.dui.display_message('You stagger into the open space.')
-            elif isinstance(tile, Terrain.SpecialDoor):
+            elif isinstance(tile, T.SpecialDoor):
                 self.dui.display_message("It doesn't budge.")
                 self.player.energy -= STD_ENERGY_COST  
             else:
@@ -809,7 +806,7 @@ class DungeonMaster:
         _loc = self.curr_lvl.dungeon_loc[row][col]
         _tile = self.curr_lvl.map[row][col]
     
-        if isinstance(_tile,Terrain.Door):
+        if isinstance(_tile,T.Door):
             if _loc.occupant != '' or self.curr_lvl.size_of_item_stack(row, col) > 0:
                 self.dui.display_message('There is something in the way!')
             elif _tile.broken:
@@ -853,7 +850,7 @@ class DungeonMaster:
         for r in (-1,0,1):
             for c in (-1,0,1):
                 _tile = self.curr_lvl.map[row+r][col+c]
-                if self.in_bounds(row+r,col+c) and isinstance(_tile,Terrain.Door) and _tile.is_open() == open:
+                if self.in_bounds(row+r,col+c) and isinstance(_tile, T.Door) and _tile.is_open() == open:
                     _dir = (r,c)
                     _count += 1
         
@@ -887,7 +884,7 @@ class DungeonMaster:
 
     # This will eventually have to have generic user messages and I'll have to pass a reference to the opener
     def open_door(self, tile, r, c):
-        if isinstance(tile, Terrain.SpecialDoor):
+        if isinstance(tile, T.SpecialDoor):
             self.curr_lvl.check_special_door(tile)
                      
         if tile.locked:
@@ -959,7 +956,7 @@ class DungeonMaster:
                 self.dui.display_message('You stagger forward.')
         else:
             if agent == self.player:
-                if target_tile.get_type() == Terrain.OCEAN:
+                if target_tile.get_type() == T.OCEAN:
                     self.dui.display_message('You nearly fall into the water!')
                 else:
                     # perhaps have the player take damage?
@@ -1105,14 +1102,14 @@ class DungeonMaster:
     
     def fire_weapon_at_ceiling(self, player, gun):
         _sqr = self.curr_lvl.map[player.row][player.col]
-        if isinstance(_sqr, Terrain.SecurityCamera):
+        if isinstance(_sqr, T.SecurityCamera):
             self.dui.display_message("You shoot the security camera.")
             _sqr.functional = False
             return
 
         if self.curr_lvl.level_num == 0:
             _msg = "You fire straight up into the air."
-        elif isinstance(_sqr, Terrain.HoleInCeiling):
+        elif isinstance(_sqr, T.HoleInCeiling):
             _msg = "You fire into the hole in the ceiling."
         else:
             _msg = "You shoot at the ceiling and are rewarded with a shower of dust and rubble."
@@ -1120,7 +1117,7 @@ class DungeonMaster:
             
     def fire_weapon_at_floor(self, player, gun):
         _sqr = self.curr_lvl.map[player.row][player.col]
-        if isinstance(_sqr, Terrain.Terminal):
+        if isinstance(_sqr, T.Terminal):
             self.dui.display_message("You blast the computer terminal.")
             _sqr.functional = False
         else:
@@ -1175,7 +1172,7 @@ class DungeonMaster:
                         break
                     else:
                         self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
-                elif isinstance(self.curr_lvl.map[bullet_row][bullet_col], Terrain.Door):
+                elif isinstance(self.curr_lvl.map[bullet_row][bullet_col], T.Door):
                     door = self.curr_lvl.map[bullet_row][bullet_col]
                     door.handle_damage(self, self.curr_lvl, bullet_row, bullet_col, gun.shooting_dmg_roll())
                     break
@@ -1496,11 +1493,11 @@ class DungeonMaster:
                     self.dui.display_message("You wave the chainsaw around in the air.")
                 elif _loc.occupant != '' and isinstance(_loc.occupant, BaseAgent):
                     self.curr_lvl.melee.attack(self.player, _loc.occupant)  
-                elif _sqr.get_type() in (Terrain.WALL, Terrain.PERM_WALL):
+                elif _sqr.get_type() in (T.WALL, T.PERM_WALL):
                     self.dui.display_message("That's probably not good for your chainsaw.")
-                elif _sqr.get_type() in (Terrain.STEEL_DOOR, Terrain.SPECIAL_DOOR):
+                elif _sqr.get_type() in (T.STEEL_DOOR, T.SPECIAL_DOOR):
                     self.dui.display_message("You make a lot of sparks but not much else happens.")
-                elif _sqr.get_type() == Terrain.DOOR and not _sqr.is_open():
+                elif _sqr.get_type() == T.DOOR and not _sqr.is_open():
                     _sqr.smash()
                     self.update_sqr(self.curr_lvl, _row, _col)
                     self.refresh_player_view()
@@ -1524,7 +1521,7 @@ class DungeonMaster:
             _door_c = self.player.col + _dt[1]
             _tile = self.curr_lvl.map[_door_r][_door_c]
             
-            if isinstance(_tile,Terrain.Door):
+            if isinstance(_tile, T.Door):
                 if _tile.is_open():
                     self.dui.display_message('The door is open.')
                 else:
@@ -1539,7 +1536,7 @@ class DungeonMaster:
             try:
                 turns = int(timer)
                 self.dui.clear_msg_line()
-                trap = Terrain.Trap('bomb')
+                trap = T.Trap('bomb')
                 trap.explosive = bomb
                 trap.revealed = True # player knows where his own bomb is
                 trap.previous_tile = self.curr_lvl.map[self.player.row][self.player.col]
@@ -1651,7 +1648,7 @@ class DungeonMaster:
     # cases, if omniscient isn't true, the monsters won't be visible.
     def get_sqr_info(self,r,c,omniscient=False):
         if not self.in_bounds(r,c):
-            return DungeonSqrInfo(r,c,False,False,False,Terrain.BlankSquare())
+            return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
             
         visible = omniscient or self.curr_lvl.dungeon_loc[r][c].visible
         remembered = visible or self.curr_lvl.dungeon_loc[r][c].visited
@@ -1821,7 +1818,7 @@ class DungeonMaster:
         _loc = self.curr_lvl.dungeon_loc[r][c]
         _sqr = self.curr_lvl.map[r][c]
         
-        if isinstance(_sqr,Terrain.DownStairs) or isinstance(_sqr, Terrain.UpStairs):
+        if isinstance(_sqr, T.DownStairs) or isinstance(_sqr, T.UpStairs):
             self.dui.display_message('There is a lift access here.')
         if _sqr.was_stairs():
             self.dui.display_message('There is a lift access here.')
@@ -1848,8 +1845,8 @@ class DungeonMaster:
         elif _sqr.get_type() == ACID_POOL:
             self.agent_steps_in_acid_pool(agent, r, c)
             
-        if isinstance(_sqr, Terrain.Trap):
-            if not isinstance(_sqr, Terrain.HoleInCeiling):
+        if isinstance(_sqr, T.Trap):
+            if not isinstance(_sqr, T.HoleInCeiling):
                 _mr = MessageResolver(self, self.dui)
                 _mr.simple_verb_action(agent, ' %s on ' + _sqr.get_name(2) + "!", ['step'])
             self.agent_steps_on_trap(agent, _sqr)
@@ -1875,7 +1872,7 @@ class DungeonMaster:
             
     def item_hits_ground(self, level, r, c, item):
         # If an item lands on a hole it should fall to the next level
-        if isinstance(self.curr_lvl.map[r][c], Terrain.GapingHole):
+        if isinstance(self.curr_lvl.map[r][c], T.GapingHole):
             self.curr_lvl.dungeon_loc[r][c].temp_tile = ''
             self.update_sqr(level, r, c)
             self.alert_player(r, c, item.get_name() + ' falls down the hole.')
@@ -1888,7 +1885,7 @@ class DungeonMaster:
         else:
             level.add_item_to_sqr(r, c, item)
         
-            if level.map[r][c].get_type() in [Terrain.OCEAN,Terrain.WATER]:
+            if level.map[r][c].get_type() in [T.OCEAN, T.WATER]:
                 msg = 'Splash!  The ' + item.get_full_name() + ' sinks into the water.'
                 alt = 'You hear a distance sploosh.'
                 alert = VisualAlert(r, c, msg, alt, level)
@@ -1919,10 +1916,10 @@ class DungeonMaster:
             # in the explosion beecause I only want to destroy the lift when the bomb was
             # set direction on it.
             _sqr = self.curr_lvl.map[row][col]
-            if _sqr.get_type() == Terrain.DOWN_STAIRS or (hasattr(_sqr, 'previous_tile') and _sqr.previous_tile.get_type() == Terrain.DOWN_STAIRS):
+            if _sqr.get_type() == T.DOWN_STAIRS or (hasattr(_sqr, 'previous_tile') and _sqr.previous_tile.get_type() == T.DOWN_STAIRS):
                 alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '', level)
                 alert.show_alert(self, False)
-                _trap = Terrain.GapingHole()
+                _trap = T.GapingHole()
                 self.curr_lvl.map[row][col] = _trap
 
         bullet = Items.Bullet('*', 'white')

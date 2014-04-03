@@ -24,6 +24,7 @@ from .Agent import SecurityControlProgram
 from .CombatResolver import CyberspaceCombatResolver
 from .FieldOfView import get_lit_list
 from .GameLevel import GameLevel
+from .LevelManager import LevelManager
 from .Maze import Maze
 from . import MonsterFactory
 from .Software import get_software_by_name
@@ -45,12 +46,14 @@ class CyberspaceLevel(GameLevel):
         self.melee = CyberspaceCombatResolver(dm, dm.dui)
     
     def access_cameras(self):
-        if not self.cameras_active:
+        lm = LevelManager(self.dm)
+        if not lm.are_cameras_active():
             _msg = "You activate the security camera system."
+            lm.set_camera_state(True)
         else:
             _msg = "You disable the security camera system."
+            lm.set_camera_state(False)
         self.dm.dui.display_message(_msg)
-        self.cameras_active = not self.cameras_active
         
     def activate_security_program(self):
         _scp = SecurityControlProgram(self.dm, 0, 0, self.level_num)
@@ -126,7 +129,10 @@ class CyberspaceLevel(GameLevel):
         #self.__add_monsters()
         self.__add_files()
         self.__set_entry_spot()
-        
+
+        lm = LevelManager(self.dm)
+        self.place_sqr(SecurityCamera(0, lm.are_cameras_active()), CYBERSPACE_FLOOR) 
+
     def is_cyberspace(self):
         return True
         
@@ -151,10 +157,6 @@ class CyberspaceLevel(GameLevel):
 
     def resolve_events(self):
         pass # for the moment, there are no events in cyberspace
-    
-    def set_camera_node(self, state):
-        self.cameras_active = state
-        self.place_sqr(SecurityCamera(0, state), CYBERSPACE_FLOOR) 
         
     def set_real_stairs(self, upstairs, downstairs):
         if upstairs:

@@ -20,6 +20,7 @@ from random import randrange
 from .BaseTile import BaseTile
 from .FieldOfView import Shadowcaster
 from .Items import ItemFactory
+from .LevelManager import LevelManager
 from .Util import VisualAlert
 
 FLOOR = 0
@@ -177,7 +178,8 @@ class Terminal(Equipment):
         dui.wait_for_input()
         
     def use_security_cameras(self, dm, dui):
-        if not dm.curr_lvl.cameras_active:
+        lm = LevelManager(dm)
+        if not lm.are_cameras_active():
             _msg = 'Camera access is currently disabled.'
             dui.display_message(_msg, True)
             return

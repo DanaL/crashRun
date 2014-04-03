@@ -58,7 +58,7 @@ class RobotGrandCentral(SubnetNode):
 
     def visit(self, dm, agent):
         dm.alert_player(agent.row, agent.col, "Accessing directory of online robots.")
-        lm = LevelManager()
+        lm = LevelManager(dm)
         robots = lm.get_list_of_robots(dm.player.get_name(), dm.curr_lvl.level_num)
 
         if len(robots) == 0:
