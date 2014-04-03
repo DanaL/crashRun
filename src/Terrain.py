@@ -203,9 +203,13 @@ class BossTerminal(Terminal):
         Equipment.__init__(self,'?','brown','black','red','terminal',SPECIAL_TERMINAL,True)
 
     def jack_in(self, dm):
-        dm.alert_player(dm.player.row, dm.player.col, "You unplug the Master Mainframe. VICTORY!")
-        dm.alert_player(dm.player.row, dm.player.col, "You probably want to get back to the surface before the DoD nukes the joint.")
-                             
+        if self.functional:
+            dm.alert_player(dm.player.row, dm.player.col, "You unplug the Master Mainframe. VICTORY!")
+            dm.alert_player(dm.player.row, dm.player.col, "You probably want to get back to the surface before the DoD nukes the joint.")
+            self.functional = False
+        else:
+            dm.alert_player(dm.player.row, dm.player.col, "You've already deactivated it. What are you waiting around for?")
+
 class UpStairs(TerrainTile):
     def __init__(self):
         TerrainTile.__init__(self,'<','grey','black','white',1,0,1,0,'lift up',UP_STAIRS)
