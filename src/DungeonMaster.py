@@ -2130,16 +2130,28 @@ class DungeonMaster:
             self.dui.clear_msg_line()
             self.dui.display_message('The staccato of the DoD chopper fades in the distance.',0)
 
-        self.__play_game()
-
-    def __play_game(self):
         try:
             while True:
                 self.__do_turn()
         except GameOver:
             return
+            
+    def meatspace_end_of_turn_cleanup(self):
+        self.player.check_for_withdrawal_effects()
+        self.player.check_for_expired_conditions()
+        for _m in self.curr_lvl.monsters:
+            _m.check_for_expired_conditions()
+            
+        _drained = self.player.inventory.drain_batteries()
+        if len(_drained) > 0:
+            self.items_discharged(self.player, _drained)
 
-    # loop over all actors until everyone's energy is below threshold
+    def items_discharged(self, agent, items):
+        for _item in items:
+            self.dui.display_message(_item.get_power_down_message())
+            agent.remove_effects(_item)
+ 
+     # loop over all actors until everyone's energy is below threshold
     def __do_turn(self):
         if self.curr_lvl.security_lockdown and self.turn % 10 == 0:
             self.dui.display_message('An alarm is sounding.')
@@ -2169,22 +2181,7 @@ class DungeonMaster:
         self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
         for _m in self.curr_lvl.monsters:
             _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
-            
-    def meatspace_end_of_turn_cleanup(self):
-        self.player.check_for_withdrawal_effects()
-        self.player.check_for_expired_conditions()
-        for _m in self.curr_lvl.monsters:
-            _m.check_for_expired_conditions()
-            
-        _drained = self.player.inventory.drain_batteries()
-        if len(_drained) > 0:
-            self.items_discharged(self.player, _drained)
-
-    def items_discharged(self, agent, items):
-        for _item in items:
-            self.dui.display_message(_item.get_power_down_message())
-            agent.remove_effects(_item)
-            
+                       
     def __do_player_action(self):
         self.active_agent = self.player
         
