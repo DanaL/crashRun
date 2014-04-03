@@ -18,6 +18,7 @@
 from random import choice
 from random import randrange
 
+from .LevelManager import LevelManager
 from .Terrain import TerrainTile
 from .Terrain import SUBNET_NODE
 
@@ -57,7 +58,24 @@ class RobotGrandCentral(SubnetNode):
 
     def visit(self, dm, agent):
         dm.alert_player(agent.row, agent.col, "Accessing directory of online robots.")
+        lm = LevelManager()
+        robots = lm.get_list_of_robots(dm.player.get_name(), dm.curr_lvl.level_num)
+
+        if len(robots) == 0:
+            dm.alert_player(agent.row, agent.col, "There are no robots currently online.")
+        else:
+            header = ['To initiate remote robot access, please select from currently avaiable bots:']
+            menu = []
+            count = 0
+            for r in robots:
+                ch = chr(ord('a') + count)
+                menu.append((ch, r.get_name(1) + " " + r.get_serial_number(), ch))
+                count += 1
         
+        choice = ''
+        while choice == '':
+            choice = dm.dui.ask_menued_question(header,menu)
+
 def get_dance_node():
     _dn = SkillBuilderNode('Dancing', 'Miscellaneous')
     

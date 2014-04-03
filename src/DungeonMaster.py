@@ -242,7 +242,7 @@ class DungeonMaster:
         save_level(_pn, _curr.level_num, _curr.generate_save_object())
         return CyberspaceLevel(self, _curr.level_num, 20, 70)
         
-    def player_enters_cyberspace(self,level):
+    def player_enters_cyberspace(self, level):
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _hacking = self.player.skills.get_skill('Hacking').get_rank()
         
