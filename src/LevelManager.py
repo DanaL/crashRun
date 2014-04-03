@@ -24,14 +24,31 @@
 # when a player takes control of a robot. And cyberspace was kind of bolted-on
 # already. So there is a lot of stuff that will eventually need to get moved here.
 
-from .Agent import BasicBot
+#from .Agent import BasicBot
 from .GamePersistence import load_level
+from .GamePersistence import save_level
 
 class LevelManager:
-	def get_list_of_robots(self, username, level):
-		level_obj = load_level(username, level)
+	def __init__(self, dm):
+		self.username = dm.player.get_name()
+		self.level = dm.curr_lvl.level_num
+
+	def are_cameras_active(self):
+		return load_level(self.username, self.level)[13]
+	
+	def set_camera_state(self, active):
+		lvl_obj = load_level(self.username, self.level)
+		save_obj = (lvl_obj[0], lvl_obj[1], lvl_obj[2], lvl_obj[3], lvl_obj[4], lvl_obj[5], lvl_obj[6], lvl_obj[7],
+				lvl_obj[8], lvl_obj[9], lvl_obj[10], lvl_obj[11], lvl_obj[12], active, lvl_obj[14], lvl_obj[15])
+
+		save_level(self.username, self.level, save_obj)
+
+	def get_list_of_robots(self):
+		level_obj = load_level(self.username, self.level)
 		robots = [r for r in level_obj[4] if isinstance(r, BasicBot)]
 
 		return robots
+
+
 
 
