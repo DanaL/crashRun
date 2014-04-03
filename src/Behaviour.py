@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import Items
+from . import Items as I
 from .Util import get_correct_article
 
 def has_ammo_for(agent, gun):
@@ -33,7 +33,7 @@ def check_inventory_for_guns(agent):
     for _num in range(26):
         _letter = chr(_a + _num)
         _item = agent.inventory.get_item(_letter)
-        if isinstance(_item, Items.Firearm):
+        if isinstance(_item, I.Firearm):
             if _item.current_ammo > 0 or has_ammo_for(agent, _item) != '':
                 _guns.append((_item, _letter))
 
@@ -58,7 +58,7 @@ def pick_melee_weapon(agent):
     for _num in range(26):
         _letter = chr(_a + _num)
         _item = _inv.get_item(_letter)
-        if isinstance(_item, Items.Weapon):
+        if isinstance(_item, I.Weapon):
             _dmg = _item.d_roll * _item.d_dice
             if _dmg > _max_dmg:
                 _pick = _letter
@@ -99,7 +99,7 @@ def pick_armour(agent):
     for j in range(0, 26):
         _slot = chr(ord('a') + j)
         _item = _inv.get_item(_slot)
-        if isinstance(_item, Items.Armour):
+        if isinstance(_item, I.Armour):
             _area = _item.get_area()
             _ac_mod = _item.get_ac_modifier()
             _curr = _inv.get_armour_in_location(_area)
