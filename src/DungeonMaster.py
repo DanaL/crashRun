@@ -540,7 +540,7 @@ class DungeonMaster:
         self.virtual_turn = stuff[1]
         self.player = stuff[2]
         
-        self.curr_lvl = GetGameFactoryObject(self,stuff[3][6], len(stuff[3][0]), len(stuff[3][0][0]), stuff[3][5])
+        self.curr_lvl = GetGameFactoryObject(self, 12, len(stuff[3][0]), len(stuff[3][0][0]), 'mini-boss 1')
         get_level_from_save_obj(self.curr_lvl, stuff[3])
         
         self.player.dm = self
@@ -2265,6 +2265,12 @@ class DungeonMaster:
                 tile = self.curr_lvl.map[self.player.row][self.player.col]
                 if hasattr(tile, 'activated'):
                     tile.activated = True
+            elif _words[0] == 'clear':
+                while len(self.curr_lvl.monsters) > 0:
+                    m = self.curr_lvl.monsters[0]
+                    self.curr_lvl.remove_monster(m, m.row, m.col)
+                self.dui.draw_screen()
+
         except UnknownDebugCommand:
             self.dui.clear_msg_line()
             self.dui.display_message('Unknown debug command.')
