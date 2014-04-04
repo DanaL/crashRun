@@ -181,7 +181,7 @@ class DungeonMaster:
         self.player.dazed('')
         self.player_exits_cyberspace(randrange(11,21))
         
-    def player_exits_cyberspace(self, exit_dmg = 0):
+    def player_exits_cyberspace(self, exit_dmg = 0):        
         self.dui.display_message('You find yourself back in the real world.', True)
         _ms = self.player.meat_stats
         self.player.light_radius = _ms.light_r
@@ -235,10 +235,10 @@ class DungeonMaster:
         self.sight_matrix = {}
         
     def generate_cyberspace_level(self):
-        _curr = self.curr_lvl
+        _curr = self.active_levels[self.player.curr_level]
         _pn = self.player.get_name()
-        save_level(_pn, _curr.level_num, _curr.generate_save_object())
-        return CyberspaceLevel(self, _curr.level_num, 20, 70)
+        save_level(_pn, self.player.curr_level, _curr.generate_save_object())
+        return CyberspaceLevel(self, self.player.curr_level, 20, 70)
         
     def player_enters_cyberspace(self, level):
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
@@ -749,7 +749,7 @@ class DungeonMaster:
                     self.dui.display_message('You stagger into ' + _tile.get_name() + '!')
                     self.player.energy -= STD_ENERGY_COST
                 else:
-                    self.open_door(_tile, _next_r, _next_c)
+                    self.open_door(_tile, _next_r, _next_c, _p.curr_level)
             elif _level.map[_next_r][_next_c].get_type() == T.FIREWALL:
                 self.player_tries_moving_through_firewall(_p, _next_r, _next_c, _dt)
             else:
@@ -759,14 +759,15 @@ class DungeonMaster:
                 else:
                     self.dui.display_message('You cannot move that way!')
             
-    def player_bash(self,direction):
+    def player_bash(self, direction):
+        _level = self.active_levels[self.player.curr_level]
         dt = self.convert_to_dir_tuple(self.player, direction)
 
         door_r = self.player.row + dt[0]
         door_c = self.player.col + dt[1]
-        tile = self.curr_lvl.map[door_r][door_c]
+        tile = _level.map[door_r][door_c]
 
-        occupant = self.curr_lvl.dungeon_loc[door_r][door_c].occupant
+        occupant = _level.dungeon_loc[door_r][door_c].occupant
         if occupant != '':
             self.dui.display_message('There is someone in the way!')
         elif isinstance(tile, T.Door):
@@ -780,11 +781,11 @@ class DungeonMaster:
                 randio = randrange(0,20) + self.player.calc_melee_dmg_bonus()
                 
                 _noise = Noise(6, self.player, door_r, door_c, 'bashing')
-                self.curr_lvl.monsters_react_to_noise(6, _noise)
+                _level.monsters_react_to_noise(6, _noise)
         
                 if randio > 15:
                     tile.smash()
-                    self.update_sqr(self.curr_lvl, door_r,door_c)
+                    self.update_sqr(_level, door_r,door_c)
                     self.refresh_player_view()
                     self.dui.display_message('You smash open the door')
                 else:
@@ -793,41 +794,6 @@ class DungeonMaster:
                 self.player.energy -= STD_ENERGY_COST
         else:
             self.__uncontrolled_move(self.player,door_r,door_c,dt)
-
-    def close_door(self, row, col):
-        _loc = self.curr_lvl.dungeon_loc[row][col]
-        _tile = self.curr_lvl.map[row][col]
-    
-        if isinstance(_tile,T.Door):
-            if _loc.occupant != '' or self.curr_lvl.size_of_item_stack(row, col) > 0:
-                self.dui.display_message('There is something in the way!')
-            elif _tile.broken:
-                self.dui.display_message('The door is broken.')
-                self.player.energy -= STD_ENERGY_COST
-            elif not _tile.is_open():
-                self.dui.display_message('The door is already closed!')
-            else:
-                _tile.close()
-                self.update_sqr(self.curr_lvl, row, col)
-                self.refresh_player_view()
-                self.dui.display_message('You close the door')
-                self.player.energy -= STD_ENERGY_COST
-        else:
-            self.dui.display_message('There is nothing to close!')
-            
-    def player_close_door(self):
-        _adj_door = self.get_adjacent_door(self.player.row, self.player.col, True)
-        if _adj_door != None:
-            _door_r = self.player.row + _adj_door[0]
-            _door_c = self.player.col + _adj_door[1]
-            self.close_door(_door_r, _door_c)
-        else:
-            _dir = self.dui.get_direction()
-            _dt = self.convert_to_dir_tuple(self.player, _dir)
-            if _dt != None:
-                _door_r = self.player.row + _dt[0]
-                _door_c = self.player.col + _dt[1]
-                self.close_door(_door_r, _door_c)
 
     def empty_box_contents(self, box, row, col):
         if len(box.contents) == 0:
@@ -875,9 +841,10 @@ class DungeonMaster:
             self.dui.display_message('Nevermind.')
 
     # This will eventually have to have generic user messages and I'll have to pass a reference to the opener
-    def open_door(self, tile, r, c):
+    def open_door(self, tile, r, c, level_num):
+        _level = self.active_levels[level_num]
         if isinstance(tile, T.SpecialDoor):
-            self.curr_lvl.check_special_door(tile)
+            _level.check_special_door(tile)
                      
         if tile.locked:
             if self.prefs["auto unlock doors"]:
@@ -892,7 +859,7 @@ class DungeonMaster:
             self.dui.display_message('You open the door')
             self.player.energy -= STD_ENERGY_COST
             
-        self.update_sqr(self.curr_lvl, r, c)
+        self.update_sqr(_level, r, c)
         self.refresh_player_view()
         
     def pick_lock(self, door, pick):
@@ -1367,7 +1334,8 @@ class DungeonMaster:
         else:
             self.dui.display_message('You drop your ' + item.get_full_name() + '.')
             self.player.remove_effects(item)
-            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, item)
+            _lvl = self.active_levels[self.player.curr_level]
+            self.item_hits_ground(_lvl, self.player.row, self.player.col, item)
             self.player.energy -= STD_ENERGY_COST
 
     def access_software(self, sw, exe_mess):

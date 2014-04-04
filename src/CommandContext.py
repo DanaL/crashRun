@@ -147,7 +147,7 @@ class CommandContext(object):
         
 class MeatspaceCC(CommandContext):       
     def attempt_to_disarm(self, trap, row, col):
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[self.dm.player.curr_level]
         _p = self.dm.player
         _rank = _p.skills.get_skill('Bomb Defusing').get_rank()
         if _rank == 0:
@@ -197,7 +197,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message("You are not in the right headspace at the moment.")
             return
 
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[_p.curr_level]
         
         _sqr = self.find_actionable_sqrs(_p.row, _p.col)
         if _sqr == None:
@@ -242,7 +242,7 @@ class MeatspaceCC(CommandContext):
             
     def door_action(self, sqr, row, col, lvl):
         if not sqr.broken and not sqr.opened:
-            self.dm.open_door(sqr, row, col)
+            self.dm.open_door(sqr, row, col, lvl.level_num)
             return
         
         _loc = lvl.dungeon_loc[row][col]
@@ -276,7 +276,7 @@ class MeatspaceCC(CommandContext):
       
     def find_actionable_sqrs(self, row, col):
         _sqrs = []
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[self.dm.player.curr_level]
         for r in (-1, 0, 1):
             for c in (-1, 0, 1):
                 _sqr = _lvl.map[row+r][col+c]
@@ -601,7 +601,7 @@ class CyberspaceCC(CommandContext):
             self.dm.cmd_move_player(k)
           
     def do_action(self):
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[self.dm.player.curr_level]
         _p = self.dm.player
         _sqr = _lvl.map[_p.row][_p.col]
         
