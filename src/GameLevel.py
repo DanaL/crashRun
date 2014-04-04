@@ -306,7 +306,7 @@ class GameLevel:
                     stack.remove(item)
                 _msg = light_source.get_name() + ' has gone out.'
 
-                alert = VisualAlert(light_source.row, light_source.col, _msg, '', self.dm.curr_lvl)
+                alert = VisualAlert(light_source.row, light_source.col, _msg, '', self)
                 alert.show_alert(self.dm, True)
                 
     # this could maybe be moved to GamePersistence?

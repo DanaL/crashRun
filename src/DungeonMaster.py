@@ -1985,12 +1985,12 @@ class DungeonMaster:
         
         raise TurnInterrupted
     
-    def __check_trajectory(self, start_r, start_c, target_r, target_c):
+    def __check_trajectory(self, start_r, start_c, target_r, target_c, level):
         if start_r == target_r and start_c == target_c:
             return True
         _pts = bresenham_line(start_r, start_c, target_r, target_c)
         for _pt in _pts:
-            if not self.curr_lvl.map[_pt[0]][_pt[1]].is_passable():
+            if not level.map[_pt[0]][_pt[1]].is_passable():
                 return False
         return True
         
@@ -1999,13 +1999,14 @@ class DungeonMaster:
         _cursor.row = start_r
         _cursor.col = start_c
         
-        self.curr_lvl.dungeon_loc[start_r][start_c].temp_tile = _cursor
-        self.update_sqr(self.curr_lvl, start_r, start_c)
+        _level = self.active_levels[self.player.curr_level]
+        _level.dungeon_loc[start_r][start_c].temp_tile = _cursor
+        self.update_sqr(_level, start_r, start_c)
         
         while True:
             ch = self.dui.get_target()
             if ch == ' ': 
-                if self.__check_trajectory(start_r, start_c, _cursor.row, _cursor.col):
+                if self.__check_trajectory(start_r, start_c, _cursor.row, _cursor.col, _level):
                     break
                 else:
                     self.dui.display_message("You can't target that location.")
@@ -2018,13 +2019,13 @@ class DungeonMaster:
                 _next_r = _cursor.row + _dir[0]
                 _next_c = _cursor.col + _dir[1]
 
-            if self.curr_lvl.is_clear(_next_r, _next_c, True) and calc_distance(start_r, start_c, _next_r, _next_c) <= _range:
-                self.curr_lvl.dungeon_loc[_cursor.row][_cursor.col].temp_tile = ''
-                self.update_sqr(self.curr_lvl, _cursor.row, _cursor.col)
-                self.curr_lvl.dungeon_loc[_next_r][_next_c].temp_tile = _cursor
+            if _level.is_clear(_next_r, _next_c, True) and calc_distance(start_r, start_c, _next_r, _next_c) <= _range:
+                _level.dungeon_loc[_cursor.row][_cursor.col].temp_tile = ''
+                self.update_sqr(_level, _cursor.row, _cursor.col)
+                _level.dungeon_loc[_next_r][_next_c].temp_tile = _cursor
                 _cursor.row = _next_r
                 _cursor.col = _next_c
-                self.update_sqr(self.curr_lvl, _cursor.row, _cursor.col)
+                self.update_sqr(_level, _cursor.row, _cursor.col)
         
         self.dui.clear_msg_line()
         
@@ -2056,11 +2057,12 @@ class DungeonMaster:
         _lit_flare = Items.LitFlare(self.turn)
         _lit_flare.row = target[0]
         _lit_flare.col = target[1]
+        _level = self.active_levels[self.player.curr_level]
         self.alert_player(target[0], target[1], 'You light the ' + flare.get_name(1) + '.')
-        self.curr_lvl.dungeon_loc[target[0]][target[1]].temp_tile = ''
-        self.curr_lvl.eventQueue.push( ('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare), self.turn + _lit_flare.duration)
-        self.item_hits_ground(self.curr_lvl, target[0], target[1], _lit_flare)
-        self.curr_lvl.add_light_source(_lit_flare)
+        _level.dungeon_loc[target[0]][target[1]].temp_tile = ''
+        _level.eventQueue.push( ('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare), self.turn + _lit_flare.duration)
+        self.item_hits_ground(_level, target[0], target[1], _lit_flare)
+        _level.add_light_source(_lit_flare)
         self.refresh_player_view()
         self.player.energy -= STD_ENERGY_COST
         
