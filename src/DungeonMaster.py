@@ -1800,7 +1800,7 @@ class DungeonMaster:
         self.refresh_player_view()
         self.tell_player_about_sqr(next_r, next_c)
         self.check_ground_effects(self.player, next_r, next_c)
-        
+
         if self.is_special_tile(self.player.row, self.player.col):
             self.player_moves_onto_a_special_sqr(self.player.row, self.player.col)
             
@@ -2265,6 +2265,12 @@ class DungeonMaster:
                 tile = self.curr_lvl.map[self.player.row][self.player.col]
                 if hasattr(tile, 'activated'):
                     tile.activated = True
+            elif _words[0] == 'clear':
+                while len(self.curr_lvl.monsters) > 0:
+                    m = self.curr_lvl.monsters[0]
+                    self.curr_lvl.remove_monster(m, m.row, m.col)
+                self.dui.draw_screen()
+
         except UnknownDebugCommand:
             self.dui.clear_msg_line()
             self.dui.display_message('Unknown debug command.')

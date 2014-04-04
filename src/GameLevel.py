@@ -306,7 +306,7 @@ class GameLevel:
             m.dm = ''
 
         self.clear_occupants()
-        _exit_point = (self.dm.player.row,self.dm.player.col)
+        _exit_point = (self.dm.player.row, self.dm.player.col)
         _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, 
                 self.category,self.level_num,_exit_point,self.cameras,self.entrances,self.exits,
                 self.security_lockdown, self.subnet_nodes, self.cameras_active, self.security_active,
