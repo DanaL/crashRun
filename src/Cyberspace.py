@@ -308,7 +308,9 @@ class CyberspaceLevel(GameLevel):
         elif _monster == 10:
             _name = 'naive garbage collector'
 
-        return MonsterFactory.get_monster_by_name(self.dm, _name, 0, 0)
+        _m = MonsterFactory.get_monster_by_name(self.dm, _name, 0, 0)
+        _m.curr_level = self.level_num
+        return _m
         
     def __set_entry_spot(self):
         while True:

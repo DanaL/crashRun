@@ -576,8 +576,8 @@ class DungeonUI(object):
     def draw_screen(self):
         self.guts.redraw_screen()
         
-    def set_r_c(self, r, c):
-        self.guts.set_r_c(r, c)
+    def set_r_c(self, r, c, level):
+        self.guts.set_r_c(r, c, level)
 
     def show_vision(self, vision):
         self.guts.show_vision(vision)

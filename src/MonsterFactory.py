@@ -348,12 +348,8 @@ def _zombieScientist(dm, row, col):
     return _zs
     
 def get_monster_by_name(dm, name, row, col):
-    return _monster_dict[name](dm,row,col)
+    return _monster_dict[name](dm, row, col)
 
-def get_monster_by_level(dm, level, row, col):
-    _m = choice(_monsters_by_level[level])
-    return _m(dm,row,col)
-    
 _monster_dict = {}
 _monster_dict['beastman'] = _beastMan
 _monster_dict['belligerent process'] = _belligerentProcess

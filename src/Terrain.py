@@ -164,14 +164,14 @@ class Terminal(Equipment):
         
         self.access(dm, _dui)
  
-    def show_camera_feed(self, camera, dm, dui):
-        sc = Shadowcaster(dm, camera.camera_range, camera.row, camera.col)
+    def show_camera_feed(self, camera, dm, dui, level):
+        sc = Shadowcaster(dm, camera.camera_range, camera.row, camera.col, level)
         feed = sc.calc_visible_list()
         feed[(camera.row, camera.col)] = 0
 
         vision = []
         for f in feed:
-            dm.curr_lvl.dungeon_loc[f[0]][f[1]].visited = True
+            dm.active_levels[level].dungeon_loc[f[0]][f[1]].visited = True
             sqr = dm.get_sqr_info(f[0], f[1], True)
             vision.append(sqr)
 
@@ -180,7 +180,7 @@ class Terminal(Equipment):
         dui.show_vision(vision)
         dui.wait_for_input()
         
-    def use_security_cameras(self, dm, dui):
+    def use_security_cameras(self, dm, dui, level):
         lm = LevelManager(dm)
         if not lm.are_cameras_active():
             _msg = 'Camera access is currently disabled.'
@@ -189,7 +189,7 @@ class Terminal(Equipment):
             
         header = ['Accessing level security cameras']
         menu = []
-        for camera in dm.curr_lvl.cameras:
+        for camera in dm.active_levels[level].cameras:
             menu.append( (str(camera), 'Camera ' + str(camera), camera) )
         menu.append( ('q', 'Exit security camera subsystem', 'q') )
 
@@ -197,8 +197,8 @@ class Terminal(Equipment):
         while a != 'q':
             a = dui.ask_menued_question(header, menu)
             if a not in ('q', ''):
-                if dm.curr_lvl.cameras[a].functional:
-                    self.show_camera_feed(dm.curr_lvl.cameras[a], dm, dui)
+                if dm.active_levels[level].cameras[a].functional:
+                    self.show_camera_feed(dm.active_levels[level].cameras[a], dm, dui, level)
                 else:
                     _msg = 'Camera ' + str(a) + ' is not working.'
                     dui.display_message(_msg, 1)

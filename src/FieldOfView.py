@@ -79,13 +79,14 @@ def get_lit_list(radius):
 class Shadowcaster(object):
     __slope_tilt = 0.2 # used when we have to manually adjust a slope
 
-    def __init__(self,dm,max_radius,p_row,p_col):
+    def __init__(self, dm, max_radius, p_row, p_col, level_num):
         self.__p_row = p_row
         self.__p_col = p_col
         self.__dm = dm
         self.__max_radius = max_radius
         self.__max_radius_sqred = max_radius * max_radius
         self.__visible = {}
+        self.level_num = level_num
 
     # When light radius is 1, we can probably just calculate it manually.
     def calc_visible_list(self):
@@ -141,14 +142,14 @@ class Shadowcaster(object):
             end_c = self.__x_to_c(end_x)
             curr_row = self.__y_to_r(y)
             
-            pclear = self.__dm.is_open(curr_row,start_c)
+            pclear = self.__dm.is_open(curr_row, start_c, self.level_num)
             while start_c <= end_c:
                 #Are we within the circle?
                 if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c += 1
                     continue
                 
-                cclear = self.__dm.is_open(curr_row,start_c)
+                cclear = self.__dm.is_open(curr_row,start_c, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -193,7 +194,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_c += 1
 
-            if not self.__dm.is_open(curr_row,end_c):
+            if not self.__dm.is_open(curr_row, end_c, self.level_num):
                 break
 
             y += 1.0
@@ -206,14 +207,14 @@ class Shadowcaster(object):
             end_c = self.__x_to_c(end_x)
             curr_row = self.__y_to_r(y)
 
-            pclear = self.__dm.is_open(curr_row,start_c)    
+            pclear = self.__dm.is_open(curr_row, start_c, self.level_num)    
             while start_c >= end_c:
                 # Are we within the circle?
                 if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c -= 1
                     continue
 
-                cclear = self.__dm.is_open(curr_row,start_c)
+                cclear = self.__dm.is_open(curr_row, start_c, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -232,7 +233,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_c -= 1
 
-            if not self.__dm.is_open(curr_row,end_c):
+            if not self.__dm.is_open(curr_row, end_c, self.level_num):
                 break
 
             y += 1.0
@@ -245,14 +246,14 @@ class Shadowcaster(object):
             end_r = self.__y_to_r(end_y)
             curr_col = self.__x_to_c(x)
 
-            pclear = self.__dm.is_open(start_r,curr_col)
+            pclear = self.__dm.is_open(start_r, curr_col, self.level_num)
             while start_r <= end_r:
                 # Are we within the circle?
                 if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r += 1
                     continue
 
-                cclear = self.__dm.is_open(start_r,curr_col)
+                cclear = self.__dm.is_open(start_r, curr_col, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -269,7 +270,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_r += 1
         
-            if not self.__dm.is_open(end_r,curr_col):
+            if not self.__dm.is_open(end_r, curr_col, self.level_num):
                 break
 
             x += 1.0
@@ -282,7 +283,7 @@ class Shadowcaster(object):
             end_r = self.__y_to_r(end_y)
             curr_col = self.__x_to_c(x)
 
-            pclear = self.__dm.is_open(start_r,curr_col)
+            pclear = self.__dm.is_open(start_r, curr_col, self.level_num)
 
             while start_r >= end_r:
                 # Are we within the circle?
@@ -290,7 +291,7 @@ class Shadowcaster(object):
                     start_r -= 1
                     continue
 
-                cclear = self.__dm.is_open(start_r,curr_col)
+                cclear = self.__dm.is_open(start_r, curr_col, self.level_num)
                 
                 if cclear != pclear:
                     if pclear:
@@ -308,7 +309,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_r -= 1
         
-            if not self.__dm.is_open(end_r,curr_col):
+            if not self.__dm.is_open(end_r, curr_col, self.level_num):
                 break
 
             x += 1.0
@@ -321,14 +322,14 @@ class Shadowcaster(object):
             end_c = self.__x_to_c(end_x)
             curr_row = self.__y_to_r(y)
             
-            pclear = self.__dm.is_open(curr_row,start_c)
+            pclear = self.__dm.is_open(curr_row, start_c, self.level_num)
             while start_c  >= end_c:
                 # Are we within the circle?
                 if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c -= 1
                     continue
 
-                cclear = self.__dm.is_open(curr_row,start_c)
+                cclear = self.__dm.is_open(curr_row, start_c, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -346,7 +347,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_c -= 1
 
-            if not self.__dm.is_open(curr_row,end_c):
+            if not self.__dm.is_open(curr_row, end_c, self.level_num):
                 break
 
             y -= 1.0
@@ -359,14 +360,14 @@ class Shadowcaster(object):
             end_c = self.__x_to_c(end_x)
             curr_row = self.__y_to_r(y)
         
-            pclear = self.__dm.is_open(curr_row,start_c)
+            pclear = self.__dm.is_open(curr_row, start_c, self.level_num)
             while start_c  <= end_c:
                 # Are we within the circle?
                 if y**2 + self.__c_to_x(start_c)**2 > self.__max_radius_sqred + 0.5:
                     start_c += 1
                     continue
 
-                cclear = self.__dm.is_open(curr_row,start_c)
+                cclear = self.__dm.is_open(curr_row, start_c, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -384,7 +385,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_c += 1
 
-            if not self.__dm.is_open(curr_row,end_c):
+            if not self.__dm.is_open(curr_row, end_c, self.level_num):
                 break
 
             y -= 1.0
@@ -397,14 +398,14 @@ class Shadowcaster(object):
             end_r = self.__y_to_r(end_y)
             curr_col = self.__x_to_c(x)
 
-            pclear = self.__dm.is_open(start_r,curr_col)
+            pclear = self.__dm.is_open(start_r, curr_col, self.level_num)
             while start_r >= end_r:
                 # Are we within the circle?
                 if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r -= 1
                     continue
 
-                cclear = self.__dm.is_open(start_r,curr_col)
+                cclear = self.__dm.is_open(start_r, curr_col, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -423,7 +424,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_r -= 1
         
-            if not self.__dm.is_open(end_r,curr_col):
+            if not self.__dm.is_open(end_r, curr_col, self.level_num):
                 break
 
             x -= 1.0
@@ -436,14 +437,14 @@ class Shadowcaster(object):
             end_r = self.__y_to_r(end_y)
             curr_col = self.__x_to_c(x)
 
-            pclear = self.__dm.is_open(start_r,curr_col)
+            pclear = self.__dm.is_open(start_r, curr_col, self.level_num)
             while start_r <= end_r:
                 # Are we within the circle?
                 if self.__r_to_y(start_r)**2 + x**2 > self.__max_radius_sqred + 0.5:
                     start_r += 1
                     continue
 
-                cclear = self.__dm.is_open(start_r,curr_col)
+                cclear = self.__dm.is_open(start_r, curr_col, self.level_num)
 
                 if cclear != pclear:
                     if pclear:
@@ -462,7 +463,7 @@ class Shadowcaster(object):
                 pclear = cclear
                 start_r += 1
         
-            if not self.__dm.is_open(end_r,curr_col):
+            if not self.__dm.is_open(end_r, curr_col, self.level_num):
                 break
 
             x -= 1.0

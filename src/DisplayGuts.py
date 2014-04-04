@@ -75,28 +75,28 @@ class DisplayGuts(object):
         # the player could move out of the visible area.  So, if the number of rows or
         # cols for the dungeon level <= the available display area, don't event check
         # for a redraw, otherwise re-draw if the player is within three of the edge.
-        if self.display_rows <= self.cc.get_lvl_length():
+        if self.display_rows <= self.cc.get_lvl_length(_pl[2]):
             if r < 3 and self.map_r > -1:
                 self.map_r = _pl[0] - self.display_rows + 5
                 if self.map_r < 1:
                     self.map_r = -1
                 redraw = True
-            elif self.map_r <= self.cc.get_lvl_length() - self.display_rows and r >= self.display_rows - 5:
+            elif self.map_r <= self.cc.get_lvl_length(_pl[2]) - self.display_rows and r >= self.display_rows - 5:
                 self.map_r = _pl[0] - 5
-                if self.map_r + self.display_rows > self.cc.get_lvl_length():
-                    self.map_r = self.cc.get_lvl_length() - self.display_rows + 1
+                if self.map_r + self.display_rows > self.cc.get_lvl_length(_pl[2]):
+                    self.map_r = self.cc.get_lvl_length(_pl[2]) - self.display_rows + 1
                 redraw = True
 
-        if self.display_cols <= self.cc.get_lvl_width():
+        if self.display_cols <= self.cc.get_lvl_width(_pl[2]):
             if self.map_c > 0 and c < 3:
                 self.map_c = _pl[1] - self.display_cols + 5
                 if self.map_c < 1:
                     self.map_c = 0
                 redraw = True
-            elif self.map_c <= self.cc.get_lvl_width() - self.display_cols and c >= self.display_cols - 5:
+            elif self.map_c <= self.cc.get_lvl_width(_pl[2]) - self.display_cols and c >= self.display_cols - 5:
                 self.map_c = _pl[1] - 5
-                if self.map_c + self.display_cols > self.cc.get_lvl_width():
-                    self.map_c = self.cc.get_lvl_width() - self.display_cols
+                if self.map_c + self.display_cols > self.cc.get_lvl_width(_pl[2]):
+                    self.map_c = self.cc.get_lvl_width(_pl[2]) - self.display_cols
                 redraw = True
 
         if redraw: self.redraw_screen()
@@ -142,13 +142,13 @@ class DisplayGuts(object):
             SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
             
-    def set_r_c(self, r, c):
-        if self.cc.get_lvl_width() < self.display_cols:
+    def set_r_c(self, r, c, level):
+        if self.cc.get_lvl_width(level) < self.display_cols:
             self.map_c = 0
         else:
             self.map_c = c - self.display_cols // 2
 
-        if self.cc.get_lvl_length() < self.display_rows:
+        if self.cc.get_lvl_length(level) < self.display_rows:
             self.map_r = -1
         else:
             self.map_r = r - self.display_rows // 2 + 1

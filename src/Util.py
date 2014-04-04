@@ -40,8 +40,13 @@ class Alert:
         if refresh:
             dm.refresh_player_view()
 
+    # This will eventually be deleted
     def show_alert(self, dm, refresh):
         self.display_message(self.message, dm, refresh)
+
+    def show_alert(self, dm, refresh, level):
+        if self.dm.curr_level == level:
+            self.display_message(self.message, dm, refresh)
 
 class VisualAlert(Alert):
     def show_alert(self, dm, refresh):

@@ -77,11 +77,11 @@ class CommandContext(object):
     def display_software(self, as_menu=False):
         self.dui.write_screen(self.get_software_list(as_menu), True)
                         
-    def get_lvl_length(self):
-        return self.dm.curr_lvl.lvl_length
+    def get_lvl_length(self, level):
+        return self.dm.active_levels[level].lvl_length
 
-    def get_lvl_width(self):
-        return self.dm.curr_lvl.lvl_width
+    def get_lvl_width(self, level):
+        return self.dm.active_levels[level].lvl_width
 
     def get_player_loc(self):
         return self.dm.get_player_loc()
@@ -109,8 +109,8 @@ class CommandContext(object):
         
     def get_status_bar_info(self):
         _p = self.dm.player
-        _lvl = self.dm.curr_lvl
-        return StatusBarInfo(_p.get_name(),_p.curr_hp,_p.max_hp,_p.get_curr_ac(),_lvl.level_num,_lvl.category)
+        _lvl = self.dm.active_levels[_p.curr_level]
+        return StatusBarInfo(_p.get_name(), _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
 
     def get_tile_info(self, row, col):
         return self.dm.get_tile_info(row, col)

@@ -226,7 +226,7 @@ class GameLevel:
         return len(_loc.item_stack)
         
     def add_light_source(self, light_source):
-        _sc = Shadowcaster(self.dm, light_source.radius, light_source.row, light_source.col)
+        _sc = Shadowcaster(self.dm, light_source.radius, light_source.row, light_source.col, self.level_num)
         light_source.illuminates = _sc.calc_visible_list()
         light_source.illuminates[(light_source.row, light_source.col)] = 0
         self.light_sources.append(light_source)
@@ -445,6 +445,7 @@ class GameLevel:
     def add_monster_to_dungeon(self, monster, r, c):
         monster.row = r
         monster.col = c
+        monster.curr_level = self.level_num
         self.dungeon_loc[r][c].occupant = monster
         self.monsters.append(monster)
 

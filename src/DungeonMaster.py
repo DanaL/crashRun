@@ -291,7 +291,7 @@ class DungeonMaster:
             
         self.curr_lvl = next_lvl         
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-        self.dui.set_r_c(self.player.row,self.player.col)
+        self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
         self.dui.draw_screen()
         self.refresh_player_view()
         self.dui.update_status_bar()
@@ -342,7 +342,7 @@ class DungeonMaster:
                 self.__monster_displaces_player(self.curr_lvl.player_loc, monster)
 
             self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-            self.dui.set_r_c(self.player.row,self.player.col)
+            self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.refresh_player_view()
             self.dui.update_status_bar()
             self.dui.draw_screen()
@@ -442,6 +442,7 @@ class DungeonMaster:
             
     def start_game(self, dui):
         self.prefs = get_preferences()
+        self.active_levels = {}
 
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
@@ -459,18 +460,23 @@ class DungeonMaster:
         except NoSaveFileFound:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             self.begin_new_game(game)
-            self.dui.set_r_c(self.player.row, self.player.col)
+            self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
             BasicBot.bot_number = 0
 
-        self.__start_play()
+        self.start_play()
         
     def begin_new_game(self,player_name):
         cg = CharacterGenerator(self.dui,self)
         self.player = cg.new_character(player_name)
-        self.create_game()
+        self.active_levels[0] = Prologue(self)
+        self.active_levels[0].generate_level()
+        player_start = self.active_levels[0].entrances[0][0]
+        self.player.row = player_start[0]
+        self.player.col = player_start[1]   
+        self.active_levels[0].dungeon_loc[self.player.row][self.player.col].occupant = self.player
 
     def __item_destroyed(self, item, owner):
         if owner == self.player:
@@ -551,15 +557,7 @@ class DungeonMaster:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             
         self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-    
-    def create_game(self):
-        self.curr_lvl = Prologue(self)
-        self.curr_lvl.generate_level()
-        player_start = self.curr_lvl.entrances[0][0]
-        self.player.row = player_start[0]
-        self.player.col = player_start[1]   
-        self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-                
+                    
     def save_and_exit(self):
         if self.dui.query_yes_no('Are you sure you wish to save') == 'y':        
             self.dui.display_message('Saving...')
@@ -584,9 +582,10 @@ class DungeonMaster:
         
     # Does the location block light or not.  (Note that a square might
     # be open, but not necessarily passable)
-    def is_open(self,r,c):
-        if self.in_bounds(r,c):
-            return not self.curr_lvl.map[r][c].is_opaque()
+    def is_open(self, r, c, l_num):
+        _level = self.active_levels[l_num]        
+        if _level.in_bounds(r,c):
+            return not _level.map[r][c].is_opaque()
 
         return False
 
@@ -594,12 +593,8 @@ class DungeonMaster:
     def is_trap(self,r,c):
         return self.curr_lvl.map[r][c].get_type() == T.TRAP and self.curr_lvl.map[r][c].revealed
 
-    # is a location a valid square in the current map
-    def in_bounds(self,r,c):
-        return self.curr_lvl.in_bounds(r,c)
-
     def monster_fires_missile(self, monster, target_r, target_c, dmg_dice, dmg_rolls, radius):
-        if not self.is_occupant_visible_to_player(self.curr_lvl, monster):
+        if not self.is_occupant_visible_to_player(monster):
             _monster_name = "It"
         else:
             _monster_name = monster.get_name()
@@ -1588,11 +1583,11 @@ class DungeonMaster:
         except CannotDropReadiedArmour:
             self.dui.display_message('Perhaps you should try taking it off first?')
             
-    def is_occupant_visible_to_player(self, level, occupant, omniscient=False):
+    def is_occupant_visible_to_player(self, occupant, omniscient=False):
         if occupant == '':
             return False
     
-        if level != self.curr_lvl:
+        if occupant.curr_level != self.player.curr_level:
             return False
 
         if not omniscient and self.__not_in_sight_matrix((occupant.row,occupant.col)):
@@ -1607,24 +1602,26 @@ class DungeonMaster:
         return True
     
     def get_terrain_tile(self, loc, r, c, visible, omniscient):
+        _level = self.active_levels[self.player.curr_level]
         if visible and loc.temp_tile != '':
             return loc.temp_tile
-        elif visible and self.is_occupant_visible_to_player(self.curr_lvl, loc.occupant, omniscient):
+        elif visible and self.is_occupant_visible_to_player(loc.occupant, omniscient):
             return loc.occupant
-        elif not self.curr_lvl.map[r][c].is_recepticle() and self.curr_lvl.size_of_item_stack(r,c) > 0:
+        elif not _level.map[r][c].is_recepticle() and _level.size_of_item_stack(r,c) > 0:
             i = loc.item_stack[-1]  
             return loc.item_stack[-1]   
         else:
-            return self.curr_lvl.map[r][c]
+            return _level.map[r][c]
             
-    def get_tile_info(self,row, col):
-        if not self.in_bounds(row, col):
+    def get_tile_info(self,row, col, l_num):
+        _level = self.active_levels[l_num]
+        if not _level.in_bounds(row, col):
             return DungeonSqrInfo(row,col,False,False,False,None)
         
-        _sqr = self.curr_lvl.map[row][col]
-        _loc = self.curr_lvl.dungeon_loc[row][col]
+        _sqr = _level.map[row][col]
+        _loc = _level.dungeon_loc[row][col]
         if _loc.visited:
-            _visible = self.curr_lvl.dungeon_loc[row][col].visible
+            _visible = _level.dungeon_loc[row][col].visible
             _terrain = self.get_terrain_tile(_loc, row, col, _visible, True)
             _si = DungeonSqrInfo(row, col, _visible, True, _loc.lit, _terrain)
             if row == self.player.row and col == self.player.col:
@@ -1646,14 +1643,15 @@ class DungeonMaster:
     # omniscient means if the player can see the square from outside his normal vision set.
     # Ie., when getting sqr info for a square through a camera feed or some such.  In those
     # cases, if omniscient isn't true, the monsters won't be visible.
-    def get_sqr_info(self,r,c,omniscient=False):
-        if not self.in_bounds(r,c):
+    def get_sqr_info(self, r, c, l_num, omniscient=False):
+        _level = self.active_levels[l_num]
+        if not _level.in_bounds(r,c):
             return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
             
-        visible = omniscient or self.curr_lvl.dungeon_loc[r][c].visible
-        remembered = visible or self.curr_lvl.dungeon_loc[r][c].visited
+        visible = omniscient or _level.dungeon_loc[r][c].visible
+        remembered = visible or _level.dungeon_loc[r][c].visited
 
-        _loc = self.curr_lvl.dungeon_loc[r][c]
+        _loc = _level.dungeon_loc[r][c]
         terrain = self.get_terrain_tile(_loc, r, c, visible, omniscient)
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
@@ -1717,15 +1715,16 @@ class DungeonMaster:
         _pc = self.player.col
         _sqrs_to_draw = [] 
         self.sight_matrix = {}
-        
-        if isinstance(self.curr_lvl, CyberspaceLevel):
+        _level = self.active_levels[self.player.curr_level]
+
+        if isinstance(_level, CyberspaceLevel):
             _perception_roll = randrange(self.player.stats.get_intuition() + 5) 
             _perception_roll += self.player.get_search_bonus(True)
         else:
             _perception_roll = 0
         
         _vr = 0 if self.player.has_condition("blind") else self.player.vision_radius
-        sc = Shadowcaster(self, _vr, _pr, _pc)
+        sc = Shadowcaster(self, _vr, _pr, _pc, self.player.curr_level)
         _visible = sc.calc_visible_list()
         
         _sqrs = [(_pr,_pc)]
@@ -1733,20 +1732,20 @@ class DungeonMaster:
             _s = (_pr + _sqr[0], _pc + _sqr[1])
             if _s in _visible: _sqrs.append(_s)
         
-        for _ls in self.curr_lvl.light_sources:
+        for _ls in _level.light_sources:
             for _sqr in _ls.illuminates:
                 if _sqr in _visible: _sqrs.append(_sqr)
         
         for _s in _sqrs:
             self.sight_matrix[_s] = 0
-            self.curr_lvl.dungeon_loc[_s[0]][_s[1]].visible = True
-            self.curr_lvl.dungeon_loc[_s[0]][_s[1]].visited = True
-            self.curr_lvl.dungeon_loc[_s[0]][_s[1]].lit = True
+            _level.dungeon_loc[_s[0]][_s[1]].visible = True
+            _level.dungeon_loc[_s[0]][_s[1]].visited = True
+            _level.dungeon_loc[_s[0]][_s[1]].lit = True
             
-            _loc = self.get_sqr_info(_s[0],_s[1])
+            _loc = self.get_sqr_info(_s[0],_s[1], self.player.curr_level)
             if _perception_roll > 14:
                 self.passive_search(_loc)
-                _loc = self.get_sqr_info(_s[0],_s[1])
+                _loc = self.get_sqr_info(_s[0],_s[1], self.player.curr_level)
                 
             _sqrs_to_draw.append(_loc)
 
@@ -1756,7 +1755,7 @@ class DungeonMaster:
             _sqrs_to_draw.append(self.get_sqr_info(s[0],s[1]))
 
         self.dui.update_block(_sqrs_to_draw)
-        self.dui.update_view(self.get_sqr_info(self.player.row, self.player.col))
+        self.dui.update_view(self.get_sqr_info(self.player.row, self.player.col, self.player.curr_level))
         
     # Called when a square moves out of sight range
     def __loc_out_of_sight(self,loc):
@@ -1928,7 +1927,7 @@ class DungeonMaster:
         # should fill a volume, of course, maybe I'll change that in some future version
         # This will also have a flaw if I ever add a 'see-through' wall (like a force-field)
         # Also, perhaps dmg should go down further from blast radius??
-        sc = Shadowcaster(self, explosive.blast_radius, row, col)
+        sc = Shadowcaster(self, explosive.blast_radius, row, col, level)
         areaOfEffect = sc.calc_visible_list()
         areaOfEffect[(row, col)] = 0
 
@@ -2100,11 +2099,11 @@ class DungeonMaster:
         alert.show_alert(self, False)
         
     def get_player_loc(self):
-        return (self.player.row, self.player.col)
+        return (self.player.row, self.player.col, self.player.curr_level)
 
     def refresh_player(self):
         self.refresh_player_view()
-        sqr = self.get_sqr_info(self.player.row, self.player.col)
+        sqr = self.get_sqr_info(self.player.row, self.player.col, self.player.curr_level)
         self.dui.update_view(sqr)
 
     def search(self):
@@ -2123,7 +2122,7 @@ class DungeonMaster:
                     self.update_sqr(self.curr_lvl,_sr,_sc)
         self.player.energy -= STD_ENERGY_COST
         
-    def __start_play(self):
+    def start_play(self):
         self.refresh_player()
         self.dui.update_status_bar()
         if self.turn == 0:
@@ -2132,7 +2131,7 @@ class DungeonMaster:
 
         try:
             while True:
-                self.__do_turn()
+                self.do_turn()
         except GameOver:
             return
             
@@ -2152,15 +2151,24 @@ class DungeonMaster:
             agent.remove_effects(_item)
  
      # loop over all actors until everyone's energy is below threshold
-    def __do_turn(self):
-        if self.curr_lvl.security_lockdown and self.turn % 10 == 0:
+    def do_turn(self):
+        _sound_alarm = False
+        for _level in self.active_levels.keys():
+            if self.active_levels[_level].security_lockdown and self.turn % 10 == 0:
+                _sound_alarm = True
+
+        if _sound_alarm:
             self.dui.display_message('An alarm is sounding.')
                 
         # perform player action
-        self.__do_player_action()
+        self.do_player_action()
         
         #loop over monsters
-        for _m in self.curr_lvl.monsters:
+        _monsters = []
+        for _level in self.active_levels.keys(): 
+            _monsters += self.active_levels[_level]
+
+        for _m in _monsters:
             self.active_agent = _m
 
             try:
@@ -2172,9 +2180,11 @@ class DungeonMaster:
             except TurnInterrupted:
                 pass
             self.active_agent = ''
-            
-        self.curr_lvl.resolve_events()          
-        self.curr_lvl.end_of_turn()
+        
+        for _level in self.active_levels.keys():
+            _curr_lvl = self.active_levels[_level]
+            _curr_lvl.resolve_events()          
+            _curr_lvl.end_of_turn()
     
         # restore energy to players and monsters
         # this will change to be a method that also calcs speed modifiers
@@ -2182,7 +2192,7 @@ class DungeonMaster:
         for _m in self.curr_lvl.monsters:
             _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
                        
-    def __do_player_action(self):
+    def do_player_action(self):
         self.active_agent = self.player
         
         try:

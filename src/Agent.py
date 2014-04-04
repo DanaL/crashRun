@@ -212,6 +212,7 @@ class BaseAgent(BaseTile):
         self.energy = self.ENERGY_THRESHOLD
         self.base_energy = self.ENERGY_THRESHOLD
         self.dead = False
+        self.curr_level = 0
         
     def add_hp(self,delta):
         self.curr_hp += delta
@@ -599,7 +600,7 @@ class BaseMonster(BaseAgent, AStarMover):
         d = self.distance_from_player(player_loc)
 
         if d <= self.vision_radius:
-            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col)
+            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col, self.curr_level)
             mv = sc.calc_visible_list()
             return player_loc in mv
         return False
@@ -1261,7 +1262,7 @@ class CleanerBot(BasicBot):
         d = self.distance_from_player(player_loc)
 
         if d < r:
-            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col)
+            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col, self.curr_level)
             mv = sc.calc_visible_list()
             if player_loc in mv:
                 action()
