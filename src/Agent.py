@@ -86,7 +86,7 @@ class AgentMemory:
             self.remember('damaged by player')            
         
 class AStarPathFactory: 
-    def __init__(self,dm,start,goal):
+    def __init__(self, dm, start, goal, level_num):
         self.__start = start
         self.__goal = goal
         self.start_r = start[0]
@@ -94,7 +94,8 @@ class AStarPathFactory:
         self.goal_r = goal[0]
         self.goal_c = goal[1]
         self.dm = dm
-    
+        self.level_num = level_num
+
     def pop_from_open(self):
         _cost = self.__open[0][1]
         _t = 0
@@ -106,7 +107,8 @@ class AStarPathFactory:
         return self.__open.pop(_t)[0]
     
     def not_passable(self, row, col):
-        if not self.dm.is_clear(row, col) or self.dm.curr_lvl.map[row][col].is_toxic():
+        _level = self.dm.active_levels[self.level_num]
+        if not _level.is_clear(row, col) or _level.map[row][col].is_toxic():
             return True
         
         return False
@@ -501,7 +503,7 @@ class AStarMover:
     def move_to(self, goal):
         if len(self.moves) == 0 and self.distance(goal) <= 10:
             _start = (self.row,self.col)
-            _as = AStarPathFactory(self.dm, _start, goal)
+            _as = AStarPathFactory(self.dm, _start, goal, self.curr_level)
             self.moves = _as.find_path()[:4]
 
         if len(self.moves) > 0:
@@ -516,7 +518,7 @@ class AStarMover:
     def move_to_unbound(self, goal):
         if not self.moves:
             _start = (self.row, self.col)
-            _as = AStarPathFactory(self.dm, _start, goal)
+            _as = AStarPathFactory(self.dm, _start, goal, self.curr_level)
             self.moves = _as.find_path()
             if not self.moves:
                 return False
@@ -585,7 +587,7 @@ class BaseMonster(BaseAgent, AStarMover):
         return _name
     
     def is_player_adjacent_to_loc(self, row, col):
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[self.curr_level]
         for r in (-1,0,1):
             for c in (-1,0,1):
                 if _lvl.get_occupant(row + r, col + c) == self.dm.player:
