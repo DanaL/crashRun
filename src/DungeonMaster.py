@@ -1118,9 +1118,10 @@ class DungeonMaster:
     # I could perhaps merge a bunch of the code between this & throwing weapons?
     # the loop is essentially the same.  Would pass in the appropriate combat resolver
     def fire_weapon(self, shooter, start_r, start_c, direction, gun):
+        _level = self.active_levels[shooter.curr_level]
         _noise = Noise(8, shooter, start_r, start_c, 'gunfire')
-        self.curr_lvl.monsters_react_to_noise(8, _noise)
-        
+        _level.monsters_react_to_noise(8, _noise)
+                
         if direction == '<':
             self.fire_weapon_at_ceiling(shooter, gun)
             return
@@ -1150,36 +1151,36 @@ class DungeonMaster:
             bullet_row += dt[0]
             bullet_col += dt[1]
 
-            self.curr_lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
+            _level.dungeon_loc[prev_r][prev_c].temp_tile = ''
 
-            if self.is_open(bullet_row,bullet_col) and self.curr_lvl.dungeon_loc[bullet_row][bullet_col].occupant == '':
-                self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
+            if self.is_open(bullet_row, bullet_col, shooter.curr_level) and _level.dungeon_loc[bullet_row][bullet_col].occupant == '':
+                _level.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
             else:
                 # If the square isn't open, item must have hit a monster or a solid
                 # terrain feature.
-                if self.curr_lvl.dungeon_loc[bullet_row][bullet_col].occupant != '':
-                    target = self.curr_lvl.dungeon_loc[bullet_row][bullet_col].occupant
-                    self.update_sqr(self.curr_lvl, prev_r,prev_c)
+                if _level.dungeon_loc[bullet_row][bullet_col].occupant != '':
+                    target = _level.dungeon_loc[bullet_row][bullet_col].occupant
+                    self.update_sqr(_level, prev_r,prev_c)
                     if _sr.attack(shooter, target, gun):
                         break
                     else:
-                        self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
-                elif isinstance(self.curr_lvl.map[bullet_row][bullet_col], T.Door):
-                    door = self.curr_lvl.map[bullet_row][bullet_col]
-                    door.handle_damage(self, self.curr_lvl, bullet_row, bullet_col, gun.shooting_dmg_roll())
+                        _level.dungeon_loc[bullet_row][bullet_col].temp_tile = bullet
+                elif isinstance(_level.map[bullet_row][bullet_col], T.Door):
+                    door = _level.map[bullet_row][bullet_col]
+                    door.handle_damage(self, _level, bullet_row, bullet_col, gun.shooting_dmg_roll())
                     break
                 else:
-                    self.update_sqr(self.curr_lvl, bullet_row,bullet_col)
-                    self.update_sqr(self.curr_lvl, prev_r,prev_c)
+                    self.update_sqr(_level, bullet_row,bullet_col)
+                    self.update_sqr(_level, prev_r,prev_c)
                     break
 
-            self.update_sqr(self.curr_lvl, bullet_row, bullet_col)
-            self.update_sqr(self.curr_lvl, prev_r,prev_c)
+            self.update_sqr(_level, bullet_row, bullet_col)
+            self.update_sqr(_level, prev_r,prev_c)
             
             if (bullet_row,bullet_col) in self.sight_matrix:
                 sleep(ANIMATION_PAUSE) 
 
-        self.curr_lvl.dungeon_loc[bullet_row][bullet_col].temp_tile =  '' 
+        _level.dungeon_loc[bullet_row][bullet_col].temp_tile =  '' 
         
     def throw_item_down(self, item):
         _p = self.player
