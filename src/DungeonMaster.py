@@ -455,7 +455,7 @@ class DungeonMaster:
 
         try:
             self.__load_saved_game(game)
-            self.dui.set_r_c(self.player.row, self.player.col)
+            self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.dui.draw_screen()
         except NoSaveFileFound:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
@@ -546,24 +546,27 @@ class DungeonMaster:
         self.player = stuff[2]
         BasicBot.bot_number = stuff[4]
 
-        self.curr_lvl = GetGameFactoryObject(self,stuff[3][6], len(stuff[3][0]), len(stuff[3][0][0]), stuff[3][5])
-        get_level_from_save_obj(self.curr_lvl, stuff[3])
+        for _lvl in stuff[3]:
+            _level_num = _lvl[6]
+            self.active_levels[_level_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
+            get_level_from_save_obj(self.active_levels[_level_num], _lvl)
         
         self.player.dm = self
         
-        if self.curr_lvl.is_cyberspace():
+        if self.active_levels[self.player.curr_level].is_cyberspace():
             self.dui.set_command_context(CyberspaceCC(self, self.dui))
         else:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             
-        self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
+        self.active_levels[self.player.curr_level].dungeon_loc[self.player.row][self.player.col].occupant = self.player
                     
     def save_and_exit(self):
         if self.dui.query_yes_no('Are you sure you wish to save') == 'y':        
             self.dui.display_message('Saving...')
             self.player.dm = ''
         
-            _save_obj = (self.turn, self.virtual_turn, self.player, self.curr_lvl.generate_save_object(), BasicBot.bot_number)
+            _lvls = [_lvl.generate_save_object() for _lvl in self.active_levels.values()]
+            _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number)
             save_game(self.player.get_name(), _save_obj)
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 

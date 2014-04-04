@@ -77,11 +77,11 @@ class CommandContext(object):
     def display_software(self, as_menu=False):
         self.dui.write_screen(self.get_software_list(as_menu), True)
                         
-    def get_lvl_length(self, level):
-        return self.dm.active_levels[level].lvl_length
+    def get_lvl_length(self, level_num):
+        return self.dm.active_levels[level_num].lvl_length
 
-    def get_lvl_width(self, level):
-        return self.dm.active_levels[level].lvl_width
+    def get_lvl_width(self, level_num):
+        return self.dm.active_levels[level_num].lvl_width
 
     def get_player_loc(self):
         return self.dm.get_player_loc()

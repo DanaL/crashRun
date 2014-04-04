@@ -34,8 +34,9 @@ class MessageResolver(object):
         
     def monster_killed(self, monster, by_player):
         _name = self.resolve_name(monster)
+        _level = self.dm.active_levels[monster.cur_level]
         if by_player:
-            if self.dm.curr_lvl.is_cyberspace():
+            if _level.is_cyberspace():
                 options = ['delete', 'expunge']
             else:
                 options = ['waste', 'dust', 'kill']
@@ -47,7 +48,7 @@ class MessageResolver(object):
         else:
             _mess = _name + ' is killed.'
         
-        alert = VisualAlert(monster.row, monster.col, _mess, '', self.dm.curr_lvl)
+        alert = VisualAlert(monster.row, monster.col, _mess, '', _level)
         alert.show_alert(self.dm, False)
         
     def parse(self, agent, verb):
@@ -60,6 +61,7 @@ class MessageResolver(object):
             return _verbs[verb][agent == self.dm.player]
             
     def pick_up_message(self, agent, item):
+        _level = self.dm.active_levels[agent.curr_level]
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'pick')
         _item = item.get_full_name()
         _art = get_correct_article(_item)
@@ -68,23 +70,25 @@ class MessageResolver(object):
             _msg += _art + ' '
         _msg += _item + '.'
         
-        alert = VisualAlert(agent.row, agent.col, _msg, '', self.dm.curr_lvl)
+        alert = VisualAlert(agent.row, agent.col, _msg, '', _level)
         alert.show_alert(self.dm, False)
             
     def resolve_name(self, agent):
+        _level = self.dm.active_levels[agent.curr_level]
         if agent == self.dm.player:
             return 'you'
-        elif self.dm.is_occupant_visible_to_player(self.dm.curr_lvl, agent):
+        elif self.dm.is_occupant_visible_to_player(agent):
             return agent.get_name()
         else:
             return 'it'
     
     def put_on_item(self, agent, item):
+        _level = self.dm.active_levels[agent.curr_level]
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'put')
         _item = item.get_full_name()
         _msg += ' on the ' + item.get_full_name() + '.'
 
-        alert = VisualAlert(agent.row, agent.col, _msg, '', self.dm.curr_lvl)
+        alert = VisualAlert(agent.row, agent.col, _msg, '', _level)
         alert.show_alert(self.dm, False)
 
     def simple_verb_action(self, subject, text, verbs, pause_for_more=False):

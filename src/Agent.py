@@ -548,8 +548,9 @@ class BaseMonster(BaseAgent, AStarMover):
         self.max_hp = self.curr_hp
         self.attitude = 'inactive'
     
-    def attack(self,loc):
-        self.dm.curr_lvl.melee.attack(self, self.dm.curr_lvl.get_occupant(loc[0], loc[1]))
+    def attack(self, loc):
+        _level = self.dm.active_levels[self.curr_level]
+        _level.melee.attack(self, _level.get_occupant(loc[0], loc[1]))
         
     def damaged(self, dm, level, damage, attacker, attack_type='melee'):
         self.attitude = 'hostile'
