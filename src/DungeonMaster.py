@@ -2178,7 +2178,8 @@ class DungeonMaster:
         try:
             _if = ItemFactory()
             _item = _if.gen_item(_request,1)
-            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _item)
+            _lvl = self.active_levels[self.player.curr_level]
+            self.item_hits_ground(_lvl, self.player.row, self.player.col, _item)
         except ItemDoesNotExist:
             self.dui.clear_msg_line()
             self.dui.display_message('Unknown item.')
