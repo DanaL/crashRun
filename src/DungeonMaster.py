@@ -945,7 +945,7 @@ class DungeonMaster:
                     level.douse_squares(i)
             elif isinstance(i, Items.LitFlare):
                 _msg = agent.get_name() + ' picks up the lit flare, which goes out.'
-                va = VisualAlert(agent.row, agent.col, _msg, '', self.curr_lvl)
+                va = VisualAlert(agent.row, agent.col, _msg, '', level)
                 va.show_alert(self, False)
                 level.douse_squares(i)
                 return
@@ -957,7 +957,7 @@ class DungeonMaster:
                 _msg = 'There is no more room in your backpack for the '
                 _msg += i.get_name() + '.'
                 self.dui.display_message(_msg)
-            self.item_hits_ground(self.curr_lvl, agent.row, agent.col, i)
+            self.item_hits_ground(level, agent.row, agent.col, i)
             raise PickUpAborted
 
     def __build_pick_up_menu(self,stack):
@@ -1000,26 +1000,27 @@ class DungeonMaster:
     # might occur to items being picked up.  (Perhaps the item classes could have a method 'on_handled()' that contains
     # that sort of code)
     def player_pick_up(self):
-        _len = self.curr_lvl.size_of_item_stack(self.player.row, self.player.col)
+        _level = self.active_levels[self.player.curr_level]
+        _len = _level.size_of_item_stack(self.player.row, self.player.col)
         if _len == 0:
             self.dui.display_message('There is nothing to pick up.')
             return
         elif _len == 1:
-            item = self.curr_lvl.dungeon_loc[self.player.row][self.player.col].item_stack.pop()
+            item = _level.dungeon_loc[self.player.row][self.player.col].item_stack.pop()
 
             if item.get_category() == 'Tool' and item.get_name(1) == 'lit flare':
                 self.dui.display_message('Youch!  You burn your hand on the lit flare!')
-                self.item_hits_ground(self.curr_lvl, self.player.row,self.player.col,item)
-                self.player.damaged(self, self.curr_lvl, randrange(1,5), '', ['burn'])
+                self.item_hits_ground(_level, self.player.row, self.player.col,item)
+                self.player.damaged(self, randrange(1,5), '', ['burn'])
                 self.player.energy -= STD_ENERGY_COST
                 return
                 
             try:
-                self.pick_up_item(self.player, self.curr_lvl, item)
+                self.pick_up_item(self.player, _level, item)
             except PickUpAborted:
                 return
         else:
-            stack = self.curr_lvl.dungeon_loc[self.player.row][self.player.col].item_stack
+            stack = _level.dungeon_loc[self.player.row][self.player.col].item_stack
             menu = self.__build_pick_up_menu(stack)
             picks = self.dui.ask_repeated_menued_question(['Pick up what?'],menu)
 
@@ -1032,7 +1033,7 @@ class DungeonMaster:
             
                 try:
                     stack.pop(p)
-                    self.pick_up_item(self.player,self.curr_lvl,item)
+                    self.pick_up_item(self.player, _level, item)
                 except PickUpAborted:
                     break
         
