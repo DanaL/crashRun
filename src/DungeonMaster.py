@@ -540,7 +540,7 @@ class DungeonMaster:
         self.virtual_turn = stuff[1]
         self.player = stuff[2]
         
-        self.curr_lvl = GetGameFactoryObject(self, 12, len(stuff[3][0]), len(stuff[3][0][0]), 'mini-boss 1')
+        self.curr_lvl = GetGameFactoryObject(self,stuff[3][6], len(stuff[3][0]), len(stuff[3][0][0]), stuff[3][5])
         get_level_from_save_obj(self.curr_lvl, stuff[3])
         
         self.player.dm = self
@@ -1800,7 +1800,7 @@ class DungeonMaster:
         self.refresh_player_view()
         self.tell_player_about_sqr(next_r, next_c)
         self.check_ground_effects(self.player, next_r, next_c)
-        
+
         if self.is_special_tile(self.player.row, self.player.col):
             self.player_moves_onto_a_special_sqr(self.player.row, self.player.col)
             

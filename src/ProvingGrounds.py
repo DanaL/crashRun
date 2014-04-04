@@ -83,7 +83,10 @@ class ProvingGroundsLevel(GameLevel):
     def draw_entrance_tunnel(self):
         _row = randrange(5, self.lvl_length-5)
         _col = 3
-        self.map[_row][1] = SpecialFloor('up')
+
+        # direction in the dungeon switches after level 13
+        entrance_dir = 'up' if self.level_num == 13 else 'down'
+        self.map[_row][1] = SpecialFloor(entrance_dir)
         self.entrances.append([(_row, 1), None])
         self.map[_row][2] = self.tf.get_terrain_tile(FLOOR)
         self.player_start_loc = (_row, 2)

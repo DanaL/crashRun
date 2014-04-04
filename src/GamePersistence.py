@@ -52,7 +52,7 @@ def get_level_from_save_obj(level, obj):
     _light_sources = obj[3]
     _monsters = obj[4]
     _category = obj[5]
-    _lvlNum = obj[6]
+    _lvl_num = obj[6]
     _player_loc = obj[7]
     _cameras = obj[8]
     _entrances = obj[9]
@@ -78,6 +78,7 @@ def get_level_from_save_obj(level, obj):
     level.security_active = _security
     level.player_loc = _player_loc
     level.things_fallen_in_holes = _fallen
+    level.level_num = _lvl_num
     
     for _m in _monsters:
         _m.dm = level.dm
