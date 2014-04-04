@@ -272,7 +272,16 @@ class GameLevel:
             self.dungeon_loc[_d[0]][_d[1]].lit = False
 
     def end_of_turn(self):
-        self.dm.meatspace_end_of_turn_cleanup()
+        _player = self.dm.player
+        _player.check_for_withdrawal_effects()
+        _player.check_for_expired_conditions()
+                    
+        _drained = _player.inventory.drain_batteries()
+        if len(_drained) > 0:
+            self.dm.items_discharged(_player, _drained)
+
+        for _m in self.monsters:
+            _m.check_for_expired_conditions()
         
         if self.dm.turn % 15 == 0:
             self.dm.player.add_hp(1)

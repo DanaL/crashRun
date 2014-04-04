@@ -53,7 +53,7 @@ class VisualAlert(Alert):
         _txt = ''
         if dm.player.has_condition("blind"):
             _txt = self.alternate
-        elif not dm.can_player_see_location(self.row, self.col, self.level):
+        elif not dm.can_player_see_location(self.row, self.col, dm.player.curr_level):
             _txt = self.alternate
         else:
             _txt = self.message

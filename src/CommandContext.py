@@ -89,13 +89,14 @@ class CommandContext(object):
     # Return a section of map (useful for when a screen, or portion thereof needs to be
     # withdrawn)
     def get_section(self, r, c, length, width):
+        _level = self.dm.active_levels[self.dm.player.curr_level]
         lr = r
         section = []
-        while lr < length and lr < self.dm.curr_lvl.lvl_length:
+        while lr < length and lr < _level.lvl_length:
             lc = c  
             row = []
-            while lc < width and lc < self.dm.curr_lvl.lvl_width:
-                sqr = self.dm.get_sqr_info(lr,lc)
+            while lc < width and lc < _level.lvl_width:
+                sqr = self.dm.get_sqr_info(lr, lc, self.dm.player.curr_level)
                 row.append(sqr)
 
                 lc += 1

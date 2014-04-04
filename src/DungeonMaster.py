@@ -572,13 +572,6 @@ class DungeonMaster:
             raise GameOver()
         else:
             self.dui.display_message('Nevermind...')
-
-    def is_clear(self,r,c):
-        return self.curr_lvl.is_clear(r,c)
-    
-    def is_special_tile(self, r, c):
-        _tile = self.curr_lvl.map[r][c]
-        return _tile.get_type() == SPECIAL_FLOOR or _tile.get_type() == SPECIAL_DOOR
         
     # Does the location block light or not.  (Note that a square might
     # be open, but not necessarily passable)
@@ -723,28 +716,29 @@ class DungeonMaster:
             self.player_moves_up_a_level()
         elif direction == '>':
             self.player_moves_down_a_level()
-        else:
+        else:            
             _dt = self.convert_to_dir_tuple(self.player, direction)
             _p = self.player
+            _level = self.active_levels[_p.curr_level]
             _next_r = _p.row + _dt[0]
             _next_c = _p.col + _dt[1] 
-            _tile = self.curr_lvl.map[_next_r][_next_c]
+            _tile = _level.map[_next_r][_next_c]
 
-            if self.is_clear(_next_r, _next_c) or self.is_special_tile(_next_r, _next_c):
+            if _level.is_clear(_next_r, _next_c) or _tile.is_special_tile():
                 self.__move_player(_p.row, _p.col, _next_r, _next_c, _dt)
-            elif self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant != '':
-                _occ = self.curr_lvl.dungeon_loc[_next_r][_next_c].occupant
+            elif _level.dungeon_loc[_next_r][_next_c].occupant != '':
+                _occ = _level.dungeon_loc[_next_r][_next_c].occupant
 
                 if self.player.has_condition('blind'):
-                    self.mark_invisible_monster(self.curr_lvl.dungeon_loc[_next_r][_next_c], _next_r, _next_c)
+                    self.mark_invisible_monster(_level.dungeon_loc[_next_r][_next_c], _next_r, _next_c)
                 if isinstance(_occ, BaseAgent):
-                    self.curr_lvl.melee.attack(self.player, _occ)           
+                    _level.melee.attack(self.player, _occ)           
                     self.player.energy -= STD_ENERGY_COST
                     _glasses = self.player.inventory.get_armour_in_location('glasses')
                     if isinstance(_glasses, Items.TargetingWizard) and _glasses.charge > 0:
                         _glasses.charge -= 1
                         if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
-            elif self.curr_lvl.map[_next_r][_next_c].get_type() == T.OCEAN:
+            elif _level.map[_next_r][_next_c].get_type() == T.OCEAN:
                 _msg = "You don't want to get your implants wet."
                 self.dui.display_message(_msg)
             elif self.__should_attempt_to_open(_tile):
@@ -753,7 +747,7 @@ class DungeonMaster:
                     self.player.energy -= STD_ENERGY_COST
                 else:
                     self.open_door(_tile, _next_r, _next_c)
-            elif self.curr_lvl.map[_next_r][_next_c].get_type() == T.FIREWALL:
+            elif _level.map[_next_r][_next_c].get_type() == T.FIREWALL:
                 self.player_tries_moving_through_firewall(_p, _next_r, _next_c, _dt)
             else:
                 if self.player.has_condition('dazed'):
@@ -1665,8 +1659,8 @@ class DungeonMaster:
             message = message[0].upper() + message[1:]
             self.dui.display_message(message, pause_for_more)
 
-    def can_player_see_location(self, r, c, level):
-        return level == self.curr_lvl and (r,c) in self.sight_matrix
+    def can_player_see_location(self, r, c, level_num):
+        return level_num == self.player.curr_level and (r,c) in self.sight_matrix
 
     # Update a monster's location, and update the player's view if necessary
     def move_monster(self, monster, h_move, v_move):
@@ -1678,17 +1672,18 @@ class DungeonMaster:
             next_row = monster.row + v_move
             next_col = monster.col + h_move
 
-        if not self.is_clear(next_row,next_col):
+        _level = self.active_levels[monster.curr_level]
+        if not _level.is_clear(next_row, next_col):
             raise IllegalMonsterMove
         else:
             if monster.has_condition('dazed'):
                 self.alert_player(next_row, next_col, monster.get_name() + ' staggers wildly.')
-            self.__agent_moves_to_sqr(next_row, next_col, monster)
-            self.check_ground_effects(monster, next_row, next_col)
+            self.__agent_moves_to_sqr(next_row, next_col, monster, _level)
+            self.check_ground_effects(monster, next_row, next_col, _level)
             
     def update_sqr(self, level, r , c):
-        if self.can_player_see_location(r, c, level):
-            self.dui.update_view(self.get_sqr_info(r, c))
+        if self.can_player_see_location(r, c, level.level_num):
+            self.dui.update_view(self.get_sqr_info(r, c, level.level_num))
 
     def passive_search(self, loc):
         if self.player.has_condition('dazed'): 
@@ -1751,23 +1746,24 @@ class DungeonMaster:
 
         # now we need to 'extinguish' squares that are not longer lit
         for s in filter(self.__not_in_sight_matrix, self.last_sight_matrix):
-            self.__loc_out_of_sight(s)
-            _sqrs_to_draw.append(self.get_sqr_info(s[0],s[1]))
+            self.__loc_out_of_sight(s, _level)
+            _sqrs_to_draw.append(self.get_sqr_info(s[0],s[1], _level.level_num))
 
         self.dui.update_block(_sqrs_to_draw)
         self.dui.update_view(self.get_sqr_info(self.player.row, self.player.col, self.player.curr_level))
         
     # Called when a square moves out of sight range
-    def __loc_out_of_sight(self,loc):
-        self.curr_lvl.dungeon_loc[loc[0]][loc[1]].visible = False
-        self.curr_lvl.dungeon_loc[loc[0]][loc[1]].visited = True
-        self.curr_lvl.dungeon_loc[loc[0]][loc[1]].lit = False
+    def __loc_out_of_sight(self, loc, level):
+        level.dungeon_loc[loc[0]][loc[1]].visible = False
+        level.dungeon_loc[loc[0]][loc[1]].visited = True
+        level.dungeon_loc[loc[0]][loc[1]].lit = False
                         
     def cmd_pass(self):
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
-        self.check_ground_effects(self.player, self.player.row, self.player.col)
+        _level = self.active_levels[self.player.curr_level]
+        self.check_ground_effects(self.player, self.player.row, self.player.col, _level)
         
     def monster_killed(self, level, r, c, by_player):
         victim = level.dungeon_loc[r][c].occupant
@@ -1782,7 +1778,7 @@ class DungeonMaster:
         self.mr.monster_killed(victim, by_player)
         level.remove_monster(victim, r, c)
         
-        if self.can_player_see_location(r, c, level):
+        if self.can_player_see_location(r, c, victim.curr_level):
             self.dui.update_view(self.get_sqr_info(r,c))
 
         if by_player:
@@ -1791,31 +1787,33 @@ class DungeonMaster:
             raise TurnInterrupted
     
     def __move_player(self, curr_r, curr_c, next_r, next_c, dt):
+        _level = self.active_levels[self.player.curr_level]
         self.player.energy -= STD_ENERGY_COST
-        self.curr_lvl.dungeon_loc[curr_r][curr_c].visited = True
-        self.__agent_moves_to_sqr(next_r, next_c, self.player)
-        self.curr_lvl.dungeon_loc[next_r][next_c].temp_tile = ''
-        self.curr_lvl.handle_stealth_check(self.player)
+        _level.dungeon_loc[curr_r][curr_c].visited = True
+        self.__agent_moves_to_sqr(next_r, next_c, self.player, _level)
+        _level.dungeon_loc[next_r][next_c].temp_tile = ''
+        _level.handle_stealth_check(self.player)
         self.refresh_player_view()
-        self.tell_player_about_sqr(next_r, next_c)
-        self.check_ground_effects(self.player, next_r, next_c)
+        self.tell_player_about_sqr(next_r, next_c, _level)
+        self.check_ground_effects(self.player, next_r, next_c, _level)
 
-        if self.is_special_tile(self.player.row, self.player.col):
+        _tile = _level.map[self.player.row][self.player.col]
+        if _tile.is_special_tile():
             self.player_moves_onto_a_special_sqr(self.player.row, self.player.col)
             
-    def __agent_moves_to_sqr(self,r,c,agent):
-        self.curr_lvl.dungeon_loc[agent.row][agent.col].occupant = ''
-        self.update_sqr(self.curr_lvl, agent.row, agent.col)
+    def __agent_moves_to_sqr(self, r, c, agent, level):
+        level.dungeon_loc[agent.row][agent.col].occupant = ''
+        self.update_sqr(level, agent.row, agent.col)
         
         agent.row = r
         agent.col = c
 
-        self.curr_lvl.dungeon_loc[r][c].occupant = agent
-        self.update_sqr(self.curr_lvl, r, c)
+        level.dungeon_loc[r][c].occupant = agent
+        self.update_sqr(level, r, c)
 
-    def tell_player_about_sqr(self, r, c):
-        _loc = self.curr_lvl.dungeon_loc[r][c]
-        _sqr = self.curr_lvl.map[r][c]
+    def tell_player_about_sqr(self, r, c, level):
+        _loc = level.dungeon_loc[r][c]
+        _sqr = level.map[r][c]
         
         if isinstance(_sqr, T.DownStairs) or isinstance(_sqr, T.UpStairs):
             self.dui.display_message('There is a lift access here.')
@@ -1826,18 +1824,19 @@ class DungeonMaster:
         elif _sqr.get_type() == SUBNET_NODE:
             self.dui.display_message('There is a subnet node access point here.')
         
-        if self.curr_lvl.size_of_item_stack(r,c) == 1:
+        _stack_size = level.size_of_item_stack(r, c)
+        if _stack_size == 1:
             item_name = _loc.item_stack[0].get_name(True)
             msg = 'You see ' + get_correct_article(item_name)
             msg = msg.strip()
             msg += ' ' + item_name + ' here.'
             self.dui.display_message(msg)
-        elif self.curr_lvl.size_of_item_stack(r,c) > 1:
+        elif _stack_size > 1:
             self.dui.display_message('There are several items here.')
         
-    def check_ground_effects(self, agent, r, c):
-        _loc = self.curr_lvl.dungeon_loc[r][c]
-        _sqr = self.curr_lvl.map[r][c]
+    def check_ground_effects(self, agent, r, c, level):
+        _loc = level.dungeon_loc[r][c]
+        _sqr = level.map[r][c]
         
         if _sqr.get_type() == TOXIC_WASTE:
             self.agent_steps_in_toxic_waste(agent, r, c)
@@ -2134,16 +2133,6 @@ class DungeonMaster:
                 self.do_turn()
         except GameOver:
             return
-            
-    def meatspace_end_of_turn_cleanup(self):
-        self.player.check_for_withdrawal_effects()
-        self.player.check_for_expired_conditions()
-        for _m in self.curr_lvl.monsters:
-            _m.check_for_expired_conditions()
-            
-        _drained = self.player.inventory.drain_batteries()
-        if len(_drained) > 0:
-            self.items_discharged(self.player, _drained)
 
     def items_discharged(self, agent, items):
         for _item in items:
@@ -2166,7 +2155,7 @@ class DungeonMaster:
         #loop over monsters
         _monsters = []
         for _level in self.active_levels.keys(): 
-            _monsters += self.active_levels[_level]
+            _monsters += self.active_levels[_level].monsters
 
         for _m in _monsters:
             self.active_agent = _m
@@ -2189,7 +2178,7 @@ class DungeonMaster:
         # restore energy to players and monsters
         # this will change to be a method that also calcs speed modifiers
         self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
-        for _m in self.curr_lvl.monsters:
+        for _m in _monsters:
             _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
                        
     def do_player_action(self):
@@ -2266,19 +2255,20 @@ class DungeonMaster:
             
     def debug_command(self, cmd_text):
         try:
+            _level = self.active_levels[self.player.curr_level]
             _words = cmd_text.split(' ')
             if _words[0] == 'add':
                 self.debug_add(_words[1:])
             elif _words[0] == 'maxhp':
                 self.player.add_hp(9999)
             elif _words[0] == 'activate':
-                tile = self.curr_lvl.map[self.player.row][self.player.col]
+                tile = _level.map[self.player.row][self.player.col]
                 if hasattr(tile, 'activated'):
                     tile.activated = True
             elif _words[0] == 'clear':
-                while len(self.curr_lvl.monsters) > 0:
-                    m = self.curr_lvl.monsters[0]
-                    self.curr_lvl.remove_monster(m, m.row, m.col)
+                while len(_level.monsters) > 0:
+                    m = _level.monsters[0]
+                    _level.remove_monster(m, m.row, m.col)
                 self.dui.draw_screen()
 
         except UnknownDebugCommand:

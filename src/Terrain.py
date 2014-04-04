@@ -84,6 +84,9 @@ class TerrainTile(BaseTile):
     def is_recepticle(self):
         return self.__recepticle
 
+    def is_special_tile(self):
+        return self.get_type() in (SPECIAL_FLOOR, SPECIAL_DOOR)
+        
     def get_type(self):
         return self.__type
 
