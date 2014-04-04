@@ -136,12 +136,13 @@ class Player(BaseAgent, AgentMemory):
     def calc_cyberspace_ac(self):
         BaseAgent.calc_cyberspace_ac(self, 10)
         
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):    
-        _dmg = super(Player, self).damaged(dm, level, damage, attacker, attack_type)
+    def damaged(self, dm, damage, attacker, attack_type='melee'):    
+        _dmg = super(Player, self).damaged(dm, damage, attacker, attack_type)
         
         if _dmg < 1:
             _msg = 'The attack does no damage.'
-            alert = Alert(self.row, self.col, _msg, '', level)
+            _lvl = dm.active_levels[self.curr_level]
+            alert = Alert(self.row, self.col, _msg, '', _lvl)
             alert.show_alert(dm, False)
         
     def get_articled_name(self):
@@ -200,7 +201,7 @@ class Player(BaseAgent, AgentMemory):
             
         return _bonus
     
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         dm.player_killed(killer)
     
     def add_xp(self,xp):

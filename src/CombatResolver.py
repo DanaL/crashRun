@@ -50,7 +50,7 @@ class CyberspaceCombatResolver(CombatResolver):
         if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.show_hit_message(tori, uke, 'hit')
             _dmg = tori.get_cyberspace_damage_roll()
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
+            uke.damaged(self.dm, _dmg, tori)
         else:
             self.dm.mr.show_miss_message(tori, uke)
     
@@ -97,7 +97,7 @@ class MeleeResolver(CombatResolver):
                 _verb = 'pistol whip'
             
             self.dm.mr.show_hit_message(tori, uke, _verb)
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori, _dmg_types)
+            uke.damaged(self.dm, _dmg, tori, _dmg_types)
             _success = True
         else:
             self.dm.mr.show_miss_message(tori, uke)
@@ -113,7 +113,8 @@ class MeleeResolver(CombatResolver):
             _dt = get_rnd_direction_tuple()
             r = tori.row + _dt[0]
             c = tori.col + _dt[1]
-            uke = self.dm.curr_lvl.dungeon_loc[r][c].occupant
+            _lvl = self.dm.active_levels[uke.curr_level]
+            uke = _lvl.dungeon_loc[r][c].occupant
     
         if uke == '':
             self.dm.mr.simple_verb_action(tori, ' %s wildly and %s.',['swing','miss'])
@@ -148,7 +149,7 @@ class ShootingResolver(CombatResolver):
         if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.shot_message(uke)
             _dmg = gun.shooting_dmg_roll()
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
+            uke.damaged(self.dm, _dmg, tori)
             return True
         return False
         
@@ -161,7 +162,7 @@ class ThrowingResolver(CombatResolver):
         if _base_roll == 20 or _roll > self.get_total_uke_ac(uke):
             self.dm.mr.thrown_message(item, uke)
             _dmg = item.dmg_roll(tori)
-            uke.damaged(self.dm, self.dm.curr_lvl, _dmg, tori)
+            uke.damaged(self.dm, _dmg, tori)
             return True
         return False
 

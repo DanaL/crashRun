@@ -1768,21 +1768,22 @@ class DungeonMaster:
         _level = self.active_levels[self.player.curr_level]
         self.check_ground_effects(self.player, self.player.row, self.player.col, _level)
         
-    def monster_killed(self, level, r, c, by_player):
-        victim = level.dungeon_loc[r][c].occupant
+    def monster_killed(self, level_num, r, c, by_player):
+        _level = self.active_levels[level_num]
+        victim = _level.dungeon_loc[r][c].occupant
         
         # drop the monster's stuff, if it has any
         if len(victim.inventory) != 0:
             items = victim.inventory.get_dump()
             
             for i in items:
-                self.item_hits_ground(level, r, c, i)
+                self.item_hits_ground(_level, r, c, i)
 
         self.mr.monster_killed(victim, by_player)
-        level.remove_monster(victim, r, c)
+        _level.remove_monster(victim, r, c)
         
-        if self.can_player_see_location(r, c, victim.curr_level):
-            self.dui.update_view(self.get_sqr_info(r,c))
+        if self.can_player_see_location(r, c, level_num):
+            self.dui.update_view(self.get_sqr_info(r, c, level_num))
 
         if by_player:
             self.player.add_xp(victim.get_xp_value())
@@ -1873,12 +1874,12 @@ class DungeonMaster:
             
     def item_hits_ground(self, level, r, c, item):
         # If an item lands on a hole it should fall to the next level
-        if isinstance(self.curr_lvl.map[r][c], T.GapingHole):
-            self.curr_lvl.dungeon_loc[r][c].temp_tile = ''
+        if isinstance(level.map[r][c], T.GapingHole):
+            level.dungeon_loc[r][c].temp_tile = ''
             self.update_sqr(level, r, c)
             self.alert_player(r, c, item.get_name() + ' falls down the hole.')
             if not isinstance(item, Items.Explosion) and not isinstance(item, Items.LitFlare):
-                self.curr_lvl.things_fallen_in_holes.append(item)
+                level.things_fallen_in_holes.append(item)
             return
             
         if isinstance(item, Items.Explosion):
@@ -1891,7 +1892,7 @@ class DungeonMaster:
                 alt = 'You hear a distance sploosh.'
                 alert = VisualAlert(r, c, msg, alt, level)
                 alert.show_alert(self, False)
-                self.update_sqr(self.curr_lvl, r, c)
+                self.update_sqr(level, r, c)
             else:
                 if isinstance(item, Items.WithOffSwitch) and item.on and item.charge > 0:
                     self.drop_lit_light_source(r, c, item)

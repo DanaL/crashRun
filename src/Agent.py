@@ -80,7 +80,7 @@ class AgentMemory:
         except ValueError:
             pass # Don't really care that it wasn't in the memory
 
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
+    def damaged(self, dm, damage, attacker, attack_type='melee'):
         self.attitude = 'hostile'
         if attacker == dm.player:
             self.remember('damaged by player')            
@@ -302,7 +302,7 @@ class BaseAgent(BaseTile):
     def chance_to_catch(self, item):
         return False
         
-    def damaged(self, dm, level, damage, attacker, damage_types=[]):
+    def damaged(self, dm, damage, attacker, damage_types=[]):
         _special = set(damage_types).intersection(set(('shock','burn','brain damage', 'toxic waste', 'acid')))
             
         if damage > 0:
@@ -310,7 +310,7 @@ class BaseAgent(BaseTile):
             if self.curr_hp < 1:
                 if attacker == '' and len(damage_types) > 0:
                     attacker = DamageDesc(list(damage_types)[0])
-                self.killed(dm, level, attacker)
+                self.killed(dm, attacker)
             if not self.dead:
                 dm.handle_attack_effects(attacker, self, _special)
             
@@ -351,9 +351,9 @@ class BaseAgent(BaseTile):
                 return True
         return False
         
-    def killed(self, dm, level, killer):        
+    def killed(self, dm, killer):
         self.dead = True    
-        dm.monster_killed(level, self.row, self.col, killer == dm.player)
+        dm.monster_killed(self.curr_level, self.row, self.col, killer == dm.player)
         
     def make_random_move(self):
         delta_r = randrange(-1, 2)
@@ -552,9 +552,9 @@ class BaseMonster(BaseAgent, AStarMover):
         _level = self.dm.active_levels[self.curr_level]
         _level.melee.attack(self, _level.get_occupant(loc[0], loc[1]))
         
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
+    def damaged(self, dm, damage, attacker, attack_type='melee'):
         self.attitude = 'hostile'
-        super(BaseMonster, self).damaged(dm, level, damage, attacker, attack_type)
+        super(BaseMonster, self).damaged(dm, damage, attacker, attack_type)
         
     def distance_from_player(self, pl=None):
         if pl == None:
@@ -658,7 +658,8 @@ class AltPredator(BaseMonster):
                 self.state = 'scared'
             
             if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
-                self.flee_to = furthest_sqr(self.dm.curr_lvl, _player_loc, 25, self)
+                _lvl = self.dm.active_levels[self.curr_level]
+                self.flee_to = furthest_sqr(_lvl, _player_loc, 25, self)
             
             if self.flee_to == None:
                 va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "", self.dm.curr_lvl)
@@ -714,9 +715,9 @@ class FeralDog(AltPredator, AgentMemory):
             
         super().perform_action()
 
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
-        AgentMemory.damaged(self, dm, level, damage, attacker, attack_type)
-        AltPredator.damaged(self, dm, level, damage, attacker, attack_type)
+    def damaged(self, dm, damage, attacker, attack_type='melee'):
+        AgentMemory.damaged(self, dm, damage, attacker, attack_type)
+        AltPredator.damaged(self, dm, damage, attacker, attack_type)
 
 class HumanFoe(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
@@ -777,9 +778,9 @@ class Junkie(HumanFoe, AgentMemory):
             
         super().perform_action()
 
-    def damaged(self, dm, level, damage, attacker, attack_type='melee'):
-        AgentMemory.damaged(self, dm, level, damage, attacker, attack_type)         
-        HumanFoe.damaged(self, dm, level, damage, attacker, attack_type)
+    def damaged(self, dm, damage, attacker, attack_type='melee'):
+        AgentMemory.damaged(self, dm, damage, attacker, attack_type)         
+        HumanFoe.damaged(self, dm, damage, attacker, attack_type)
     
 class CyberspaceMonster(AltPredator):
     def __init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, dm, ch,
@@ -879,10 +880,10 @@ class SecurityControlProgram(CyberspaceMonster):
         _name += str(_hp%10)
         self.name = _name
 
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         # Killing a level's SCP results in security being disabled
         level.security_active = False
-        super(CyberspaceMonster, self).killed(dm, level, killer)
+        super(CyberspaceMonster, self).killed(dm, killer)
         
 class GridBug(CyberspaceMonster):
     def __init__(self, dm, row, col):
@@ -1458,7 +1459,7 @@ class TemporarySquirrel(AltPredator, Unique):
     
     def killed(self, dm, level, killer):
         Unique.killed(self, dm)
-        super(AltPredator, self).killed(dm, level, killer)
+        super(AltPredator, self).killed(dm, killer)
         
 class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
     def __init__(self, dm, row, col):
@@ -1478,7 +1479,7 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
     
     def killed(self, dm, level, killer):
         Unique.killed(self, dm)
-        super(AltPredator, self).killed(dm, level, killer)
+        super(AltPredator, self).killed(dm, killer)
            
 class MoreauBot6000(CleanerBot, Unique):
     def __init__(self, dm, row, col):
@@ -1509,7 +1510,7 @@ class MoreauBot6000(CleanerBot, Unique):
 
     def killed(self, dm, level, killer):
         Unique.killed(self, dm)
-        super(CleanerBot, self).killed(dm, level, killer)
+        super(CleanerBot, self).killed(dm, killer)
           
     def perform_action(self):
         _pl = self.dm.get_player_loc()
@@ -1532,9 +1533,9 @@ class Roomba3000(Roomba, Unique):
         self.can_steal_readied = True
         self.conditions.append((('light protection',0,0), self))
 
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         Unique.killed(self, dm)
-        super(Roomba, self).killed(dm, level, killer)
+        super(Roomba, self).killed(dm, killer)
         
     def perform_action(self):
         _pl = self.dm.get_player_loc()
