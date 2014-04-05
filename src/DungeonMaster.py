@@ -904,13 +904,14 @@ class DungeonMaster:
             self.dui.display_message('You aren\'t making any sense.')
 
     # Function for handling an unexpected move (agent is stunned, bashing into the open air, etc)
-    def __uncontrolled_move(self,agent,target_r,target_c,dt):
-        target_loc = self.curr_lvl.dungeon_loc[target_r][target_c]
-        target_tile = self.curr_lvl.map[target_r][target_c]
+    def __uncontrolled_move(self, agent, target_r, target_c, dt):
+        _lvl = self.active_levels[agent.curr_level]
+        target_loc = _lvl.dungeon_loc[target_r][target_c]
+        target_tile = _lvl.map[target_r][target_c]
 
-        if self.is_clear(target_r,target_c):
+        if _lvl.is_clear(target_r, target_c):
             if agent == self.player:
-                self.__move_player(self.player.row,self.player.col,target_r,target_c,dt)
+                self.__move_player(self.player.row, self.player.col, target_r, target_c, dt)
                 self.dui.display_message('You stagger forward.')
         else:
             if agent == self.player:
