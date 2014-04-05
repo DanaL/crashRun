@@ -993,7 +993,8 @@ class DungeonMaster:
 
     def monster_summons_monster(self, creator, monster_name, row, col):
         _h = MonsterFactory.get_monster_by_name(self, monster_name, row, col)
-        self.curr_lvl.add_monster_to_dungeon(_h, row, col)
+        _lvl = self.active_levels[creator.curr_level]
+        self._lvl.add_monster_to_dungeon(_h, row, col)
         self.refresh_player_view()
                 
     # I'll have to eventually add code to check for being burderened, as well as special behaviour that

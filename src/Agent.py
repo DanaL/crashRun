@@ -662,7 +662,7 @@ class AltPredator(BaseMonster):
                 self.flee_to = furthest_sqr(_lvl, _player_loc, 25, self)
             
             if self.flee_to == None:
-                va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "", self.dm.curr_lvl)
+                va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "")
                 va.show_alert(self.dm, False)
                 fled = False
             else:
@@ -835,9 +835,10 @@ class CeilingCat(CyberspaceMonster):
 
     def not_revealed_action(self):
         _pl = self.dm.get_player_loc()
+        _lvl = self.dm.active_levels[self.curr_level]
         if self.distance_from_player(_pl) <= 1:
             self.revealed = True
-            self.dm.update_sqr(self.dm.curr_lvl, self.row, self.col)
+            self.dm.update_sqr(_lvl, self.row, self.col)
             
             _msg = "A ceiling cat pops out of the roof!"
             self.dm.alert_player(self.row, self.col, _msg)
@@ -893,7 +894,7 @@ class GridBug(CyberspaceMonster):
         
     def perform_action(self):
         self.energy -= STD_ENERGY_COST
-        _lvl = self.dm.curr_lvl
+        _lvl = self.dm.active_levels[self.curr_level]
         _p = self.dm.get_player_loc()
         for _sqr in [(self.row+1,self.col),(self.row-1,self.col),(self.row,self.col+1),(self.row,self.col-1)]:
             if _p == _sqr:
@@ -912,18 +913,19 @@ class BelligerentProcess(CyberspaceMonster):
             'white', 'belligerent process', row, col, 1, 'male', 3)
         
     def fork(self):
+        _lvl = self.dm.active_levels[self.curr_level]
         _fork = copy(self)
-        _sqr = self.get_adj_empty_sqr()
+        _sqr = self.get_adj_empty_sqr(_lvl)
         if _sqr != None:
-            self.dm.curr_lvl.add_monster_to_dungeon(_fork, _sqr[0], _sqr[1])
-            self.dm.update_sqr(self.dm.curr_lvl, _sqr[0], _sqr[1])
+            _lvl.add_monster_to_dungeon(_fork, _sqr[0], _sqr[1])
+            self.dm.update_sqr(_lvl, _sqr[0], _sqr[1])
             self.dm.alert_player(self.row, self.col, 'The process forks itself.')
         
-    def get_adj_empty_sqr(self):
+    def get_adj_empty_sqr(self, level):
         _picks = []
         for r in (-1,0,1):
             for c in (-1,0,1):
-                if self.dm.curr_lvl.is_clear(self.row + r, self.col + c):
+                if level.is_clear(self.row + r, self.col + c):
                     _picks.append((self.row + r, self.col + c))
         
         if len(_picks) > 0:
@@ -1310,12 +1312,12 @@ class RepairBot(CleanerBot):
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
     
-    def look_for_patient(self):
+    def look_for_patient(self, level):
         _patients = PriorityQueue()
-        _sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col)
+        _sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col, self.curr_level)
         
         for _sqr in _sc.calc_visible_list():
-            _occ = self.dm.curr_lvl.dungeon_loc[_sqr[0]][_sqr[1]].occupant
+            _occ = level.dungeon_loc[_sqr[0]][_sqr[1]].occupant
             if self.is_patient(_occ):
                 _patients.push(_occ, calc_distance(self.row,self.col,_sqr[0],_sqr[1]))
                 
@@ -1339,18 +1341,19 @@ class RepairBot(CleanerBot):
         
     def perform_action(self):
         _triage = PriorityQueue()
-        
+        _lvl = self.dm.active_levels[self.curr_level]
+
         # check surrounding squares for damaged bots
         for r in range(-1,2):
             for c in range(-1,2):
-                _occ = self.dm.curr_lvl.get_occupant(self.row+r,self.col+c)
+                _occ = _lvl.get_occupant(self.row+r, self.col+c)
                 if self.is_patient(_occ):
                     _triage.push(_occ, float(_occ.curr_hp) / float(_occ.max_hp))
         
         if len(_triage) > 0:
             self.repair_bot(_triage.pop())
         else:
-            self.look_for_patient()
+            self.look_for_patient(_lvl)
         
         self.energy -= STD_ENERGY_COST
         
@@ -1375,10 +1378,11 @@ class Roomba(CleanerBot):
     
     # The roomba will try to clean up the entire square before moving on
     def look_for_trash_to_vacuum(self):
-        _loc = self.dm.curr_lvl.dungeon_loc[self.row][self.col]
-        if self.dm.curr_lvl.size_of_item_stack(self.row,self.col) > 0:
+        _lvl = self.dm.active_levels[self.curr_level]
+        _loc = s_lvl.dungeon_loc[self.row][self.col]
+        if _lvl.size_of_item_stack(self.row,self.col) > 0:
             _item = _loc.item_stack.pop()
-            self.dm.pick_up_item(self, self.dm.curr_lvl, _item)
+            self.dm.pick_up_item(self, _lvl, _item)
         else:
             self.move()
                 
@@ -1438,7 +1442,8 @@ class SurveillanceDrone(CleanerBot):
 
     def perform_action(self):
         self.move()
-        self.check_for_player(6, self.dm.curr_lvl.begin_security_lockdown)
+        _lvl = self.dm.active_levels[self.curr_level]
+        self.check_for_player(6, _lvl.begin_security_lockdown)
         self.energy -= STD_ENERGY_COST
         
 # I don't really expect to have many common features, but it's nice
@@ -1492,9 +1497,10 @@ class MoreauBot6000(CleanerBot, Unique):
     
     def create_beastman(self):
         _sqrs = []
+        _lvl = self.dm.active_levels[self.curr_level]
         for _r in (-1, 0, 1):
             for _c in (-1, 0, 1):
-                if self.dm.is_clear(self.row+_r, self.col+_c):
+                if _lvl.is_clear(self.row+_r, self.col+_c):
                     _sqrs.append((self.row+_r, self.col+_c))
         if len(_sqrs) > 0:
             _sqr = choice(_sqrs)
