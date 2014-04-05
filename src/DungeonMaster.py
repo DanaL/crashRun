@@ -1061,13 +1061,14 @@ class DungeonMaster:
                 self.dui.display_message('Never mind.')
     
     def fire_weapon_at_ceiling(self, player, gun):
-        _sqr = self.curr_lvl.map[player.row][player.col]
+        _p = self.player
+        _sqr = self.active_levels[_p.curr_level].map[_p.row][_p.col]
         if isinstance(_sqr, T.SecurityCamera):
             self.dui.display_message("You shoot the security camera.")
             _sqr.functional = False
             return
 
-        if self.curr_lvl.level_num == 0:
+        if _p.curr_level == 0:
             _msg = "You fire straight up into the air."
         elif isinstance(_sqr, T.HoleInCeiling):
             _msg = "You fire into the hole in the ceiling."
@@ -1076,7 +1077,8 @@ class DungeonMaster:
         self.dui.display_message(_msg)
             
     def fire_weapon_at_floor(self, player, gun):
-        _sqr = self.curr_lvl.map[player.row][player.col]
+        _p = self.player
+        _sqr = self.active_levels[_p.curr_level].map[_p.row][_p.col]
         if isinstance(_sqr, T.Terminal):
             self.dui.display_message("You blast the computer terminal.")
             _sqr.functional = False
