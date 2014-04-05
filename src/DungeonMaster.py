@@ -228,7 +228,7 @@ class DungeonMaster:
 
         if _hp_delta_cyberspace > 1 or exit_dmg > 0:
             _dmg = _hp_delta_cyberspace // 5 + exit_dmg
-            self.player.damaged(self, self.curr_lvl, _dmg, '', ['brain damage'])
+            self.player.damaged(self, _dmg, '', ['brain damage'])
             self.dui.display_message(self.get_meatspace_dmg_msg(_dmg, self.player.curr_hp), True)
             
     def __clear_current_level_info(self):
@@ -490,7 +490,8 @@ class DungeonMaster:
         if item.get_category() == 'Explosive':
             bomb = Trap('bomb')
             bomb.explosive = item
-            self.handle_explosion(self.curr_lvl, owner.row, owner.col, bomb)
+            _lvl = self.active_levels[owner.curr_level]
+            self.handle_explosion(_lvl, owner.row, owner.col, bomb)
         
         owner.remove_effects(item)
             
@@ -523,7 +524,8 @@ class DungeonMaster:
                 
     def monster_steals(self, thief, r, c, can_steal_readied):
         _item = ''
-        _victim = self.curr_lvl.dungeon_loc[r][c].occupant
+        _lvl = self.active_levels[thief.curr_level]
+        _victim = _lvl.dungeon_loc[r][c].occupant
         
         if _victim != '':
             _inv = _victim.inventory
@@ -585,10 +587,6 @@ class DungeonMaster:
 
         return False
 
-    # Hardcoded for now, I'm fixing how terrain types are stored soon enough.
-    def is_trap(self,r,c):
-        return self.curr_lvl.map[r][c].get_type() == T.TRAP and self.curr_lvl.map[r][c].revealed
-
     def monster_fires_missile(self, monster, target_r, target_c, dmg_dice, dmg_rolls, radius):
         if not self.is_occupant_visible_to_player(monster):
             _monster_name = "It"
@@ -598,7 +596,8 @@ class DungeonMaster:
         self.dui.display_message(_monster_name + ' fires a missile.')
             
         _explosion = Items.Explosion('missle', dmg_dice, dmg_rolls, radius)
-        self.item_hits_ground(self.curr_lvl, target_r, target_c, _explosion)
+        _lvl = self.active_levels[monster.curr_level]
+        self.item_hits_ground(_lvl, target_r, target_c, _explosion)
     
     def handle_mathematics_attack(self, attacker, victim):
         try:
@@ -1161,10 +1160,10 @@ class DungeonMaster:
         self.dui.display_message("You toss it up in the air.")
         if random() < 0.4:
             self.dui.display_message("It lands on your head.")
-            _dmg = item.dmg_roll() 
-            _p.damaged(self, self.curr_lvl, _dmg, item)
-             
-        self.item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
+            _dmg = item.dmg_roll(_p) 
+            _p.damaged(self, _dmg, item)
+        
+        self.item_hits_ground(self.active_levels[_p.curr_level], _p.row, _p.col, item)
         
     # function to handle when player throws something
     # should be broken up into a few parts for clarity
@@ -1482,7 +1481,8 @@ class DungeonMaster:
         if _dt != '':
             _door_r = self.player.row + _dt[0]
             _door_c = self.player.col + _dt[1]
-            _tile = self.curr_lvl.map[_door_r][_door_c]
+            _lvl = self.active_levels[self.player.curr_level]
+            _tile = _lvl.map[_door_r][_door_c]
             
             if isinstance(_tile, T.Door):
                 if _tile.is_open():
@@ -1502,9 +1502,10 @@ class DungeonMaster:
                 trap = T.Trap('bomb')
                 trap.explosive = bomb
                 trap.revealed = True # player knows where his own bomb is
-                trap.previous_tile = self.curr_lvl.map[self.player.row][self.player.col]
-                self.curr_lvl.map[self.player.row][self.player.col] = trap
-                self.curr_lvl.eventQueue.push( ('explosion',self.player.row,self.player.col, trap), self.turn+turns)
+                _lvl = self.active_levels[self.player.curr_level]
+                trap.previous_tile = _lvl.map[self.player.row][self.player.col]
+                _lvl.map[self.player.row][self.player.col] = trap
+                _lvl.eventQueue.push( ('explosion',self.player.row,self.player.col, trap), self.turn+turns)
                 self.dui.display_message('You set the bomb.  Best clear out.')
             except ValueError:
                 self.player.inventory.add_item(bomb)
@@ -1516,7 +1517,7 @@ class DungeonMaster:
         _range = self.__calc_thrown_range(self.player,grenade)
         _target = self.__pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
         _item = Items.Explosion('grenade', 10, 4, 2)
-        self.item_hits_ground(self.curr_lvl, _target[0], _target[1], _item)
+        self.item_hits_ground(self.active_levels[self.player.curr_level], _target[0], _target[1], _item)
 
     def player_throw_item(self,i):
         was_readied = False
@@ -1665,13 +1666,14 @@ class DungeonMaster:
             
         if not loc.lit or calc_distance(self.player.row, self.player.col, loc.r, loc.c) > 3:
             return 
-            
+        
+        _lvl = self.active_levels[self.play.curr_level]
         if hasattr(loc.tile,'revealed') and not loc.tile.revealed:
             loc.tile.revealed = True
             self.alert_player(loc.r, loc.c, "You see " + loc.tile.get_name(2) + ".")
-            self.update_sqr(self.curr_lvl, loc.r, loc.c)
+            self.update_sqr(_lvl, loc.r, loc.c)
             
-        _occ = self.curr_lvl.dungeon_loc[loc.r][loc.c].occupant
+        _occ = _lvl.dungeon_loc[loc.r][loc.c].occupant
         if hasattr(_occ, 'revealed') and not _occ.revealed:
             _occ.revealed = True
             self.alert_player(_occ.row, _occ.col, "You see " + _occ.get_name(2) + ".")
@@ -1814,9 +1816,9 @@ class DungeonMaster:
         _sqr = level.map[r][c]
         
         if _sqr.get_type() == TOXIC_WASTE:
-            self.agent_steps_in_toxic_waste(agent, r, c)
+            self.agent_steps_in_toxic_waste(agent, r, c, level)
         elif _sqr.get_type() == ACID_POOL:
-            self.agent_steps_in_acid_pool(agent, r, c)
+            self.agent_steps_in_acid_pool(agent, r, c, level)
             
         if isinstance(_sqr, T.Trap):
             if not isinstance(_sqr, T.HoleInCeiling):
@@ -1873,27 +1875,27 @@ class DungeonMaster:
             if not victim.has_condition('light protection') and not victim.has_condition('blind'):
                 victim.dazed(explosive)
         else:
-            victim.damaged(self, level, dmg, '', ['explosion'])
+            victim.damaged(self, dmg, '', ['explosion'])
             
     def handle_explosion(self, level, row, col, source):
         explosive = source.explosive    
         noise = Noise(10, source, row, col, 'explosion')
-        self.curr_lvl.monsters_react_to_noise(explosive.blast_radius * 1.5, noise)
+        level.monsters_react_to_noise(explosive.blast_radius * 1.5, noise)
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
         if dmg > 0:
-            alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.', level)
+            alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
             alert.show_alert(self, False)
 
             # Kludgy -- handling this here instead of when I loop over the terrain tiles
             # in the explosion beecause I only want to destroy the lift when the bomb was
             # set direction on it.
-            _sqr = self.curr_lvl.map[row][col]
+            _sqr = level.map[row][col]
             if _sqr.get_type() == T.DOWN_STAIRS or (hasattr(_sqr, 'previous_tile') and _sqr.previous_tile.get_type() == T.DOWN_STAIRS):
-                alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '', level)
+                alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '')
                 alert.show_alert(self, False)
                 _trap = T.GapingHole()
-                self.curr_lvl.map[row][col] = _trap
+                level.map[row][col] = _trap
 
         bullet = Items.Bullet('*', 'white')
 
@@ -1901,7 +1903,7 @@ class DungeonMaster:
         # should fill a volume, of course, maybe I'll change that in some future version
         # This will also have a flaw if I ever add a 'see-through' wall (like a force-field)
         # Also, perhaps dmg should go down further from blast radius??
-        sc = Shadowcaster(self, explosive.blast_radius, row, col, level)
+        sc = Shadowcaster(self, explosive.blast_radius, row, col, level.level_num)
         areaOfEffect = sc.calc_visible_list()
         areaOfEffect[(row, col)] = 0
 
@@ -1936,7 +1938,8 @@ class DungeonMaster:
             level.begin_security_lockdown()
         
     def player_killed(self, killer=''):
-        if self.curr_lvl.is_cyberspace():
+        _level = self.active_levels[self.player.curr_level]
+        if _level.is_cyberspace():
             self.__player_killed_in_cyberspace()
             return
         
@@ -1944,9 +1947,9 @@ class DungeonMaster:
         _msg = 'You have been killed by ' + _kn + '!'
         self.dui.display_message(_msg, 1)
         
-        _lvl = self.player.level
+        _xp_lvl = self.player.level
         _msg = "%s (level %d), killed on level %d by %s"
-        _msg %= (self.player.get_name(), _lvl, self.curr_lvl.level_num, _kn)
+        _msg %= (self.player.get_name(), _xp_lvl, _level.level_num, _kn)
         
         _points = self.player.get_curr_xp() # will be more complex than this someday!
         _score = write_score(self.version, _points, _msg)
@@ -1955,7 +1958,7 @@ class DungeonMaster:
         
         self.__end_of_game(_score)
     
-    def agent_steps_in_acid_pool(self, agent, row, col):
+    def agent_steps_in_acid_pool(self, agent, row, col, level):
         if agent == self.player:
             self.dui.display_message('Acid!')
         
@@ -1969,15 +1972,15 @@ class DungeonMaster:
                 self.dui.update_status_bar()
         else:
             _dmg = randrange(5,11)
-            agent.damaged(self, self.curr_lvl, _dmg, '', ['acid'])
+            agent.damaged(self, _dmg, '', ['acid'])
             
-    def agent_steps_in_toxic_waste(self, agent, row, col):
+    def agent_steps_in_toxic_waste(self, agent, row, col, level):
         if agent == self.player:
             self.dui.display_message('Gross! You step in toxic waste.')
             self.dui.display_message('You feel dizzy.')
              
         _dmg = randrange(1,11)
-        agent.damaged(self, self.curr_lvl, _dmg, '', ['toxic waste'])
+        agent.damaged(self, _dmg, '', ['toxic waste'])
         agent.dazed('')
         
     def __player_killed_in_cyberspace(self):
@@ -2071,7 +2074,7 @@ class DungeonMaster:
         _msg = str(FINAL_TURN - self.turn)
         _msg += ' turns left until the DoD nukes the complex from orbit.'
         _alt = 'You wish you\'d sprung for a watch with a Braille interface.'
-        alert = VisualAlert(self.player.row, self.player.col, _msg, _alt, self.curr_lvl)
+        alert = VisualAlert(self.player.row, self.player.col, _msg, _alt)
         alert.show_alert(self, False)
         
     def get_player_loc(self):
@@ -2087,15 +2090,16 @@ class DungeonMaster:
         if _roll > self.player.stats.get_intuition():
             return
         
+        _lvl = self.active_levels[self.player.curr_level]
         for r in (-1,0,1):
             for c in (-1,0,1):
                 _sr = self.player.row+r
                 _sc = self.player.col+c
-                _sqr = self.curr_lvl.map[_sr][_sc]
+                _sqr = _lvl.map[_sr][_sc]
                 if hasattr(_sqr, 'revealed') and not _sqr.revealed:
                     self.alert_player(_sr,_sc, "You find " + _sqr.get_name(2))
                     _sqr.revealed = True
-                    self.update_sqr(self.curr_lvl,_sr,_sc)
+                    self.update_sqr(_lvl,_sr,_sc)
         self.player.energy -= STD_ENERGY_COST
         
     def start_play(self):
@@ -2208,8 +2212,9 @@ class DungeonMaster:
                 _monster = TemporarySquirrel(self, _pick[0], _pick[1])
             else:
                 _monster = MonsterFactory.get_monster_by_name(self, _request, _pick[0], _pick[1])
-                
-            self.curr_lvl.add_monster_to_dungeon(_monster, _pick[0], _pick[1])
+            
+            _lvl = self.active_levels[self.player.curr_level]    
+            _lvl.add_monster_to_dungeon(_monster, _pick[0], _pick[1])
             self.refresh_player_view()
         except KeyError:
             self.dui.display_message('Unknown monster.')
