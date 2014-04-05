@@ -46,7 +46,7 @@ class CyberspaceLevel(GameLevel):
         self.melee = CyberspaceCombatResolver(dm, dm.dui)
     
     def access_cameras(self):
-        lm = LevelManager(self.dm)
+        lm = LevelManager(self.dm, self.level_num)
         if not lm.are_cameras_active():
             _msg = "You activate the security camera system."
             lm.set_camera_state(True)
@@ -130,7 +130,7 @@ class CyberspaceLevel(GameLevel):
         self.__add_files()
         self.__set_entry_spot()
 
-        lm = LevelManager(self.dm)
+        lm = LevelManager(self.dm, self.level_num)
         self.place_sqr(SecurityCamera(0, lm.are_cameras_active()), CYBERSPACE_FLOOR) 
 
     def is_cyberspace(self):

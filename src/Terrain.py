@@ -184,7 +184,7 @@ class Terminal(Equipment):
         dui.wait_for_input()
         
     def use_security_cameras(self, dm, dui, level):
-        lm = LevelManager(dm)
+        lm = LevelManager(dm, level)
         if not lm.are_cameras_active():
             _msg = 'Camera access is currently disabled.'
             dui.display_message(_msg, True)
@@ -319,7 +319,8 @@ class ConcussionMine(Trap):
         
     def trigger(self, dm, victim, row, col):
         dm.dui.display_message("Whomp!")
-        dm.curr_lvl.remove_trap(row, col)
+        _lvl = dm.active_levels[victim.curr_level]
+        _lvl.remove_trap(row, col)
         victim.stun_attack(self)
         
 class GapingHole(Trap):
