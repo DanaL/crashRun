@@ -1443,25 +1443,26 @@ class DungeonMaster:
             if chainsaw.charge == 0:
                 self.dui.display_message('Your chainsaw is out of juice.')
             else:
+                _lvl = self.active_levels[self.player.curr_level]
                 _noise = Noise(7, self.player, self.player.row, self.player.col, 'chainsaw')
-                self.curr_lvl.monsters_react_to_noise(5, _noise)
+                _lvl.monsters_react_to_noise(5, _noise)
                 self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
                 
                 _row = self.player.row + _dt[0]
                 _col = self.player.col + _dt[1]
-                _loc = self.curr_lvl.dungeon_loc[_row][_col]
-                _sqr = self.curr_lvl.map[_row][_col]
+                _loc = _lvl.dungeon_loc[_row][_col]
+                _sqr = _lvl.map[_row][_col]
                 if _dt == (0,0):
                     self.dui.display_message("You wave the chainsaw around in the air.")
                 elif _loc.occupant != '' and isinstance(_loc.occupant, BaseAgent):
-                    self.curr_lvl.melee.attack(self.player, _loc.occupant)  
+                    _lvl.melee.attack(self.player, _loc.occupant)  
                 elif _sqr.get_type() in (T.WALL, T.PERM_WALL):
                     self.dui.display_message("That's probably not good for your chainsaw.")
                 elif _sqr.get_type() in (T.STEEL_DOOR, T.SPECIAL_DOOR):
                     self.dui.display_message("You make a lot of sparks but not much else happens.")
                 elif _sqr.get_type() == T.DOOR and not _sqr.is_open():
                     _sqr.smash()
-                    self.update_sqr(self.curr_lvl, _row, _col)
+                    self.update_sqr(_lvl, _row, _col)
                     self.refresh_player_view()
                     self.dui.display_message("You make short work of that door.")
                 else:
@@ -1667,7 +1668,7 @@ class DungeonMaster:
         if not loc.lit or calc_distance(self.player.row, self.player.col, loc.r, loc.c) > 3:
             return 
         
-        _lvl = self.active_levels[self.play.curr_level]
+        _lvl = self.active_levels[self.player.curr_level]
         if hasattr(loc.tile,'revealed') and not loc.tile.revealed:
             loc.tile.revealed = True
             self.alert_player(loc.r, loc.c, "You see " + loc.tile.get_name(2) + ".")
@@ -1677,7 +1678,7 @@ class DungeonMaster:
         if hasattr(_occ, 'revealed') and not _occ.revealed:
             _occ.revealed = True
             self.alert_player(_occ.row, _occ.col, "You see " + _occ.get_name(2) + ".")
-            self.update_sqr(self.curr_lvl, _occ.row, _occ.col)
+            self.update_sqr(self._lvl, _occ.row, _occ.col)
             
     # If all is true, refresh all squares, whether they've been changed or not
     def refresh_player_view(self, all=False):
