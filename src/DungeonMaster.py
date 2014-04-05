@@ -794,12 +794,12 @@ class DungeonMaster:
         else:
             self.__uncontrolled_move(self.player,door_r,door_c,dt)
 
-    def empty_box_contents(self, box, row, col):
+    def empty_box_contents(self, box, row, col, level):
         if len(box.contents) == 0:
             self.alert_player(row, col, 'The box was empty.')
         else:
             for c in box.contents:
-                self.item_hits_ground(self.curr_lvl, row, col, c)
+                self.item_hits_ground(level, row, col, c)
 
     def __get_tile_from_dir(self, _dir):
         _dt = self.convert_to_dir_tuple(self.player, _dir)

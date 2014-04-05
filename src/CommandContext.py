@@ -179,7 +179,7 @@ class MeatspaceCC(CommandContext):
     def move(self, k):
         self.dm.cmd_move_player(k)
                  
-    def open_box(self, box, row, col):
+    def open_box(self, box, row, col, level):
         if self.dui.query_yes_no('Open box') == 'y': 
             if box.is_locked():
                 self.dui.display_message('That box is locked.')
@@ -188,7 +188,7 @@ class MeatspaceCC(CommandContext):
             else:
                 box.open = True
                 self.dui.display_message('You open the box.')
-                self.dm.empty_box_contents(box, row, col)
+                self.dm.empty_box_contents(box, row, col, level)
             self.dm.player.energy -= STD_ENERGY_COST
             
     def do_action(self):
@@ -226,14 +226,14 @@ class MeatspaceCC(CommandContext):
             _sqr = _sqr[0]
         
         if isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
-            self.open_box(_sqr, _sr, _sc)
+            self.open_box(_sqr, _sr, _sc, _lvl)
         elif _sqr.get_type() in (DOOR, SPECIAL_DOOR):
             self.door_action(_sqr, _sr, _sc, _lvl)
         elif _sqr.get_type() in (TERMINAL, SPECIAL_TERMINAL) and _sr == _p.row and _sc == _p.col:
             _sqr.jack_in(self.dm)
             self.dm.player.energy -= STD_ENERGY_COST
         elif isinstance(_sqr, Items.Box) and _sr == _p.row and _sc == _p.col:
-            self.open_box(_sqr, _sr, _sc)
+            self.open_box(_sqr, _sr, _sc, _lvl)
         elif _sqr.get_type() == TRAP and _sqr.revealed:
             self.attempt_to_disarm(_sqr, _sr, _sc)
             self.dm.player.energy -= STD_ENERGY_COST
