@@ -1315,13 +1315,13 @@ class DungeonMaster:
                     agent.inventory.add_item(ammo)
                     break
                     
-    def drop_lit_light_source(self, row, col, light):
+    def lit_light_source_lands(self, level, row, col, light):
         light.row = row
         light.col = col
         light.duration = self.turn + light.charge
 
-        self.curr_lvl.eventQueue.push( ('extinguish', light.row, light.col, light), light.duration)
-        self.curr_lvl.add_light_source(light)
+        level.eventQueue.push( ('extinguish', light.row, light.col, light), light.duration)
+        level.add_light_source(light)
         self.refresh_player_view()
 
     def player_drop_item(self, i, count):
@@ -1374,18 +1374,18 @@ class DungeonMaster:
     def player_uses_item_with_power_switch(self, item):
         if not item.on:
             if item.charge == 0:
-                alert = Alert(self.player.row, self.player.col, 'It has no juice.', '', self.curr_lvl)
+                alert = Alert(self.player.row, self.player.col, 'It has no juice.', '')
                 alert.show_alert(self, False)
             else:
                 item.toggle()
                 _msg = 'You flick on ' + item.get_name()
-                alert = Alert(self.player.row, self.player.col, _msg, '', self.curr_lvl)
+                alert = Alert(self.player.row, self.player.col, _msg, '')
                 alert.show_alert(self, False)
                 [self.player.apply_effect((e ,item), False) for e in item.effects]
         else:
             item.toggle()
             _msg = 'You flick off ' + item.get_name()
-            alert = Alert(self.player.row, self.player.col, _msg, '', self.curr_lvl)
+            alert = Alert(self.player.row, self.player.col, _msg, '')
             alert.show_alert(self, False)
             self.player.remove_effects(item)
 
@@ -1866,7 +1866,7 @@ class DungeonMaster:
                 self.update_sqr(level, r, c)
             else:
                 if isinstance(item, Items.WithOffSwitch) and item.on and item.charge > 0:
-                    self.drop_lit_light_source(r, c, item)
+                    self.lit_light_source_lands(level, r, c, item)
                 
     def explosive_effect(self, level, victim, dmg, explosive):
         if explosive.get_name(1) == 'flash bomb':

@@ -27,12 +27,11 @@ from random import randrange
 # Record-type class for events the player needs to be alerted
 # to. Base class is for basic narration-type alerts.
 class Alert:
-    def __init__(self, r, c, msg, alt, lvl):
+    def __init__(self, r, c, msg, alt):
         self.row = r
         self.col = c
         self.message = msg
         self.alternate = alt
-        self.level = lvl
 
     def display_message(self, msg, dm, refresh):
         _txt = msg[0].upper() + msg[1:]

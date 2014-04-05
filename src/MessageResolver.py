@@ -48,7 +48,7 @@ class MessageResolver(object):
         else:
             _mess = _name + ' is killed.'
         
-        alert = VisualAlert(monster.row, monster.col, _mess, '', _level)
+        alert = VisualAlert(monster.row, monster.col, _mess, '')
         alert.show_alert(self.dm, False)
         
     def parse(self, agent, verb):
@@ -61,7 +61,6 @@ class MessageResolver(object):
             return _verbs[verb][agent == self.dm.player]
             
     def pick_up_message(self, agent, item):
-        _level = self.dm.active_levels[agent.curr_level]
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'pick')
         _item = item.get_full_name()
         _art = get_correct_article(_item)
@@ -70,7 +69,7 @@ class MessageResolver(object):
             _msg += _art + ' '
         _msg += _item + '.'
         
-        alert = VisualAlert(agent.row, agent.col, _msg, '', _level)
+        alert = VisualAlert(agent.row, agent.col, _msg, '')
         alert.show_alert(self.dm, False)
             
     def resolve_name(self, agent):
@@ -83,12 +82,11 @@ class MessageResolver(object):
             return 'it'
     
     def put_on_item(self, agent, item):
-        _level = self.dm.active_levels[agent.curr_level]
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'put')
         _item = item.get_full_name()
         _msg += ' on the ' + item.get_full_name() + '.'
 
-        alert = VisualAlert(agent.row, agent.col, _msg, '', _level)
+        alert = VisualAlert(agent.row, agent.col, _msg, '')
         alert.show_alert(self.dm, False)
 
     def simple_verb_action(self, subject, text, verbs, pause_for_more=False):
