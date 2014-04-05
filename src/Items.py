@@ -113,11 +113,11 @@ class BatteryPowered:
             mr = MessageResolver(dm, dm.dui)
             verb = mr.parse(agent, 'change')
             txt = "%s %s the batteries on %s." % (mr.resolve_name(agent), verb, self.get_name())
-            alert = VisualAlert(agent.row, agent.col, txt, txt, dm.curr_lvl)
+            alert = VisualAlert(agent.row, agent.col, txt, txt)
             alert.show_alert(dm, False)
             if isinstance(self, WithOffSwitch) and self.on:
                 [agent.apply_effect((e, self), False) for e in self.effects]
-                alert = VisualAlert(agent.row, agent.col, "%s flickers back to life." % (self.get_name()), '', dm.curr_lvl)
+                alert = VisualAlert(agent.row, agent.col, "%s flickers back to life." % (self.get_name()), '')
                 alert.show_alert(dm, True)
 
     def get_power_down_message(self):
