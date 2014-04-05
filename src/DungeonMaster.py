@@ -801,21 +801,6 @@ class DungeonMaster:
             for c in box.contents:
                 self.item_hits_ground(self.curr_lvl, row, col, c)
 
-    # If there is just one adjacent door, pick it, otherwise return None
-    def get_adjacent_door(self, row, col, open):
-        _count = 0
-        for r in (-1,0,1):
-            for c in (-1,0,1):
-                _tile = self.curr_lvl.map[row+r][col+c]
-                if self.in_bounds(row+r,col+c) and isinstance(_tile, T.Door) and _tile.is_open() == open:
-                    _dir = (r,c)
-                    _count += 1
-        
-        if _count == 1:
-            return _dir
-        else:
-            return None
-
     def __get_tile_from_dir(self, _dir):
         _dt = self.convert_to_dir_tuple(self.player, _dir)
         _r = self.player.row + _dt[0]
