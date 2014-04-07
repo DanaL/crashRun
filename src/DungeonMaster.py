@@ -260,17 +260,19 @@ class DungeonMaster:
         
         level.mark_initially_known_sqrs(_hacking + 2)
         _meat_level = self.active_levels[self.player.curr_level]
+        _up = None
+        _down = None
         if _meat_level.entrances:
             _entrance = _meat_level.entrances[0][0]
-            _up = _meat_level.map[_entrance[0]][_entrance[1]]
-        else:
-            _up = None
+            _sq = _meat_level.map[_entrance[0]][_entrance[1]]
+            if _sq.get_type() == T.UP_STAIRS:
+                _up = _sq
         if _meat_level.exits:
             _exits = _meat_level.exits[0][0]
-            _down = _meat_level.map[_exits[0]][_exits[1]]
-        else:
-            _down = None
-        
+            _sq = _meat_level.map[_exits[0]][_exits[1]]
+            if _sq.get_type() == T.DOWN_STAIRS:
+                _down = _sq
+
         level.set_real_stairs(_up, _down)
         level.security_active = _meat_level.security_active
         if _meat_level.security_active:

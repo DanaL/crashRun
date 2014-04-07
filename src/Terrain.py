@@ -120,7 +120,7 @@ class Equipment(TerrainTile):
         if dmg == 0: return
         self.functional = False
         _msg = self.get_name() + ' is destroyed.'
-        alert = VisualAlert(row, col, _msg, '', level)
+        alert = VisualAlert(row, col, _msg, '')
         alert.show_alert(dm, False)
 
 class SecurityCamera(Equipment):
