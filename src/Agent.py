@@ -883,7 +883,7 @@ class SecurityControlProgram(CyberspaceMonster):
 
     def killed(self, dm, killer):
         # Killing a level's SCP results in security being disabled
-        level.security_active = False
+        dm.active_levels[self.curr_level].security_active = False
         super(CyberspaceMonster, self).killed(dm, killer)
         
 class GridBug(CyberspaceMonster):
@@ -1462,7 +1462,7 @@ class TemporarySquirrel(AltPredator, Unique):
     def get_name(self, foo=True):
         return AltPredator.get_name(self, True)
     
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         Unique.killed(self, dm)
         super(AltPredator, self).killed(dm, killer)
         
@@ -1482,7 +1482,7 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
     def get_name(self, foo=True):
         return AltPredator.get_name(self, True)
     
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         Unique.killed(self, dm)
         super(AltPredator, self).killed(dm, killer)
            
@@ -1514,7 +1514,7 @@ class MoreauBot6000(CleanerBot, Unique):
         else:
             return False
 
-    def killed(self, dm, level, killer):
+    def killed(self, dm, killer):
         Unique.killed(self, dm)
         super(CleanerBot, self).killed(dm, killer)
           

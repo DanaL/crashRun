@@ -186,7 +186,8 @@ class DungeonMaster:
         _ms = self.player.meat_stats
         self.player.light_radius = _ms.light_r
         self.player.vision_radius = _ms.vision_r
-        _security = self.curr_lvl.security_active
+        _wired_level = self.active_levels[self.player.curr_level]
+        _security = _wired_level.security_active
         
         # Calcuate player's HP on exit, and how much damage is transfered 
         # from the virtual to the real
@@ -200,28 +201,29 @@ class DungeonMaster:
         
         _up = None
         _down = None
-        for r in range(len(self.curr_lvl.map)):
-            for c in range(len(self.curr_lvl.map[0])):
-                if self.curr_lvl.map[r][c].get_type() == T.UP_STAIRS:
-                    _up = self.curr_lvl.map[r][c]
-                if self.curr_lvl.map[r][c].get_type() == T.DOWN_STAIRS:
-                    _down = self.curr_lvl.map[r][c]
+        for r in range(len(_wired_level.map)):
+            for c in range(len(_wired_level.map[0])):
+                if _wired_level.map[r][c].get_type() == T.UP_STAIRS:
+                    _up = _wired_level.map[r][c]
+                if _wired_level.map[r][c].get_type() == T.DOWN_STAIRS:
+                    _down = _wired_level.map[r][c]
                 if _up != None and _down != None: break
         
-        _nodes = self.curr_lvl.subnet_nodes
-        self.__load_lvl(self.curr_lvl.level_num, None)
-        self.curr_lvl.subnet_nodes = _nodes
-        self.curr_lvl.security_active = _security
-        if self.curr_lvl.security_lockdown and not _security:
-            self.curr_lvl.end_security_lockdown()
+        _nodes = _wired_level.subnet_nodes
+        self.__load_lvl(self.player.curr_level, self.player.curr_level, None)
+        _meat_level = self.active_levels[self.player.curr_level]
+        _meat_level.subnet_nodes = _nodes
+        _meat_level.security_active = _security
+        if _meat_level.security_lockdown and not _security:
+            _meat_level.end_security_lockdown()
             
         if _up:
-            _stairs = self.curr_lvl.entrances[0][0]
-            _u = self.curr_lvl.map[_stairs[0]][_stairs[1]]
+            _stairs = _meat_level.entrances[0][0]
+            _u = _meat_level.map[_stairs[0]][_stairs[1]]
             _u.activated = _up.activated
         if _down:
-            _stairs = self.curr_lvl.exits[0][0]
-            _d = self.curr_lvl.map[_stairs[0]][_stairs[1]]
+            _stairs = _meat_level.exits[0][0]
+            _d = _meat_level.map[_stairs[0]][_stairs[1]]
             _d.activated = _down.activated
             
         self.dui.set_command_context(MeatspaceCC(self, self.dui))
@@ -236,7 +238,9 @@ class DungeonMaster:
         _pn = self.player.get_name()
         save_level(_pn, self.player.curr_level, _curr.generate_save_object())
         return CyberspaceLevel(self, self.player.curr_level, 20, 70)
-        
+    
+    # At this point the active level is still the meatspace level; level passed
+    # into the function is the incoming cyberspace level
     def player_enters_cyberspace(self, level):
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _hacking = self.player.skills.get_skill('Hacking').get_rank()
@@ -255,20 +259,21 @@ class DungeonMaster:
         self.player.calc_cyberspace_ac()
         
         level.mark_initially_known_sqrs(_hacking + 2)
-        if self.curr_lvl.entrances:
-            _entrance = self.curr_lvl.entrances[0][0]
-            _up = self.curr_lvl.map[_entrance[0]][_entrance[1]]
+        _meat_level = self.active_levels[self.player.curr_level]
+        if _meat_level.entrances:
+            _entrance = _meat_level.entrances[0][0]
+            _up = _meat_level.map[_entrance[0]][_entrance[1]]
         else:
             _up = None
-        if self.curr_lvl.exits:
-            _exits = self.curr_lvl.exits[0][0]
-            _down = self.curr_lvl.map[_exits[0]][_exits[1]]
+        if _meat_level.exits:
+            _exits = _meat_level.exits[0][0]
+            _down = _meat_level.map[_exits[0]][_exits[1]]
         else:
             _down = None
         
         level.set_real_stairs(_up, _down)
-        level.security_active = self.curr_lvl.security_active
-        if self.curr_lvl.security_active:
+        level.security_active = _meat_level.security_active
+        if _meat_level.security_active:
             level.activate_security_program()
         
     # Moving to a level the player has never visited, so we need to generate a new map and 
@@ -280,6 +285,11 @@ class DungeonMaster:
         if next_lvl.is_cyberspace():
             self.player_enters_cyberspace(next_lvl)
             next_lvl.add_subnet_nodes(self.active_levels[prev_level_num].subnet_nodes)
+        else:
+            # If it's a cyberspace level, it will overwrite the current active level
+            # while the player is in cyberspace. Otherwise, clear the cached level
+            # from active
+            del(self.active_levels[prev_level_num])
 
         next_lvl.entrances[0][1] = exit_point
         _entrance = next_lvl.entrances[0][0]
@@ -287,7 +297,6 @@ class DungeonMaster:
         self.player.col = _entrance[1]
         
         self.active_levels[next_lvl.level_num] = next_lvl
-        del(self.active_levels[prev_level_num])
         self.player.curr_level = next_lvl.level_num
         next_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
         self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
@@ -331,9 +340,9 @@ class DungeonMaster:
             self.sight_matrix = {}
             next_lvl.resolve_events()    
 
-            self.active_levels[level_num] = next_lvl
             del(self.active_levels[prev_level_num])
-        
+            self.active_levels[level_num] = next_lvl
+            
             if monster == None:
                 self.player.row = next_lvl.player_loc[0]
                 self.player.col = next_lvl.player_loc[1]
@@ -367,69 +376,71 @@ class DungeonMaster:
             
         _mr = MessageResolver(self, self.dui)
         _mr.simple_verb_action(victim, ' %s into the hole.', ['fall'], True)
+        _lvl = self.active_levels[victim.curr_level]
         if victim == self.player:
-            self.__determine_next_level('down', (victim.row, victim.col))
+            self.__determine_next_level('down', (victim.row, victim.col), _lvl)
         else:
-            self.curr_lvl.remove_monster(victim, victim.row, victim.col)
-            self.update_sqr(self.curr_lvl,  victim.row, victim.col)
-            self.curr_lvl.things_fallen_in_holes.append(victim)
+            _lvl.remove_monster(victim, victim.row, victim.col)
+            self.update_sqr(_lvl,  victim.row, victim.col)
+            _lvl.things_fallen_in_holes.append(victim)
             
-    def __determine_next_level(self, direction, exit_point, level):
-        _exit_sqr = level.map[exit_point[0]][exit_point[1]]
+    def __determine_next_level(self, direction, exit_point, curr_level):
+        _exit_sqr = curr_level.map[exit_point[0]][exit_point[1]]
         _things_to_transfer = []
         if direction == 'up':
             # After level 14, dungeon level increases as we go up.
-            if level.level_num < 14:
-                next_level_num = level.level_num - 1
+            if curr_level.level_num < 14:
+                next_level_num = curr_level.level_num - 1
             else:
-                next_level_num = level.level_num + 1
+                next_level_num = curr_level.level_num + 1
         else:
-            if level.level_num < 14:
-                next_level_num = level.level_num + 1
+            if curr_level.level_num < 14:
+                next_level_num = curr_level.level_num + 1
             else:
-                next_level_num = level.level_num - 1
-            _things_to_transfer += level.things_fallen_in_holes
-            level.things_fallen_in_holes = []
+                next_level_num = curr_level.level_num - 1
+            _things_to_transfer += curr_level.things_fallen_in_holes
+            curr_level.things_fallen_in_holes = []
             
         if not isinstance(_exit_sqr, T.GapingHole):
             # Monsters don't jump into the hole after the player...
-            _monsters = self.__check_for_monsters_surrounding_stairs(level)
+            _monsters = self.__check_for_monsters_surrounding_stairs(curr_level)
             if len(_monsters) > 0:
                 _monster = choice(_monsters)
-                level.remove_monster(_monster, _monster.row, _monster.col)
+                curr_level.remove_monster(_monster, _monster.row, _monster.col)
             else:
                 _monster = None
         else:
             _monster = None
 
-        save_level(self.player.get_name(), level.level_num, level.generate_save_object())
+        save_level(self.player.get_name(), curr_level.level_num, curr_level.generate_save_object())
         
         # I think I can move these into the game level classes.  A game level can/should
         # know what the next level is.
-        if not self.__load_lvl(next_level_num, level.level_num, _monster):
-            if level.category == 'prologue':
-                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex'), exit_point, level.level_num)
-            elif level.category == 'old complex':
-                if level.level_num < 4:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex'), exit_point, level.level_num)
+        if not self.__load_lvl(next_level_num, curr_level.level_num, _monster):
+            if curr_level.category == 'prologue':
+                _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
+            elif curr_level.category == 'old complex':
+                if curr_level.level_num < 4:
+                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
                 else:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 20, 70, 'mines'), exit_point, level.level_num)
-            elif level.category == 'mines':
-                if level.level_num < 7:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 20, 70, 'mines'), exit_point, level.level_num)
+                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
+            elif curr_level.category == 'mines':
+                if curr_level.level_num < 7:
+                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
                 else:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex'), exit_point, level.level_num)
-            elif level.category == 'science complex':
-                if level.level_num < 11:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex'), exit_point, level.level_num)
+                    _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
+            elif curr_level.category == 'science complex':
+                if curr_level.level_num < 11:
+                    _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
                 else:
-                    self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1'), exit_point, level.level_num)
-            elif level.category == 'mini-boss 1':
-                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point, level.level_num)
-            elif level.level_num == 13:
-                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds'), exit_point, level.level_num)
+                    _gfo = GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1')
+            elif curr_level.category == 'mini-boss 1':
+                _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
+            elif curr_level.level_num == 13:
+                _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
             else:
-                self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex'), exit_point, level.level_num)
+                _gfo = GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex')
+            self.move_to_new_level(_gfo, exit_point, curr_level.level_num)
 
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
         # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
@@ -635,9 +646,9 @@ class DungeonMaster:
         return _dt
 
     def player_tries_moving_through_firewall(self, p, next_r, next_c, dt):
-        if self.curr_lvl.level_num <= 3:
+        if self.player.curr_level <= 3:
             _difficulty = 15
-        elif self.curr_lvl.level_num <= 7:
+        elif self.player.curr_level<= 7:
             _difficulty = 30
         else:
             _difficulty = 45
@@ -807,7 +818,7 @@ class DungeonMaster:
         _dt = self.convert_to_dir_tuple(self.player, _dir)
         _r = self.player.row + _dt[0]
         _c = self.player.col + _dt[1]
-        return self.curr_lvl.map[_r][_c], _r, _c
+        return self.active_levels[self.player.curr_level].map[_r][_c], _r, _c
         
     # At the moment, this is only called from cyberspace, an assumption that may become invalid
     def player_tries_to_hack(self):
@@ -816,8 +827,8 @@ class DungeonMaster:
             _tile, _r, _c = self.__get_tile_from_dir(_dir)
             if isinstance(_tile, Trap) and _tile.revealed:
                 try:
-                    self.curr_lvl.attempt_to_hack_trap(self.player, _tile, _r, _c)
-                    self.update_sqr(self.curr_lvl, _r, _c)
+                    self.active_levels[self.player.curr_level].attempt_to_hack_trap(self.player, _tile, _r, _c)
+                    self.update_sqr(self.active_levels[self.player.curr_level], _r, _c)
                     self.player.energy -= STD_ENERGY_COST
                 except TrapSetOff:
                     self.agent_steps_on_trap(self.player, _tile)
@@ -1355,7 +1366,8 @@ class DungeonMaster:
             _file = _files[_pick]
             _files[_pick] = ''
             self.dui.display_message('You drop the ' + _file.get_name() + '.')
-            self.item_hits_ground(self.curr_lvl, self.player.row, self.player.col, _file)
+            _lvl = self.active_levels[self.player.curr_level]
+            self.item_hits_ground(_lvl, self.player.row, self.player.col, _file)
         except UnableToAccess:
             pass
             

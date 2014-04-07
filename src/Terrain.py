@@ -150,7 +150,7 @@ class Terminal(Equipment):
     def enter_cyberspace(self, dm):
         _pl = (dm.player.row, dm.player.col)
         _c = dm.generate_cyberspace_level()
-        dm.move_to_new_level(_c, _pl)
+        dm.move_to_new_level(_c, _pl, dm.player.curr_level)
         
     def jack_in(self, dm):
         _p = dm.player
@@ -167,15 +167,15 @@ class Terminal(Equipment):
         
         self.access(dm, _dui)
  
-    def show_camera_feed(self, camera, dm, dui, level):
-        sc = Shadowcaster(dm, camera.camera_range, camera.row, camera.col, level)
+    def show_camera_feed(self, camera, dm, dui):
+        sc = Shadowcaster(dm, camera.camera_range, camera.row, camera.col, dm.player.curr_level)
         feed = sc.calc_visible_list()
         feed[(camera.row, camera.col)] = 0
 
         vision = []
         for f in feed:
-            dm.active_levels[level].dungeon_loc[f[0]][f[1]].visited = True
-            sqr = dm.get_sqr_info(f[0], f[1], True)
+            dm.active_levels[dm.player.curr_level].dungeon_loc[f[0]][f[1]].visited = True
+            sqr = dm.get_sqr_info(f[0], f[1], dm.player.curr_level, True)
             vision.append(sqr)
 
         dui.clear_msg_line()
@@ -183,16 +183,17 @@ class Terminal(Equipment):
         dui.show_vision(vision)
         dui.wait_for_input()
         
-    def use_security_cameras(self, dm, dui, level):
-        lm = LevelManager(dm, level)
+    def use_security_cameras(self, dm, dui):
+        lm = LevelManager(dm, dm.player.curr_level)
         if not lm.are_cameras_active():
             _msg = 'Camera access is currently disabled.'
             dui.display_message(_msg, True)
             return
             
+        _lvl = dm.active_levels[dm.player.curr_level]
         header = ['Accessing level security cameras']
         menu = []
-        for camera in dm.active_levels[level].cameras:
+        for camera in _lvl.cameras:
             menu.append( (str(camera), 'Camera ' + str(camera), camera) )
         menu.append( ('q', 'Exit security camera subsystem', 'q') )
 
@@ -200,8 +201,8 @@ class Terminal(Equipment):
         while a != 'q':
             a = dui.ask_menued_question(header, menu)
             if a not in ('q', ''):
-                if dm.active_levels[level].cameras[a].functional:
-                    self.show_camera_feed(dm.active_levels[level].cameras[a], dm, dui, level)
+                if _lvl.cameras[a].functional:
+                    self.show_camera_feed(_lvl.cameras[a], dm, dui)
                 else:
                     _msg = 'Camera ' + str(a) + ' is not working.'
                     dui.display_message(_msg, 1)
@@ -265,7 +266,7 @@ class Door(TerrainTile):
             dm.update_sqr(level, row, col)
             self.smash()
             _msg = self.get_name() + ' is blown to pieces.'
-            alert = VisualAlert(row, col, _msg, '', level)
+            alert = VisualAlert(row, col, _msg, '')
             alert.show_alert(dm, False)
 
 class SpecialDoor(Door):

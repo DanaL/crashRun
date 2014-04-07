@@ -37,7 +37,7 @@ from .Terrain import FIREWALL
 from .Terrain import UP_STAIRS
 from .Util import do_d10_roll
 
-class TrapSetOff:
+class TrapSetOff(Exception):
     pass
     
 class CyberspaceLevel(GameLevel):
