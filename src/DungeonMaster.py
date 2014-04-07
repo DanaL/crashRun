@@ -660,7 +660,7 @@ class DungeonMaster:
 
     def player_moves_onto_a_special_sqr(self, row, col):
         self.player.energy -= STD_ENERGY_COST
-        _sqr = self.curr_lvl.map[row][col]
+        _sqr = self.active_levels[self.player.curr_level].map[row][col]
         
         try:
             self.__determine_next_level(_sqr.direction, (row, col))
