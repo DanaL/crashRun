@@ -142,13 +142,13 @@ class DisplayGuts(object):
             SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
             
-    def set_r_c(self, r, c, level):
-        if self.cc.get_lvl_width(level) < self.display_cols:
+    def set_r_c(self, r, c, level_num):
+        if self.cc.get_lvl_width(level_num) < self.display_cols:
             self.map_c = 0
         else:
             self.map_c = c - self.display_cols // 2
 
-        if self.cc.get_lvl_length(level) < self.display_rows:
+        if self.cc.get_lvl_length(level_num) < self.display_rows:
             self.map_r = -1
         else:
             self.map_r = r - self.display_rows // 2 + 1

@@ -160,7 +160,8 @@ class DungeonMaster:
         self.virtual_turn = 0 # Time is kept seperately in cyberspace
         self.sight_matrix = {}
         last_sight_matrix = {}
-        
+        self.suspended_player = None
+
     def get_meatspace_dmg_msg(self, delta, curr_hp):
         _p = float(delta) / float(curr_hp)
         
@@ -183,21 +184,17 @@ class DungeonMaster:
         
     def player_exits_cyberspace(self, exit_dmg = 0):        
         self.dui.display_message('You find yourself back in the real world.', True)
-        _ms = self.player.meat_stats
-        self.player.light_radius = _ms.light_r
-        self.player.vision_radius = _ms.vision_r
+
+        # Calculate how much damage was suffered in Cyberspace. Some of that is inflicted
+        # in the real world. "If you're killed in the matrix, you die here?"...
+        _hp_delta_cyberspace = self.player.max_hp - self.player.curr_hp
+
+        self.player = self.suspended_player
+        self.suspended_player = None
+        self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
+
         _wired_level = self.active_levels[self.player.curr_level]
         _security = _wired_level.security_active
-        
-        # Calcuate player's HP on exit, and how much damage is transfered 
-        # from the virtual to the real
-        _hp_delta_cyberspace = self.player.max_hp - self.player.curr_hp
-        _hp_delta_before = _ms.maxhp - _ms.hp
-        self.player.temp_bonus_hp = 0
-        self.player.calc_hp()
-        self.player.curr_hp -= _hp_delta_before
-        self.player.calc_ac()
-        self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
         
         _up = None
         _down = None
@@ -243,22 +240,11 @@ class DungeonMaster:
     # into the function is the incoming cyberspace level
     def player_enters_cyberspace(self, level):
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
-        _hacking = self.player.skills.get_skill('Hacking').get_rank()
-        
-        self.player.meat_stats = self.player.get_meatspace_stats()
-        
-        if _hacking < 3:
-            self.player.light_radius = 3
-        elif _hacking < 5:
-            self.player.light_radius = 4
-        else:
-            self.player.light_radius = 5
-            
-        self.player.temp_bonus_hp += self.player.stats.get_chutzpah() * 2
-        self.player.calc_hp()
-        self.player.calc_cyberspace_ac()
-        
-        level.mark_initially_known_sqrs(_hacking + 2)
+        _avatar = self.player.get_cyberspace_avatar(self)
+        self.suspended_player = self.player
+        self.player = _avatar
+
+        level.mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
         _meat_level = self.active_levels[self.player.curr_level]
         _up = None
         _down = None
@@ -560,6 +546,7 @@ class DungeonMaster:
         self.virtual_turn = stuff[1]
         self.player = stuff[2]
         BasicBot.bot_number = stuff[4]
+        self.suspended_player = stuff[5]
 
         for _lvl in stuff[3]:
             _level_num = _lvl[6]
@@ -581,7 +568,7 @@ class DungeonMaster:
             self.player.dm = ''
         
             _lvls = [_lvl.generate_save_object() for _lvl in self.active_levels.values()]
-            _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number)
+            _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player)
             save_game(self.player.get_name(), _save_obj)
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 
@@ -1946,9 +1933,11 @@ class DungeonMaster:
     def player_killed(self, killer=''):
         _level = self.active_levels[self.player.curr_level]
         if _level.is_cyberspace():
-            self.__player_killed_in_cyberspace()
-            return
+            self.dui.display_message('You have been expunged.', True)
+            self.player_forcibly_exits_cyberspace()
         
+            raise TurnInterrupted
+            
         _kn =  killer.get_name(2)
         _msg = 'You have been killed by ' + _kn + '!'
         self.dui.display_message(_msg, 1)
@@ -1988,13 +1977,7 @@ class DungeonMaster:
         _dmg = randrange(1,11)
         agent.damaged(self, _dmg, '', ['toxic waste'])
         agent.dazed('')
-        
-    def __player_killed_in_cyberspace(self):
-        self.dui.display_message('You have been expunged.', True)
-        self.player_forcibly_exits_cyberspace()
-        
-        raise TurnInterrupted
-    
+
     def __check_trajectory(self, start_r, start_c, target_r, target_c, level):
         if start_r == target_r and start_c == target_c:
             return True

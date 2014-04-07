@@ -297,7 +297,7 @@ class DungeonUI(object):
             self.toggle_options()
         elif cmd == 'CENTRE_VIEW':
             _loc = self.cc.get_player_loc()
-            self.guts.set_r_c(_loc[0], _loc[1])
+            self.guts.set_r_c(_loc[0], _loc[1], _loc[2])
             self.guts.redraw_screen()
 
     def pick_from_list(self, msg, items):

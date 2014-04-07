@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+from copy import copy
 from random import randrange
 
 from .Agent import BaseAgent
@@ -93,13 +94,6 @@ class PlayerStats:
         elif toughness == 17: return 3
         elif toughness == 18: return 4
         else: return 0
-
-class MeatspaceStats(object):
-    def __init__(self, hp, maxhp, light_r, vision_r):
-        self.hp = hp
-        self.maxhp = maxhp
-        self.light_r = light_r
-        self.vision_r = vision_r
         
 class Player(BaseAgent, AgentMemory):
     def __init__(self,stats,background,name,row,col,dm):
@@ -116,7 +110,6 @@ class Player(BaseAgent, AgentMemory):
     
         self.max_hp = 0
         self.curr_hp = 0
-        self.temp_bonus_hp = 0
         
         self.background = background
         AgentMemory.__init__(self)
@@ -129,6 +122,21 @@ class Player(BaseAgent, AgentMemory):
         self.weapon_configs = {}
         self.reload_memory = None
         
+    def get_cyberspace_avatar(self, dm):
+        _avatar = copy(self)
+        _hacking = _avatar.skills.get_skill('Hacking').get_rank()
+        if _hacking < 3:
+            _avatar.light_radius = 3
+        elif _hacking < 5:
+            _avatar.light_radius = 4
+        else:
+            _avatar.light_radius = 5
+
+        _avatar.max_hp = self.max_hp + _avatar.stats.get_chutzpah() * 2
+        _avatar.curr_hp = _avatar.max_hp
+
+        return _avatar
+
     def add_hp(self, delta):
         BaseAgent.add_hp(self, delta)
         self.dm.dui.update_status_bar()
@@ -317,9 +325,6 @@ class Player(BaseAgent, AgentMemory):
         _mod += self.calc_missile_to_hit_bonus()
         
         return _mod 
-        
-    def get_meatspace_stats(self):
-        return MeatspaceStats(self.curr_hp, self.max_hp, self.light_radius, self.vision_radius)
     
     def remove_effects(self, source):
         BaseAgent.remove_effects(self, source)
@@ -435,7 +440,7 @@ class Player(BaseAgent, AgentMemory):
 
     def calc_hp(self):
         hp_bonus = self.stats.get_toughness_hp_modifier()
-        self.max_hp = reduce((lambda j,k:j+k),self.__base_hp,hp_bonus) + 5 + self.temp_bonus_hp
+        self.max_hp = reduce((lambda j,k:j+k),self.__base_hp,hp_bonus) + 5
         self.curr_hp = self.max_hp
 
     def __calc_initial_hp(self):
