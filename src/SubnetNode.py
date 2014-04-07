@@ -72,9 +72,9 @@ class RobotGrandCentral(SubnetNode):
                 menu.append((ch, r.get_name(1) + " " + r.get_serial_number(), ch))
                 count += 1
         
-        choice = ''
-        while choice == '':
-            choice = dm.dui.ask_menued_question(header,menu)
+            choice = ''
+            while choice == '':
+                choice = dm.dui.ask_menued_question(header, menu)
 
 def get_dance_node():
     _dn = SkillBuilderNode('Dancing', 'Miscellaneous')

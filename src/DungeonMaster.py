@@ -2206,10 +2206,11 @@ class DungeonMaster:
         
             _r = self.player.row
             _c = self.player.col
+            _lvl = self.active_levels[self.player.curr_level]
             _picks = []
             for r in (-1,0,1):
                 for c in (-1,0,1):
-                    if self.is_clear(_r+r,_c+c):
+                    if _lvl.is_clear(_r+r,_c+c):
                         _picks.append((_r+r,_c+c))
         
             _pick = choice(_picks)
@@ -2219,7 +2220,6 @@ class DungeonMaster:
             else:
                 _monster = MonsterFactory.get_monster_by_name(self, _request, _pick[0], _pick[1])
             
-            _lvl = self.active_levels[self.player.curr_level]    
             _lvl.add_monster_to_dungeon(_monster, _pick[0], _pick[1])
             self.refresh_player_view()
         except KeyError:
