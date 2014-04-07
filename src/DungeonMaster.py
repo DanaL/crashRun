@@ -1143,7 +1143,7 @@ class DungeonMaster:
     def throw_item_down(self, item):
         _p = self.player
         self.dui.display_message("You toss it to the ground at your feet.")
-        self.item_hits_ground(self.curr_lvl, _p.row, _p.col, item)
+        self.item_hits_ground(self.active_levels[_p.curr_level], _p.row, _p.col, item)
         
     def throw_item_up(self, item):
         _p = self.player
@@ -1157,7 +1157,7 @@ class DungeonMaster:
         
     # function to handle when player throws something
     # should be broken up into a few parts for clarity
-    def __throw_projectile(self,item,start_r,start_c,direction):
+    def __throw_projectile(self, item,start_r, start_c, direction):
         if direction == '<':
             self.throw_item_up(item)
             return
@@ -1178,39 +1178,40 @@ class DungeonMaster:
             item_row += dt[0]
             item_col += dt[1]
             
-            self.curr_lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
+            _lvl = self.active_levels[self.player.curr_level]
+            _lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
         
-            if self.is_open(item_row,item_col) and self.curr_lvl.dungeon_loc[item_row][item_col].occupant == '':
-                self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = item
+            if self.is_open(item_row, item_col, _lvl.level_num) and _lvl.dungeon_loc[item_row][item_col].occupant == '':
+                _lvl.dungeon_loc[item_row][item_col].temp_tile = item
                 _range -= 1
             else:
                 # If the square isn't open, item must have hit a monster or a solid
                 # terrain feature.
-                if self.curr_lvl.dungeon_loc[item_row][item_col].occupant != '':
-                    self.update_sqr(self.curr_lvl, prev_r, prev_c)
-                    _monster = self.curr_lvl.dungeon_loc[item_row][item_col].occupant
+                if _lvl.dungeon_loc[item_row][item_col].occupant != '':
+                    self.update_sqr(_lvl, prev_r, prev_c)
+                    _monster = _lvl.dungeon_loc[item_row][item_col].occupant
                     
                     if _monster.chance_to_catch(item):
                         return
                         
                     if _tr.attack(self.player, _monster, item):
-                        self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = ''
-                        self.update_sqr(self.curr_lvl, item_row, item_col)
+                        _lvl.dungeon_loc[item_row][item_col].temp_tile = ''
+                        self.update_sqr(_lvl, item_row, item_col)
                         break
                     else:
                         # It missed, so it keeps on flying
-                        self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = item
+                        _lvl.dungeon_loc[item_row][item_col].temp_tile = item
                         _range -= 1
                 else:
                     # we hit a non-open terrain, so move back one        
-                    self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile = ''
-                    self.curr_lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
+                    _lvl.dungeon_loc[item_row][item_col].temp_tile = ''
+                    _lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
                     item_row = prev_r
                     item_col = prev_c                                      
                     break
 
-            self.update_sqr(self.curr_lvl, item_row, item_col)
-            self.update_sqr(self.curr_lvl, prev_r,prev_c)
+            self.update_sqr(_lvl, item_row, item_col)
+            self.update_sqr(_lvl, prev_r,prev_c)
 
             sleep(ANIMATION_PAUSE) # do I really want to bother doing this?
 
@@ -1219,9 +1220,9 @@ class DungeonMaster:
             _glasses.charge -= 1
             if _glasses.charge == 0: self.items_discharged(self.player, [_glasses])
 
-        self.curr_lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
-        self.item_hits_ground(self.curr_lvl, item_row, item_col, item)
-        self.update_sqr(self.curr_lvl, item_row, item_col)  
+        _lvl.dungeon_loc[item_row][item_col].temp_tile =  '' 
+        self.item_hits_ground(_lvl, item_row, item_col, item)
+        self.update_sqr(_lvl, item_row, item_col)  
 
     def add_ammo_to_gun(self, agent, gun, ammo_pick):
         if agent == self.player:
