@@ -307,10 +307,10 @@ class DungeonMaster:
     # would be really strange to code). 
     #
     # Simpler may be to not generate labs in rooms with stairs.
-    def __monster_displaces_player(self, stairs, monster):
-        self.curr_lvl.add_monster_to_dungeon(monster, stairs[0], stairs[1])
-        
-        _nearest_clear = self.curr_lvl.get_nearest_clear_space(stairs[0], stairs[1])
+    def __monster_displaces_player(self, stairs, monster, level_num):
+        _lvl = self.active_levels[level_num]
+        _lvl.add_monster_to_dungeon(monster, stairs[0], stairs[1])
+        _nearest_clear = _lvl.get_nearest_clear_space(stairs[0], stairs[1])
         self.player.row = _nearest_clear[0]
         self.player.col = _nearest_clear[1]
 
@@ -320,28 +320,29 @@ class DungeonMaster:
 
     # loading the level object is basically duplicated with the __loadSavedGame() method
     # should be factored out
-    def __load_lvl(self,level_num, monster):
+    def __load_lvl(self, level_num, prev_level_num, monster):
         try:
             self.sight_matrix = {}
 
             level_obj = load_level(self.player.get_name(), level_num) 
-            nextLvl = GetGameFactoryObject(self, level_obj[6], len(level_obj[0]), len(level_obj[0][0]), level_obj[5])
-            get_level_from_save_obj(nextLvl, level_obj)
+            next_lvl = GetGameFactoryObject(self, level_obj[6], len(level_obj[0]), len(level_obj[0][0]), level_obj[5])
+            get_level_from_save_obj(next_lvl, level_obj)
             
             self.sight_matrix = {}
+            next_lvl.resolve_events()    
 
-            nextLvl.resolve_events()    
-
-            self.curr_lvl = nextLvl
+            self.active_levels[level_num] = next_lvl
+            del(self.active_levels[prev_level_num])
         
             if monster == None:
-                self.player.row = self.curr_lvl.player_loc[0]
-                self.player.col = self.curr_lvl.player_loc[1]
+                self.player.row = next_lvl.player_loc[0]
+                self.player.col = next_lvl.player_loc[1]
             else:
-                self.__monster_displaces_player(self.curr_lvl.player_loc, monster)
+                self.__monster_displaces_player(next_lvl.player_loc, monster, level_num)
 
-            self.curr_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-            self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
+            self.player.curr_level = level_num
+            next_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
+            self.dui.set_r_c(self.player.row, self.player.col, next_lvl.level_num)
             self.refresh_player_view()
             self.dui.update_status_bar()
             self.dui.draw_screen()
@@ -405,7 +406,7 @@ class DungeonMaster:
         
         # I think I can move these into the game level classes.  A game level can/should
         # know what the next level is.
-        if not self.__load_lvl(next_level_num, _monster):
+        if not self.__load_lvl(next_level_num, level.level_num, _monster):
             if level.category == 'prologue':
                 self.move_to_new_level(GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex'), exit_point, level.level_num)
             elif level.category == 'old complex':
@@ -682,7 +683,8 @@ class DungeonMaster:
             self.dui.display_message('You cannot go down here.')
 
     def player_moves_up_a_level(self):
-        sqr = self.curr_lvl.map[self.player.row][self.player.col]
+        _lvl = self.active_levels[self.player.curr_level]
+        sqr = _lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, T.Trap):
             if isinstance(sqr, T.HoleInCeiling):
                 self.dui.display_message("You can't jump high enough.")
@@ -693,7 +695,7 @@ class DungeonMaster:
 
         if isinstance(sqr, T.UpStairs):
             if sqr.activated:
-                self.__determine_next_level('up', (self.player.row, self.player.col))
+                self.__determine_next_level('up', (self.player.row, self.player.col), _lvl)
                 self.player.energy -= STD_ENERGY_COST
             else:
                 self.dui.display_message('The lift is deactivated.')
