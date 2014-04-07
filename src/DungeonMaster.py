@@ -160,7 +160,7 @@ class DungeonMaster:
         self.virtual_turn = 0 # Time is kept seperately in cyberspace
         self.sight_matrix = {}
         last_sight_matrix = {}
-        self.suspended_player = None
+        self.suspended_player = []
 
     def get_meatspace_dmg_msg(self, delta, curr_hp):
         _p = float(delta) / float(curr_hp)
@@ -189,8 +189,7 @@ class DungeonMaster:
         # in the real world. "If you're killed in the matrix, you die here?"...
         _hp_delta_cyberspace = self.player.max_hp - self.player.curr_hp
 
-        self.player = self.suspended_player
-        self.suspended_player = None
+        self.player = self.suspended_player.pop()
         self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
 
         _wired_level = self.active_levels[self.player.curr_level]
@@ -241,7 +240,7 @@ class DungeonMaster:
     def player_enters_cyberspace(self, level):
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _avatar = self.player.get_cyberspace_avatar(self)
-        self.suspended_player = self.player
+        self.suspended_player.append(self.player)
         self.player = _avatar
 
         level.mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
@@ -546,6 +545,8 @@ class DungeonMaster:
         self.virtual_turn = stuff[1]
         self.player = stuff[2]
         BasicBot.bot_number = stuff[4]
+        for _sp in stuff[5]:
+            _sp.dm = self
         self.suspended_player = stuff[5]
 
         for _lvl in stuff[3]:
@@ -568,6 +569,8 @@ class DungeonMaster:
             self.player.dm = ''
         
             _lvls = [_lvl.generate_save_object() for _lvl in self.active_levels.values()]
+            for _sp in self.suspended_player:
+                _sp.dm = None
             _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player)
             save_game(self.player.get_name(), _save_obj)
             self.dui.display_high_scores(5)
