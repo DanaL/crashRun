@@ -20,6 +20,7 @@ from random import choice
 from random import randrange
 from random import random
 from random import randint
+from string import ascii_letters
 
 from .BaseTile import BaseTile
 from . import Behaviour
@@ -1189,11 +1190,12 @@ class BasicBot(RelentlessPredator):
     bot_number = 0
 
     def __init__(self):
-        self.serial_number = BasicBot.bot_number
-        BasicBot.bot_number += 1
+        _num = ("%X" % BasicBot.bot_number).zfill(4)
+        BasicBot.bot_number += 1    
+        self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))
 
     def get_serial_number(self):
-        return str(self.serial_number).zfill(10)
+        return self.serial_number
         
     def regenerate(self):
         pass # Standard robots don't heal on their own. They need to be repaired.

@@ -230,8 +230,7 @@ class DungeonMaster:
         
     def generate_cyberspace_level(self):
         _curr = self.active_levels[self.player.curr_level]
-        _pn = self.player.get_name()
-        save_level(_pn, self.player.curr_level, _curr.generate_save_object())
+        save_level(self.game_name, self.player.curr_level, _curr.generate_save_object())
         return CyberspaceLevel(self, self.player.curr_level, 20, 70)
     
     def player_remotes_to_robot(self, robot):
@@ -333,7 +332,7 @@ class DungeonMaster:
         try:
             self.sight_matrix = {}
 
-            level_obj = load_level(self.player.get_name(), level_num) 
+            level_obj = load_level(self.game_name, level_num) 
             next_lvl = GetGameFactoryObject(self, level_obj[6], len(level_obj[0]), len(level_obj[0][0]), level_obj[5])
             get_level_from_save_obj(next_lvl, level_obj)
             
@@ -469,20 +468,20 @@ class DungeonMaster:
         self.dui.wait_for_input()
         self.dui.clear_screen(True)
         
-        game = self.dui.query_user('What is your name?').strip()
+        self.game_name = self.dui.query_user('What is your name?').strip()
 
         try:
-            self.__load_saved_game(game)
+            self.__load_saved_game(self.game_name)
             self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.dui.draw_screen()
         except NoSaveFileFound:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
-            self.begin_new_game(game)
+            self.begin_new_game(self.game_name)
             self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
-            BasicBot.bot_number = 0
+            BasicBot.bot_number = randrange(100) + 10
 
         self.start_play()
         
@@ -591,7 +590,7 @@ class DungeonMaster:
             for _sp in self.suspended_player:
                 _sp.dm = None
             _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player)
-            save_game(self.player.get_name(), _save_obj)
+            save_game(self.game_name, _save_obj)
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 
             self.dui.display_message('Be seeing you...', True)
@@ -992,7 +991,7 @@ class DungeonMaster:
 
     def player_quit(self):
         if self.dui.query_yes_no('Are you sure you wish to quit') == 'y':
-            clean_up_files(self.player.get_name(), get_save_file_name(self.player.get_name()))
+            clean_up_files(self.game_name, get_save_file_name(self.game_name))
             self.__end_of_game()
 
     def __end_of_game(self, score=[]):
@@ -2144,6 +2143,10 @@ class DungeonMaster:
             self.dui.display_message('An alarm is sounding.')
                 
         self.dui.do_player_action()
+
+        # This may have changed as a result of the player moving between levels
+        # on their turn.
+        _active_level_nums = [k for k in self.active_levels.keys() if k > -1]
 
         #loop over monsters
         _monsters = []
