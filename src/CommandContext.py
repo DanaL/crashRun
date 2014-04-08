@@ -42,7 +42,8 @@ from .Util import get_correct_article
 from .Util import get_direction_tuple
 from .Util import NonePicked
 from .Util import pluralize
-            
+from .Util import TurnInterrupted
+
 class StatusBarInfo:
     def __init__(self,name,hp,max_hp,ac,lvl,lvl_type):
         self.name = name
@@ -62,7 +63,24 @@ class CommandContext(object):
     
     def debug_command(self, command):
         self.dm.debug_command(command)
-    
+
+                       
+    def do_player_action(self):
+        _player = self.dm.player
+        self.dm.active_agent = _player
+        
+        try:
+            if _player.has_condition('stunned'):
+                _player.stunned(self.dui)
+            else:
+                while _player.energy >= _player.ENERGY_THRESHOLD:
+                    self.dui.get_player_command()
+                    self.dui.update_status_bar()
+        except TurnInterrupted:
+            pass
+        
+        self.active_agent = ''
+
     def get_software_list(self, as_menu):
         msg = ['Software packages installed on your wetboard:']
         for _sw in self.dm.player.software.get_menu():
@@ -405,7 +423,6 @@ class MeatspaceCC(CommandContext):
                         self.dui.display_message('You can see much better without those shades on.')
                     _player.remove_effects(_item)
                     _player.calc_ac()
-                    self.dui.update_status_bar()
                     _player.energy -= STD_ENERGY_COST
                 except Inventory.NotWearingItem:
                     self.dui.display_message('You aren\'t wearing that!')

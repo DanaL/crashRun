@@ -137,10 +137,6 @@ class Player(BaseAgent, AgentMemory):
 
         return _avatar
 
-    def add_hp(self, delta):
-        BaseAgent.add_hp(self, delta)
-        self.dm.dui.update_status_bar()
-    
     def calc_cyberspace_ac(self):
         BaseAgent.calc_cyberspace_ac(self, 10)
         
@@ -221,7 +217,6 @@ class Player(BaseAgent, AgentMemory):
         BaseAgent.apply_effect(self, effect, instant)
         if effect[0][0] in ('infrared', 'light', 'blind'):
             self.dm.refresh_player_view()
-        self.dm.dui.update_status_bar()
 
     def remove_effect(self, effect, source):
         BaseAgent.remove_effect(self, effect, source)        
@@ -358,7 +353,6 @@ class Player(BaseAgent, AgentMemory):
         if self.skill_points > 0:
             _m = 'You have %d skill points to spend.' % (self.skill_points)
             self.dm.dui.display_message(_m)
-        self.dm.dui.update_status_bar()
         self.__calc_next_level()
 
     # I probably really need to adjust this.  I don't think they need to go up exponentially

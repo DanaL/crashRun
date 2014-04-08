@@ -93,6 +93,7 @@ from .Util import get_correct_article
 from .Util import get_direction_tuple
 from .Util import get_rnd_direction_tuple
 from .Util import NonePicked
+from .Util import TurnInterrupted
 
 ANIMATION_PAUSE = 0.02
 FINAL_TURN = 20000
@@ -107,9 +108,6 @@ class GameOver(Exception):
     pass
 
 class TurnOver(Exception):
-    pass
-
-class TurnInterrupted(Exception):
     pass
 
 class UnknownDebugCommand(Exception):
@@ -305,7 +303,6 @@ class DungeonMaster:
         self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
         self.dui.draw_screen()
         self.refresh_player_view()
-        self.dui.update_status_bar()
         
         if not self.player.has_memory('enter complex'):
             self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
@@ -367,7 +364,6 @@ class DungeonMaster:
         _lvl.dungeon_loc[player.row][player.col].occupant = player
         self.dui.set_r_c(player.row, player.col, level_num)
         self.refresh_player_view()
-        self.dui.update_status_bar()
         self.dui.draw_screen()
 
     def __check_for_monsters_surrounding_stairs(self, level):
@@ -541,8 +537,7 @@ class DungeonMaster:
         
         # In case the player's AC is effected
         if victim == self.player:
-            self.player.calc_ac()
-            self.dui.update_status_bar()    
+            self.player.calc_ac()  
                 
     def monster_steals(self, thief, r, c, can_steal_readied):
         _item = ''
@@ -1991,7 +1986,6 @@ class DungeonMaster:
             agent.calc_ac()
             if agent == self.player:
                 self.dui.display_message('The acid eats through your shoes.')
-                self.dui.update_status_bar()
         else:
             _dmg = randrange(5,11)
             agent.damaged(self, _dmg, '', ['acid'])
@@ -2146,8 +2140,7 @@ class DungeonMaster:
         if _sound_alarm:
             self.dui.display_message('An alarm is sounding.')
                 
-        # perform player action
-        self.do_player_action()
+        self.dui.do_player_action()
         
         #loop over monsters
         _monsters = []
@@ -2178,20 +2171,6 @@ class DungeonMaster:
         self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
         for _m in _monsters:
             _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
-                       
-    def do_player_action(self):
-        self.active_agent = self.player
-        
-        try:
-            if self.player.has_condition('stunned'):
-                self.player.stunned(self.dui)
-            else:
-                while self.player.energy >= self.player.ENERGY_THRESHOLD:
-                    self.dui.get_player_command()
-        except TurnInterrupted:
-            pass
-        
-        self.active_agent = ''
         
     def debug_add_item(self, words):
         _request = ""

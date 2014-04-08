@@ -72,6 +72,9 @@ class EmptyInventory(Exception):
 class NonePicked(Exception):
     pass
 
+class TurnInterrupted(Exception):
+    pass
+    
 # Pretty much directly the opitmized version
 # of the algorithm from Wikipedia
 def bresenham_line(x0, y0, x1, y1):

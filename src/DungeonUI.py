@@ -188,7 +188,10 @@ class DungeonUI(object):
             message = msg
         self.__message_memory.append(message)
         self.guts.write_message(message + ' ', pause_for_more)
-            
+    
+    def do_player_action(self):
+        self.cc.do_player_action()
+        
     def get_direction(self, show_prompt=True):
         _dir = ''
         if show_prompt: 

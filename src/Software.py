@@ -79,12 +79,10 @@ class Firewall(Software):
     def execute(self, dm, agent):
         super(Firewall, self).execute(dm, agent)
         agent.calc_cyberspace_ac()
-        dm.dui.update_status_bar()
         
     def terminate(self, dm, agent):
         super(Firewall, self).terminate(dm, agent)
         agent.calc_cyberspace_ac()
-        dm.dui.update_status_bar()
         
 class MP3(Software):
     def __init__(self):
