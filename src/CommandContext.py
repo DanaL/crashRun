@@ -590,6 +590,29 @@ class MeatspaceCC(CommandContext):
         except EmptyInventory:
             pass
 
+class RemoteRobotCC(MeatspaceCC):
+    def fire_weapon(self):
+        self.dui.display_message("Nope!")
+
+    def get_status_bar_info(self):
+        _p = self.dm.player
+        _lvl = self.dm.active_levels[_p.curr_level]
+        _name = "SN #" + _p.get_serial_number()
+        return StatusBarInfo(_name, _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
+
+    def swap_weapons(self):
+        self.dui.display_message("Error 404: external limbs not found.")
+
+    def throw_item(self):
+        self.dui.display_message("That EMACS extension was not installed.")
+
+    def use_item(self):
+        self.dui.display_message("That EMACS extension was not installed.")
+
+    def wield_weapon(self):
+        self.dui.display_message("You need some major upgrades before doing that.")
+
+
 class CyberspaceCC(CommandContext):        
     def bash(self):
         self.not_in_cyberspace()

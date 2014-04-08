@@ -34,6 +34,7 @@ from .CombatResolver import ShootingResolver
 from .CombatResolver import ThrowingResolver
 from .CommandContext import MeatspaceCC
 from .CommandContext import CyberspaceCC
+from .CommandContext import RemoteRobotCC
 from .Cyberspace import CyberspaceLevel
 from .Cyberspace import TrapSetOff
 from .FieldOfView import get_lit_list
@@ -235,6 +236,20 @@ class DungeonMaster:
         save_level(_pn, self.player.curr_level, _curr.generate_save_object())
         return CyberspaceLevel(self, self.player.curr_level, 20, 70)
     
+    def player_remotes_to_robot(self, robot):
+        self.__load_lvl(robot.curr_level, robot.curr_level, None)
+        self.suspended_player.append(self.player)
+        self.player = robot
+        robot.light_radius = robot.vision_radius
+        _lvl = self.active_levels[robot.curr_level]
+        self.dui.set_command_context(RemoteRobotCC(self, self.dui))
+        self.add_player_to_level(robot.curr_level, robot)
+        for m in _lvl.monsters:
+            if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
+                break
+        _lvl.monsters.remove(m)     
+        self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
+        
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
     def player_enters_cyberspace(self, level):
@@ -327,7 +342,10 @@ class DungeonMaster:
             self.sight_matrix = {}
             next_lvl.resolve_events()    
 
-            del(self.active_levels[prev_level_num])
+            if level_num == prev_level_num:
+                self.active_levels[-1] = self.active_levels[level_num]
+            else:
+                del(self.active_levels[prev_level_num])
             self.active_levels[level_num] = next_lvl
             
             if monster == None:
@@ -336,16 +354,21 @@ class DungeonMaster:
             else:
                 self.__monster_displaces_player(next_lvl.player_loc, monster, level_num)
 
-            self.player.curr_level = level_num
-            next_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-            self.dui.set_r_c(self.player.row, self.player.col, next_lvl.level_num)
-            self.refresh_player_view()
-            self.dui.update_status_bar()
-            self.dui.draw_screen()
+            self.add_player_to_level(level_num, self.player)
+            
             return True
         except NoSaveFileFound:
             return False
         
+    def add_player_to_level(self, level_num, player):
+        player.curr_level = level_num
+        _lvl = self.active_levels[level_num]
+        _lvl.dungeon_loc[player.row][player.col].occupant = player
+        self.dui.set_r_c(player.row, player.col, level_num)
+        self.refresh_player_view()
+        self.dui.update_status_bar()
+        self.dui.draw_screen()
+
     def __check_for_monsters_surrounding_stairs(self, level):
         _monsters = []
         for r in (-1,0,1):

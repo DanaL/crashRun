@@ -302,6 +302,9 @@ class BaseAgent(BaseTile):
     def chance_to_catch(self, item):
         return False
         
+    def check_for_withdrawal_effects(self):
+        pass
+        
     def damaged(self, dm, damage, attacker, damage_types=[]):
         _special = set(damage_types).intersection(set(('shock','burn','brain damage', 'toxic waste', 'acid')))
             
@@ -363,7 +366,10 @@ class BaseAgent(BaseTile):
             self.dm.move_monster(self, delta_c, delta_r)
         except:
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
-            
+
+    def stealth_roll(self):    
+        return do_d10_roll(1, 0)
+
     def stunned(self, dui):
         self.try_to_shake_off_shock()
         self.energy -= STD_ENERGY_COST
