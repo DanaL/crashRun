@@ -66,20 +66,19 @@ class CommandContext(object):
 
                        
     def do_player_action(self):
-        _player = self.dm.player
-        self.dm.active_agent = _player
+        self.dm.active_agent = self.dm.player
         
         try:
-            if _player.has_condition('stunned'):
-                _player.stunned(self.dui)
+            if self.dm.player.has_condition('stunned'):
+                self.dm.player.stunned(self.dui)
             else:
-                while _player.energy >= _player.ENERGY_THRESHOLD:
+                while self.dm.player.energy >= self.dm.player.ENERGY_THRESHOLD:
                     self.dui.get_player_command()
                     self.dui.update_status_bar()
         except TurnInterrupted:
             pass
-        
-        self.active_agent = ''
+
+        self.dm.active_agent = ''
 
     def get_software_list(self, as_menu):
         msg = ['Software packages installed on your wetboard:']

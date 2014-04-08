@@ -248,7 +248,7 @@ class DungeonMaster:
                 break
         _lvl.monsters.remove(m)     
         self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
-        
+
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
     def player_enters_cyberspace(self, level):
@@ -2132,6 +2132,9 @@ class DungeonMaster:
  
      # loop over all actors until everyone's energy is below threshold
     def do_turn(self):
+        # Index -1 is for suspended Cyberspace levels.
+        _active_level_nums = [k for k in self.active_levels.keys() if k > -1]
+
         _sound_alarm = False
         for _level in self.active_levels.keys():
             if self.active_levels[_level].security_lockdown and self.turn % 10 == 0:
@@ -2141,15 +2144,14 @@ class DungeonMaster:
             self.dui.display_message('An alarm is sounding.')
                 
         self.dui.do_player_action()
-        
+
         #loop over monsters
         _monsters = []
-        for _level in self.active_levels.keys(): 
+        for _level in _active_level_nums: 
             _monsters += self.active_levels[_level].monsters
 
         for _m in _monsters:
             self.active_agent = _m
-
             try:
                 if self.active_agent.has_condition('stunned'):
                     self.active_agent.stunned(self.dui)
@@ -2160,8 +2162,8 @@ class DungeonMaster:
                 pass
             self.active_agent = ''
         
-        # Index -1 is for suspended Cyberspace levels.
-        for _level in [k for k in self.active_levels.keys() if k > -1]:
+        
+        for _level in _active_level_nums:
             _curr_lvl = self.active_levels[_level]
             _curr_lvl.resolve_events()          
             _curr_lvl.end_of_turn()
