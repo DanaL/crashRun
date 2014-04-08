@@ -216,7 +216,7 @@ class BaseAgent(BaseTile):
         self.dead = False
         self.curr_level = 0
         
-    def add_hp(self,delta):
+    def add_hp(self, delta):
         self.curr_hp += delta
 
         if self.curr_hp > self.max_hp:
@@ -224,6 +224,9 @@ class BaseAgent(BaseTile):
             
     def add_resistence(self,new_res):
         self.resistances.append(new_res)
+
+    def add_xp(self, xp):
+        pass
 
     # Effects should be passed as a tuple of the form ( <effect>, <source>) and <effect> should be a tuple
     # of the form ( <description>, <intensity>, <duration>)
@@ -416,6 +419,11 @@ class BaseAgent(BaseTile):
 
         return self.__count_flashlights_in_conditions() <= 1
         
+    # The healing that happens over time every X # of turns (X is 
+    # defined in GameLevel)
+    def regenerate(self):
+        self.add_hp(1)
+
     def remove_effect(self, effect, source):
         condition = (effect,source)
         if condition in self.conditions:
@@ -1187,6 +1195,9 @@ class BasicBot(RelentlessPredator):
     def get_serial_number(self):
         return str(self.serial_number).zfill(10)
         
+    def regenerate(self):
+        pass # Standard robots don't heal on their own. They need to be repaired.
+
     def robot_psych_check(self, player):
         _skill = player.skills.get_skill("Robot Psychology").get_rank() * 5
 

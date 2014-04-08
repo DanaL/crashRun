@@ -284,11 +284,11 @@ class GameLevel:
             _m.check_for_expired_conditions()
         
         if self.dm.turn % 15 == 0:
-            self.dm.player.add_hp(1)
+            self.dm.player.regenerate()
             
         if self.dm.turn % 50 == 0:
             for m in self.monsters:
-                m.add_hp(1)
+                m.regenerate()
             if random() < 0.5:
                 self.add_monster()
         

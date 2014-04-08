@@ -240,6 +240,7 @@ class DungeonMaster:
         self.__load_lvl(robot.curr_level, robot.curr_level, None)
         self.suspended_player.append(self.player)
         self.player = robot
+
         robot.light_radius = robot.vision_radius
         _lvl = self.active_levels[robot.curr_level]
         self.dui.set_command_context(RemoteRobotCC(self, self.dui))
@@ -2166,7 +2167,8 @@ class DungeonMaster:
                 pass
             self.active_agent = ''
         
-        for _level in self.active_levels.keys():
+        # Index -1 is for suspended Cyberspace levels.
+        for _level in [k for k in self.active_levels.keys() if k > -1]:
             _curr_lvl = self.active_levels[_level]
             _curr_lvl.resolve_events()          
             _curr_lvl.end_of_turn()

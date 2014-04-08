@@ -149,8 +149,7 @@ class Player(BaseAgent, AgentMemory):
         
         if _dmg < 1:
             _msg = 'The attack does no damage.'
-            _lvl = dm.active_levels[self.curr_level]
-            alert = Alert(self.row, self.col, _msg, '', _lvl)
+            alert = Alert(self.row, self.col, _msg, '')
             alert.show_alert(dm, False)
         
     def get_articled_name(self):
@@ -212,7 +211,7 @@ class Player(BaseAgent, AgentMemory):
     def killed(self, dm, killer):
         dm.player_killed(killer)
     
-    def add_xp(self,xp):
+    def add_xp(self, xp):
         self.__xp += xp
 
         if self.__xp >= self.__next_lvl and self.level <= self.__MAX_LEVEL:
