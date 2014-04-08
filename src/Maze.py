@@ -93,4 +93,13 @@ class Maze(object):
                     union(_node, _merge[0])
                     self.map[_merge[1]][_merge[2]] = self.__floor
         return self.map
+
+    def print_map(self):
+        for r in range(self.length):
+            row = ''
+            for c in range(self.width):
+                ch = self.map[r][c].get_ch()
+                row += ' ' if ch == '.' else ch
+            print(row)
+
    

@@ -250,7 +250,7 @@ class DungeonMaster:
 
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
-    def player_enters_cyberspace(self, level):
+    def player_enters_cyberspace(self, level):        
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _avatar = self.player.get_cyberspace_avatar(self)
         self.suspended_player.append(self.player)
@@ -276,6 +276,8 @@ class DungeonMaster:
         if _meat_level.security_active:
             level.activate_security_program()
         
+        
+
     # Moving to a level the player has never visited, so we need to generate a new map and 
     # replace current with it.
     def move_to_new_level(self, next_lvl, exit_point, prev_level_num):
@@ -306,7 +308,9 @@ class DungeonMaster:
         if not self.player.has_memory('enter complex'):
             self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
             self.player.remember('enter complex')
-
+        if next_lvl.is_cyberspace():
+            self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
+            
     # This might result in really stupid behaviour if the stairs were surrounded by a gigantic field of monsters
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)
     #

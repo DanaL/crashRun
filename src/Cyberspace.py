@@ -260,11 +260,10 @@ class CyberspaceLevel(GameLevel):
         for r in range(1, self.lvl_length-1):
             for c in range(1, self.lvl_width-1):
                 self.map[r][c] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
-        pass
-
+        
         # Add a few open spaces
         _tf = TerrainFactory()
-        for j in range(randrange(1,4)):
+        for j in range(randrange(3, 7)):
             _row = randrange(4, self.lvl_length - 4)
             _col = randrange(4, self.lvl_width - 4)
             for _r in (-1, 0, 1):

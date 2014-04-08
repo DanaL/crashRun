@@ -613,8 +613,14 @@ class RemoteRobotCC(MeatspaceCC):
     def get_status_bar_info(self):
         _p = self.dm.player
         _lvl = self.dm.active_levels[_p.curr_level]
-        _name = "SN #" + _p.get_serial_number()
+        _name = "Unit " + _p.get_serial_number()
         return StatusBarInfo(_name, _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
+
+    def pick_up(self):
+        if not self.dm.player.can_pick_up:
+            self.dui.display_message("Your model didn't come standard with arms.")
+        else:
+            super().pick_up()
 
     def swap_weapons(self):
         self.dui.display_message("Error 404: external limbs not found.")

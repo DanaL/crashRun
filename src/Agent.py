@@ -1193,6 +1193,7 @@ class BasicBot(RelentlessPredator):
         _num = ("%X" % BasicBot.bot_number).zfill(4)
         BasicBot.bot_number += 1    
         self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))
+        self.can_pick_up = True
 
     def get_serial_number(self):
         return self.serial_number
@@ -1424,7 +1425,8 @@ class Incinerator(CleanerBot):
         self.attitude = 'indifferent'
         self.conditions.append((('light protection',0,0), self))
         self.melee_type = 'fire'
-        
+        self.can_pick_up = False
+
     def __go_about_business(self):
         player_loc = self.dm.get_player_loc()
         if self.is_player_adjacent() and not self.robot_psych_check(self.dm.player):
@@ -1458,6 +1460,7 @@ class SurveillanceDrone(CleanerBot):
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
         self.conditions.append((('flying', 0, 0), self))
         BasicBot.__init__(self)
+        self.can_pick_up = False
 
     def perform_action(self):
         self.move()
