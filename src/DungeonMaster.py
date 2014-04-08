@@ -234,6 +234,12 @@ class DungeonMaster:
         return CyberspaceLevel(self, self.player.curr_level, 20, 70)
     
     def player_remotes_to_robot(self, robot):
+        # Stash the current Cyberspace level so that it can be resotred when the player
+        # returns to it. 
+        _lvl = self.active_levels[self.player.curr_level]
+        self.active_levels[-1] = _lvl
+        save_level(self.game_name, 'X', _lvl.generate_save_object())
+
         self.__load_lvl(robot.curr_level, robot.curr_level, None)
         self.suspended_player.append(self.player)
         self.player = robot
@@ -276,8 +282,6 @@ class DungeonMaster:
         if _meat_level.security_active:
             level.activate_security_program()
         
-        
-
     # Moving to a level the player has never visited, so we need to generate a new map and 
     # replace current with it.
     def move_to_new_level(self, next_lvl, exit_point, prev_level_num):
@@ -310,7 +314,7 @@ class DungeonMaster:
             self.player.remember('enter complex')
         if next_lvl.is_cyberspace():
             self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
-            
+
     # This might result in really stupid behaviour if the stairs were surrounded by a gigantic field of monsters
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)
     #
@@ -329,7 +333,7 @@ class DungeonMaster:
         _mr = MessageResolver(self, self.dui)
         _name = _mr.resolve_name(monster)
         self.dui.display_message('You are displaced by ' + _name, True)
-
+ 
     # loading the level object is basically duplicated with the __loadSavedGame() method
     # should be factored out
     def __load_lvl(self, level_num, prev_level_num, monster):
@@ -343,10 +347,7 @@ class DungeonMaster:
             self.sight_matrix = {}
             next_lvl.resolve_events()    
 
-            if level_num == prev_level_num:
-                self.active_levels[-1] = self.active_levels[level_num]
-            else:
-                del(self.active_levels[prev_level_num])
+            del(self.active_levels[prev_level_num])
             self.active_levels[level_num] = next_lvl
             
             if monster == None:
@@ -422,7 +423,7 @@ class DungeonMaster:
         else:
             _monster = None
 
-        save_level(self.player.get_name(), curr_level.level_num, curr_level.generate_save_object())
+        save_level(self.game_name, curr_level.level_num, curr_level.generate_save_object())
         
         # I think I can move these into the game level classes.  A game level can/should
         # know what the next level is.
@@ -572,7 +573,7 @@ class DungeonMaster:
         self.suspended_player = stuff[5]
 
         for _lvl in stuff[3]:
-            _level_num = _lvl[6]
+            _level_num = _lvl[6]            
             self.active_levels[_level_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
             get_level_from_save_obj(self.active_levels[_level_num], _lvl)
         
@@ -1974,7 +1975,7 @@ class DungeonMaster:
         _points = self.player.get_curr_xp() # will be more complex than this someday!
         _score = write_score(self.version, _points, _msg)
 
-        clean_up_files(self.player.get_name(), get_save_file_name(self.player.get_name()))
+        clean_up_files(self.game_name, get_save_file_name(self.game_name))
         
         self.__end_of_game(_score)
     
