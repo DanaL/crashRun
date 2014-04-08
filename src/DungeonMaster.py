@@ -237,6 +237,7 @@ class DungeonMaster:
         # Stash the current Cyberspace level so that it can be resotred when the player
         # returns to it. 
         _lvl = self.active_levels[self.player.curr_level]
+        print(_lvl.is_cyberspace())
         self.active_levels[-1] = _lvl
         save_level(self.game_name, 'X', _lvl.generate_save_object())
 
@@ -572,14 +573,17 @@ class DungeonMaster:
             _sp.dm = self
         self.suspended_player = stuff[5]
 
-        for _lvl in stuff[3]:
-            _level_num = _lvl[6]            
-            self.active_levels[_level_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
-            get_level_from_save_obj(self.active_levels[_level_num], _lvl)
+        _lvls = stuff[3]
+        for _lvl_num in _lvls.keys():
+            _lvl = _lvls[_lvl_num]
+            self.active_levels[_lvl_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
+            get_level_from_save_obj(self.active_levels[_lvl_num], _lvl)
         
         self.player.dm = self
         
-        if self.active_levels[self.player.curr_level].is_cyberspace():
+        if isinstance(self.player, BasicBot):
+            self.dui.set_command_context(RemoteRobotCC(self, self.dui))
+        elif self.active_levels[self.player.curr_level].is_cyberspace():
             self.dui.set_command_context(CyberspaceCC(self, self.dui))
         else:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
@@ -591,7 +595,10 @@ class DungeonMaster:
             self.dui.display_message('Saving...')
             self.player.dm = ''
         
-            _lvls = [_lvl.generate_save_object() for _lvl in self.active_levels.values()]
+            _lvls = {}
+            for _lvl_num in self.active_levels.keys():
+                _lvls[_lvl_num] = self.active_levels[_lvl_num].generate_save_object()
+
             for _sp in self.suspended_player:
                 _sp.dm = None
             _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player)
