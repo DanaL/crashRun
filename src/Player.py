@@ -121,9 +121,11 @@ class Player(BaseAgent, AgentMemory):
         self.software = Wetboard(3,10)
         self.weapon_configs = {}
         self.reload_memory = None
-        
+        self.is_avatar = False
+
     def get_cyberspace_avatar(self, dm):
         _avatar = copy(self)
+        _avatar.is_avatar = True
         _hacking = _avatar.skills.get_skill('Hacking').get_rank()
         if _hacking < 3:
             _avatar.light_radius = 3

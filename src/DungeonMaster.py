@@ -237,7 +237,6 @@ class DungeonMaster:
         # Stash the current Cyberspace level so that it can be resotred when the player
         # returns to it. 
         _lvl = self.active_levels[self.player.curr_level]
-        print(_lvl.is_cyberspace())
         self.active_levels[-1] = _lvl
         save_level(self.game_name, 'X', _lvl.generate_save_object())
 
@@ -358,7 +357,7 @@ class DungeonMaster:
                 self.__monster_displaces_player(next_lvl.player_loc, monster, level_num)
 
             self.add_player_to_level(level_num, self.player)
-            
+
             return True
         except NoSaveFileFound:
             return False
@@ -572,7 +571,7 @@ class DungeonMaster:
         for _sp in stuff[5]:
             _sp.dm = self
         self.suspended_player = stuff[5]
-
+        
         _lvls = stuff[3]
         for _lvl_num in _lvls.keys():
             _lvl = _lvls[_lvl_num]
@@ -589,7 +588,13 @@ class DungeonMaster:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             
         self.active_levels[self.player.curr_level].dungeon_loc[self.player.row][self.player.col].occupant = self.player
-                    
+        # If the player is remotely controlling a robot we need to add his suspended
+        # body back into the level
+        for _p in self.suspended_player:
+            if not _p.is_avatar:
+                _lvl = self.active_levels[_p.curr_level]
+                _lvl.dungeon_loc[_p.row][_p.col].occupant = _p
+
     def save_and_exit(self):
         if self.dui.query_yes_no('Are you sure you wish to save') == 'y':        
             self.dui.display_message('Saving...')
