@@ -610,6 +610,12 @@ class RemoteRobotCC(MeatspaceCC):
     def fire_weapon(self):
         self.dui.display_message("Nope!")
 
+    def force_quit_cyberspace(self):
+        if self.dui.query_yes_no("Terminate remote session") == 'y':
+            self.dm.terminate_remote_session()
+        else:
+            self.dui.display_message("Nevermind.")
+
     def get_status_bar_info(self):
         _p = self.dm.player
         _lvl = self.dm.active_levels[_p.curr_level]
@@ -633,7 +639,6 @@ class RemoteRobotCC(MeatspaceCC):
 
     def wield_weapon(self):
         self.dui.display_message("You need some major upgrades before doing that.")
-
 
 class CyberspaceCC(CommandContext):        
     def bash(self):

@@ -236,11 +236,13 @@ class DungeonMaster:
     def player_remotes_to_robot(self, robot):
         # Stash the current Cyberspace level so that it can be resotred when the player
         # returns to it. 
+        _cyber_coord = (self.player.row, self.player.col)
         _lvl = self.active_levels[self.player.curr_level]
         self.active_levels[-1] = _lvl
         save_level(self.game_name, 'X', _lvl.generate_save_object())
 
         self.__load_lvl(robot.curr_level, robot.curr_level, None)
+        self.player.row, self.player.col = _cyber_coord
         self.suspended_player.append(self.player)
         self.player = robot
 
@@ -251,8 +253,32 @@ class DungeonMaster:
         for m in _lvl.monsters:
             if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
                 break
-        _lvl.monsters.remove(m)     
+        _lvl.monsters.remove(m)
+
+        for _p in self.suspended_player:
+            if not _p.is_avatar and _p.curr_level == robot.curr_level:
+                _lvl.dungeon_loc[_p.row][_p.col].occupant = _p
+
+        self.refresh_player_view()
+        self.dui.draw_screen()
         self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
+
+    def terminate_remote_session(self):
+        _lvl = self.active_levels[self.player.curr_level]
+        _suspended = self.suspended_player.pop()
+        _lvl.monsters.append(self.player)
+        save_level(self.game_name, _lvl.level_num, _lvl.generate_save_object())
+        del(self.active_levels[self.player.curr_level])
+        self.active_levels[_suspended.curr_level] = self.active_levels[-1]
+        for _m in self.active_levels[_suspended.curr_level].monsters:
+            _m.dm = self
+        del(self.active_levels[-1])
+        self.player = _suspended
+        self.dui.set_command_context(CyberspaceCC(self, self.dui))
+        self.active_levels[_suspended.curr_level].dungeon_loc[_suspended.row][_suspended.col].occupant = _suspended
+        self.dui.set_r_c(_suspended.row, _suspended.col, _suspended.curr_level)
+        self.refresh_player_view()
+        self.dui.draw_screen()
 
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
