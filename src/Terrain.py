@@ -20,7 +20,6 @@ from random import randrange
 from .BaseTile import BaseTile
 from .FieldOfView import Shadowcaster
 from .Items import ItemFactory
-from .LevelManager import LevelManager
 from .Util import VisualAlert
 
 FLOOR = 0
@@ -147,10 +146,8 @@ class Terminal(Equipment):
                 self.enter_cyberspace(dm)
                 return
 
-    def enter_cyberspace(self, dm):
-        _pl = (dm.player.row, dm.player.col)
-        _c = dm.generate_cyberspace_level()
-        dm.move_to_new_level(_c, _pl, dm.player.curr_level)
+    def enter_cyberspace(self, dm):        
+        dm.player_enters_cyberspace()
         
     def jack_in(self, dm):
         _p = dm.player
@@ -174,7 +171,7 @@ class Terminal(Equipment):
 
         vision = []
         for f in feed:
-            dm.active_levels[dm.player.curr_level].dungeon_loc[f[0]][f[1]].visited = True
+            dm.dungeon_levels[dm.player.curr_level].dungeon_loc[f[0]][f[1]].visited = True
             sqr = dm.get_sqr_info(f[0], f[1], dm.player.curr_level, True)
             vision.append(sqr)
 
@@ -184,13 +181,12 @@ class Terminal(Equipment):
         dui.wait_for_input()
         
     def use_security_cameras(self, dm, dui):
-        lm = LevelManager(dm, dm.player.curr_level)
-        if not lm.are_cameras_active():
+        _lvl = dm.dungeon_levels[dm.player.curr_level]
+        if not _lvl.cameras_active:
             _msg = 'Camera access is currently disabled.'
             dui.display_message(_msg, True)
             return
             
-        _lvl = dm.active_levels[dm.player.curr_level]
         header = ['Accessing level security cameras']
         menu = []
         for camera in _lvl.cameras:
@@ -320,7 +316,7 @@ class ConcussionMine(Trap):
         
     def trigger(self, dm, victim, row, col):
         dm.dui.display_message("Whomp!")
-        _lvl = dm.active_levels[victim.curr_level]
+        _lvl = dm.dungeon_levels[victim.curr_level]
         _lvl.remove_trap(row, col)
         victim.stun_attack(self)
         

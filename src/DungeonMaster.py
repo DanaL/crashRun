@@ -46,11 +46,9 @@ from .GamePersistence import clean_up_files
 from .GamePersistence import get_level_from_save_obj
 from .GamePersistence import get_preferences
 from .GamePersistence import get_save_file_name
-from .GamePersistence import load_level
 from .GamePersistence import load_saved_game
 from .GamePersistence import NoSaveFileFound
 from .GamePersistence import save_game
-from .GamePersistence import save_level
 from .GamePersistence import write_score
 from . import Items
 from .Items import ItemDoesNotExist
@@ -177,6 +175,38 @@ class DungeonMaster:
             
         return _msg
         
+    def player_remotes_to_robot(self, robot):
+        # Stash the current Cyberspace level so that it can be resotred when the player
+        # returns to it. 
+        _cyber_coord = (self.player.row, self.player.col)
+        
+        self.suspended_player.append(self.player)
+        self.player = robot
+
+        robot.light_radius = robot.vision_radius
+        _lvl = self.dungeon_levels[robot.curr_level]
+        self.dui.set_command_context(RemoteRobotCC(self, self.dui))
+        self.add_player_to_level(robot.curr_level, robot)
+        for m in _lvl.monsters:
+            if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
+                break
+        _lvl.monsters.remove(m)
+        
+        self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
+
+    def terminate_remote_session(self):
+        # We remove the robot from the list of monsters when we take control, so
+        # add it back in.
+        _lvl = self.dungeon_levels[self.player.curr_level]
+        _lvl.monsters.append(self.player)
+
+        _suspended = self.suspended_player.pop()        
+        self.player = _suspended
+        self.dui.set_command_context(CyberspaceCC(self, self.dui))
+        self.dui.set_r_c(_suspended.row, _suspended.col, _suspended.curr_level)
+        self.refresh_player_view()
+        self.dui.draw_screen()
+        
     def player_forcibly_exits_cyberspace(self):
         self.player.dazed('')
         self.player_exits_cyberspace(randrange(11,21))
@@ -191,35 +221,12 @@ class DungeonMaster:
         self.player = self.suspended_player.pop()
         self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
 
-        _wired_level = self.active_levels[self.player.curr_level]
-        _security = _wired_level.security_active
-        
-        _up = None
-        _down = None
-        for r in range(len(_wired_level.map)):
-            for c in range(len(_wired_level.map[0])):
-                if _wired_level.map[r][c].get_type() == T.UP_STAIRS:
-                    _up = _wired_level.map[r][c]
-                if _wired_level.map[r][c].get_type() == T.DOWN_STAIRS:
-                    _down = _wired_level.map[r][c]
-                if _up != None and _down != None: break
-        
-        _nodes = _wired_level.subnet_nodes
-        self.__load_lvl(self.player.curr_level, self.player.curr_level, None)
-        _meat_level = self.active_levels[self.player.curr_level]
-        _meat_level.subnet_nodes = _nodes
+        _wired_level = self.dungeon_levels[-1]
+        _security = _wired_level.security_active        
+        _meat_level = self.dungeon_levels[self.player.curr_level]
         _meat_level.security_active = _security
         if _meat_level.security_lockdown and not _security:
             _meat_level.end_security_lockdown()
-            
-        if _up:
-            _stairs = _meat_level.entrances[0][0]
-            _u = _meat_level.map[_stairs[0]][_stairs[1]]
-            _u.activated = _up.activated
-        if _down:
-            _stairs = _meat_level.exits[0][0]
-            _d = _meat_level.map[_stairs[0]][_stairs[1]]
-            _d.activated = _down.activated
             
         self.dui.set_command_context(MeatspaceCC(self, self.dui))
 
@@ -227,120 +234,36 @@ class DungeonMaster:
             _dmg = _hp_delta_cyberspace // 5 + exit_dmg
             self.player.damaged(self, _dmg, '', ['brain damage'])
             self.dui.display_message(self.get_meatspace_dmg_msg(_dmg, self.player.curr_hp), True)
-        
-    def generate_cyberspace_level(self):
-        _curr = self.active_levels[self.player.curr_level]
-        save_level(self.game_name, self.player.curr_level, _curr.generate_save_object())
-        return CyberspaceLevel(self, self.player.curr_level, 20, 70)
-    
-    def player_remotes_to_robot(self, robot):
-        # Stash the current Cyberspace level so that it can be resotred when the player
-        # returns to it. 
-        _cyber_coord = (self.player.row, self.player.col)
-        _lvl = self.active_levels[self.player.curr_level]
-        self.active_levels[-1] = _lvl
-        save_level(self.game_name, 'X', _lvl.generate_save_object())
 
-        self.__load_lvl(robot.curr_level, robot.curr_level, None)
-        self.player.row, self.player.col = _cyber_coord
-        self.suspended_player.append(self.player)
-        self.player = robot
-
-        robot.light_radius = robot.vision_radius
-        _lvl = self.active_levels[robot.curr_level]
-        self.dui.set_command_context(RemoteRobotCC(self, self.dui))
-        self.add_player_to_level(robot.curr_level, robot)
-        for m in _lvl.monsters:
-            if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
-                break
-        _lvl.monsters.remove(m)
-
-        for _p in self.suspended_player:
-            if not _p.is_avatar and _p.curr_level == robot.curr_level:
-                _lvl.dungeon_loc[_p.row][_p.col].occupant = _p
-
-        self.refresh_player_view()
-        self.dui.draw_screen()
-        self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
-
-    def terminate_remote_session(self):
-        _lvl = self.active_levels[self.player.curr_level]
-        _suspended = self.suspended_player.pop()
-        _lvl.monsters.append(self.player)
-        save_level(self.game_name, _lvl.level_num, _lvl.generate_save_object())
-        del(self.active_levels[self.player.curr_level])
-        self.active_levels[_suspended.curr_level] = self.active_levels[-1]
-        for _m in self.active_levels[_suspended.curr_level].monsters:
-            _m.dm = self
-        del(self.active_levels[-1])
-        self.player = _suspended
-        self.dui.set_command_context(CyberspaceCC(self, self.dui))
-        self.active_levels[_suspended.curr_level].dungeon_loc[_suspended.row][_suspended.col].occupant = _suspended
-        self.dui.set_r_c(_suspended.row, _suspended.col, _suspended.curr_level)
-        self.refresh_player_view()
-        self.dui.draw_screen()
+        self.add_player_to_level(self.player.curr_level, self.player)
 
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
-    def player_enters_cyberspace(self, level):        
+    def player_enters_cyberspace(self):        
+        self.dungeon_levels[-1] = CyberspaceLevel(self, -1, 20, 70)
+        self.dungeon_levels[-1].generate_level(self.player.curr_level)
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _avatar = self.player.get_cyberspace_avatar(self)
+        _avatar.meatspace_level = self.player.curr_level
         self.suspended_player.append(self.player)
         self.player = _avatar
 
-        level.mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
-        _meat_level = self.active_levels[self.player.curr_level]
-        _up = None
-        _down = None
-        if _meat_level.entrances:
-            _entrance = _meat_level.entrances[0][0]
-            _sq = _meat_level.map[_entrance[0]][_entrance[1]]
-            if _sq.get_type() == T.UP_STAIRS:
-                _up = _sq
-        if _meat_level.exits:
-            _exits = _meat_level.exits[0][0]
-            _sq = _meat_level.map[_exits[0]][_exits[1]]
-            if _sq.get_type() == T.DOWN_STAIRS:
-                _down = _sq
+        self.dungeon_levels[-1] = self.dungeon_levels[-1]
+        self.dungeon_levels[-1].mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
+        _meat_level = self.dungeon_levels[self.player.curr_level]
 
-        level.set_real_stairs(_up, _down)
-        level.security_active = _meat_level.security_active
+        _up_loc = _meat_level.get_entrance()
+        _down_loc = _meat_level.get_exit()
+        _up = _meat_level.map[_up_loc[0]][_up_loc[1]] if _up_loc else None
+        _down = _meat_level.map[_down_loc[0]][_down_loc[1]] if _down_loc else None
+
+        self.dungeon_levels[-1].security_active = _meat_level.security_active
         if _meat_level.security_active:
-            level.activate_security_program()
-        
-    # Moving to a level the player has never visited, so we need to generate a new map and 
-    # replace current with it.
-    def move_to_new_level(self, next_lvl, exit_point, prev_level_num):
-        self.sight_matrix = {}
-        next_lvl.generate_level()
-        
-        if next_lvl.is_cyberspace():
-            self.player_enters_cyberspace(next_lvl)
-            next_lvl.add_subnet_nodes(self.active_levels[prev_level_num].subnet_nodes)
-        else:
-            # If it's a cyberspace level, it will overwrite the current active level
-            # while the player is in cyberspace. Otherwise, clear the cached level
-            # from active
-            del(self.active_levels[prev_level_num])
+            self.dungeon_levels[-1].activate_security_program()
 
-        next_lvl.entrances[0][1] = exit_point
-        _entrance = next_lvl.entrances[0][0]
-        self.player.row = _entrance[0]
-        self.player.col = _entrance[1]
-        
-        self.active_levels[next_lvl.level_num] = next_lvl
-        self.player.curr_level = next_lvl.level_num
-        next_lvl.dungeon_loc[self.player.row][self.player.col].occupant = self.player
-        self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
-        self.dui.draw_screen()
-        self.refresh_player_view()
-        
-        if not self.player.has_memory('enter complex'):
-            self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
-            self.player.remember('enter complex')
-        if next_lvl.is_cyberspace():
-            self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
-
+        self.player.row, self.player.col = self.dungeon_levels[-1].entrance
+        self.add_player_to_level(-1, self.player)
+    
     # This might result in really stupid behaviour if the stairs were surrounded by a gigantic field of monsters
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)
     #
@@ -350,7 +273,7 @@ class DungeonMaster:
     #
     # Simpler may be to not generate labs in rooms with stairs.
     def __monster_displaces_player(self, stairs, monster, level_num):
-        _lvl = self.active_levels[level_num]
+        _lvl = self.dungeon_levels[level_num]
         _lvl.add_monster_to_dungeon(monster, stairs[0], stairs[1])
         _nearest_clear = _lvl.get_nearest_clear_space(stairs[0], stairs[1])
         self.player.row = _nearest_clear[0]
@@ -359,42 +282,21 @@ class DungeonMaster:
         _mr = MessageResolver(self, self.dui)
         _name = _mr.resolve_name(monster)
         self.dui.display_message('You are displaced by ' + _name, True)
- 
-    # loading the level object is basically duplicated with the __loadSavedGame() method
-    # should be factored out
-    def __load_lvl(self, level_num, prev_level_num, monster):
-        try:
-            self.sight_matrix = {}
-
-            level_obj = load_level(self.game_name, level_num) 
-            next_lvl = GetGameFactoryObject(self, level_obj[6], len(level_obj[0]), len(level_obj[0][0]), level_obj[5])
-            get_level_from_save_obj(next_lvl, level_obj)
-            
-            self.sight_matrix = {}
-            next_lvl.resolve_events()    
-
-            del(self.active_levels[prev_level_num])
-            self.active_levels[level_num] = next_lvl
-            
-            if monster == None:
-                self.player.row = next_lvl.player_loc[0]
-                self.player.col = next_lvl.player_loc[1]
-            else:
-                self.__monster_displaces_player(next_lvl.player_loc, monster, level_num)
-
-            self.add_player_to_level(level_num, self.player)
-
-            return True
-        except NoSaveFileFound:
-            return False
-        
+         
     def add_player_to_level(self, level_num, player):
+        self.sight_matrix = {}
         player.curr_level = level_num
-        _lvl = self.active_levels[level_num]
+        _lvl = self.dungeon_levels[level_num]
         _lvl.dungeon_loc[player.row][player.col].occupant = player
         self.dui.set_r_c(player.row, player.col, level_num)
         self.refresh_player_view()
         self.dui.draw_screen()
+
+        if _lvl.is_cyberspace():
+            self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
+        if  _lvl.level_num == 1 and not self.player.has_memory('enter complex'):
+                self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
+                self.player.remember('enter complex')
 
     def __check_for_monsters_surrounding_stairs(self, level):
         _monsters = []
@@ -413,7 +315,7 @@ class DungeonMaster:
             
         _mr = MessageResolver(self, self.dui)
         _mr.simple_verb_action(victim, ' %s into the hole.', ['fall'], True)
-        _lvl = self.active_levels[victim.curr_level]
+        _lvl = self.dungeon_levels[victim.curr_level]
         if victim == self.player:
             self.__determine_next_level('down', (victim.row, victim.col), _lvl)
         else:
@@ -449,11 +351,11 @@ class DungeonMaster:
         else:
             _monster = None
 
-        save_level(self.game_name, curr_level.level_num, curr_level.generate_save_object())
-        
+        self.dungeon_levels[curr_level.level_num].dungeon_loc[self.player.row][self.player.col].occupant = ''
+
         # I think I can move these into the game level classes.  A game level can/should
-        # know what the next level is.
-        if not self.__load_lvl(next_level_num, curr_level.level_num, _monster):
+        # know what the next level is.        
+        if not next_level_num in self.dungeon_levels:
             if curr_level.category == 'prologue':
                 _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
             elif curr_level.category == 'old complex':
@@ -477,20 +379,36 @@ class DungeonMaster:
                 _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
             else:
                 _gfo = GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex')
-            self.move_to_new_level(_gfo, exit_point, curr_level.level_num)
+            _gfo.generate_level()
+            self.dungeon_levels[next_level_num] = _gfo
+            self.player.row, self.player.col = _gfo.entrance                
+        else:
+            # Moving to an existing level
+            self.dungeon_levels[next_level_num].resolve_events()
+            if curr_level.level_num > next_level_num:
+                _sqr = self.dungeon_levels[next_level_num].get_exit()
+            else:
+                _sqr = self.dungeon_levels[next_level_num].get_entrance()
+
+            if _monster == None:
+                self.player.row, self.player.col = _sqr                
+            else:
+                self.__monster_displaces_player(_sqr, _monster, next_level_num)
+
+        self.add_player_to_level(next_level_num, self.player)
 
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
         # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
         if isinstance(_exit_sqr, T.GapingHole):
-            self.active_levels[self.player.curr_level].map[self.player.row][self.player.col] = T.HoleInCeiling()
+            self.dungeon_levels[self.player.curr_level].map[self.player.row][self.player.col] = T.HoleInCeiling()
         
         if _things_to_transfer:
-            self.active_levels[self.player.curr_level].things_fell_into_level(_things_to_transfer)
+            self.dungeon_levels[self.player.curr_level].things_fell_into_level(_things_to_transfer)
             self.refresh_player_view()
             
     def start_game(self, dui):
         self.prefs = get_preferences()
-        self.active_levels = {}
+        self.dungeon_levels = {}
 
         self.dui = dui
         self.mr = MessageResolver(self, self.dui)
@@ -519,12 +437,10 @@ class DungeonMaster:
     def begin_new_game(self,player_name):
         cg = CharacterGenerator(self.dui,self)
         self.player = cg.new_character(player_name)
-        self.active_levels[0] = Prologue(self)
-        self.active_levels[0].generate_level()
-        player_start = self.active_levels[0].entrances[0][0]
-        self.player.row = player_start[0]
-        self.player.col = player_start[1]   
-        self.active_levels[0].dungeon_loc[self.player.row][self.player.col].occupant = self.player
+        self.dungeon_levels[0] = Prologue(self)
+        self.dungeon_levels[0].generate_level()
+        self.player.row, self.player.col = self.dungeon_levels[0].entrance
+        self.dungeon_levels[0].dungeon_loc[self.player.row][self.player.col].occupant = self.player
 
     def __item_destroyed(self, item, owner):
         if owner == self.player:
@@ -538,7 +454,7 @@ class DungeonMaster:
         if item.get_category() == 'Explosive':
             bomb = Trap('bomb')
             bomb.explosive = item
-            _lvl = self.active_levels[owner.curr_level]
+            _lvl = self.dungeon_levels[owner.curr_level]
             self.handle_explosion(_lvl, owner.row, owner.col, bomb)
         
         owner.remove_effects(item)
@@ -571,7 +487,7 @@ class DungeonMaster:
                 
     def monster_steals(self, thief, r, c, can_steal_readied):
         _item = ''
-        _lvl = self.active_levels[thief.curr_level]
+        _lvl = self.dungeon_levels[thief.curr_level]
         _victim = _lvl.dungeon_loc[r][c].occupant
         
         if _victim != '':
@@ -601,24 +517,24 @@ class DungeonMaster:
         _lvls = stuff[3]
         for _lvl_num in _lvls.keys():
             _lvl = _lvls[_lvl_num]
-            self.active_levels[_lvl_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
-            get_level_from_save_obj(self.active_levels[_lvl_num], _lvl)
+            self.dungeon_levels[_lvl_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
+            get_level_from_save_obj(self.dungeon_levels[_lvl_num], _lvl)
         
         self.player.dm = self
         
         if isinstance(self.player, BasicBot):
             self.dui.set_command_context(RemoteRobotCC(self, self.dui))
-        elif self.active_levels[self.player.curr_level].is_cyberspace():
+        elif self.dungeon_levels[self.player.curr_level].is_cyberspace():
             self.dui.set_command_context(CyberspaceCC(self, self.dui))
         else:
             self.dui.set_command_context(MeatspaceCC(self, self.dui))
             
-        self.active_levels[self.player.curr_level].dungeon_loc[self.player.row][self.player.col].occupant = self.player
+        self.dungeon_levels[self.player.curr_level].dungeon_loc[self.player.row][self.player.col].occupant = self.player
         # If the player is remotely controlling a robot we need to add his suspended
         # body back into the level
         for _p in self.suspended_player:
             if not _p.is_avatar:
-                _lvl = self.active_levels[_p.curr_level]
+                _lvl = self.dungeon_levels[_p.curr_level]
                 _lvl.dungeon_loc[_p.row][_p.col].occupant = _p
 
     def save_and_exit(self):
@@ -627,8 +543,8 @@ class DungeonMaster:
             self.player.dm = ''
         
             _lvls = {}
-            for _lvl_num in self.active_levels.keys():
-                _lvls[_lvl_num] = self.active_levels[_lvl_num].generate_save_object()
+            for _lvl_num in self.dungeon_levels.keys():
+                _lvls[_lvl_num] = self.dungeon_levels[_lvl_num].generate_save_object()
 
             for _sp in self.suspended_player:
                 _sp.dm = None
@@ -645,7 +561,7 @@ class DungeonMaster:
     # Does the location block light or not.  (Note that a square might
     # be open, but not necessarily passable)
     def is_open(self, r, c, l_num):
-        _level = self.active_levels[l_num]        
+        _level = self.dungeon_levels[l_num]        
         if _level.in_bounds(r,c):
             return not _level.map[r][c].is_opaque()
 
@@ -660,7 +576,7 @@ class DungeonMaster:
         self.dui.display_message(_monster_name + ' fires a missile.')
             
         _explosion = Items.Explosion('missle', dmg_dice, dmg_rolls, radius)
-        _lvl = self.active_levels[monster.curr_level]
+        _lvl = self.dungeon_levels[monster.curr_level]
         self.item_hits_ground(_lvl, target_r, target_c, _explosion)
     
     def handle_mathematics_attack(self, attacker, victim):
@@ -724,7 +640,7 @@ class DungeonMaster:
 
     def player_moves_onto_a_special_sqr(self, row, col):
         self.player.energy -= STD_ENERGY_COST
-        _sqr = self.active_levels[self.player.curr_level].map[row][col]
+        _sqr = self.dungeon_levels[self.player.curr_level].map[row][col]
         
         try:
             self.__determine_next_level(_sqr.direction, (row, col))
@@ -732,12 +648,12 @@ class DungeonMaster:
             self.__determine_next_level('down', (row, col))
        
     def player_moves_down_a_level(self):
-        _lvl = self.active_levels[self.player.curr_level]
+        _lvl = self.dungeon_levels[self.player.curr_level]
         sqr = _lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, T.Trap) and isinstance(sqr.previous_tile, T.DownStairs):
             sqr = sqr.previous_tile
 
-        if isinstance(sqr,T.DownStairs):
+        if isinstance(sqr, T.DownStairs):
             if  sqr.activated:
                 self.__determine_next_level('down', (self.player.row, self.player.col), _lvl)
                 self.player.energy -= STD_ENERGY_COST
@@ -747,7 +663,7 @@ class DungeonMaster:
             self.dui.display_message('You cannot go down here.')
 
     def player_moves_up_a_level(self):
-        _lvl = self.active_levels[self.player.curr_level]
+        _lvl = self.dungeon_levels[self.player.curr_level]
         sqr = _lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, T.Trap):
             if isinstance(sqr, T.HoleInCeiling):
@@ -776,7 +692,7 @@ class DungeonMaster:
     def mark_invisible_monster(self, loc, row, col):
         _occ = BaseTile('I', 'white', 'black', 'white', 'it')
         loc.temp_tile = _occ
-        self.dui.update_view(self.get_sqr_info(row, col, True))
+        self.dui.update_view(self.get_sqr_info(row, col, self.player.curr_level, True))
         
     def cmd_move_player(self, direction):
         self.dui.clear_msg_line()
@@ -787,7 +703,7 @@ class DungeonMaster:
         else:            
             _dt = self.convert_to_dir_tuple(self.player, direction)
             _p = self.player
-            _level = self.active_levels[_p.curr_level]
+            _level = self.dungeon_levels[_p.curr_level]
             _next_r = _p.row + _dt[0]
             _next_c = _p.col + _dt[1] 
             _tile = _level.map[_next_r][_next_c]
@@ -825,7 +741,7 @@ class DungeonMaster:
                     self.dui.display_message('You cannot move that way!')
             
     def player_bash(self, direction):
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         dt = self.convert_to_dir_tuple(self.player, direction)
 
         door_r = self.player.row + dt[0]
@@ -871,7 +787,7 @@ class DungeonMaster:
         _dt = self.convert_to_dir_tuple(self.player, _dir)
         _r = self.player.row + _dt[0]
         _c = self.player.col + _dt[1]
-        return self.active_levels[self.player.curr_level].map[_r][_c], _r, _c
+        return self.dungeon_levels[self.player.curr_level].map[_r][_c], _r, _c
         
     # At the moment, this is only called from cyberspace, an assumption that may become invalid
     def player_tries_to_hack(self):
@@ -880,8 +796,8 @@ class DungeonMaster:
             _tile, _r, _c = self.__get_tile_from_dir(_dir)
             if isinstance(_tile, Trap) and _tile.revealed:
                 try:
-                    self.active_levels[self.player.curr_level].attempt_to_hack_trap(self.player, _tile, _r, _c)
-                    self.update_sqr(self.active_levels[self.player.curr_level], _r, _c)
+                    self.dungeon_levels[self.player.curr_level].attempt_to_hack_trap(self.player, _tile, _r, _c)
+                    self.update_sqr(self.dungeon_levels[self.player.curr_level], _r, _c)
                     self.player.energy -= STD_ENERGY_COST
                 except TrapSetOff:
                     self.agent_steps_on_trap(self.player, _tile)
@@ -892,7 +808,7 @@ class DungeonMaster:
 
     # This will eventually have to have generic user messages and I'll have to pass a reference to the opener
     def open_door(self, tile, r, c, level_num):
-        _level = self.active_levels[level_num]
+        _level = self.dungeon_levels[level_num]
         if isinstance(tile, T.SpecialDoor):
             _level.check_special_door(tile)
                      
@@ -956,7 +872,7 @@ class DungeonMaster:
 
     # Function for handling an unexpected move (agent is stunned, bashing into the open air, etc)
     def __uncontrolled_move(self, agent, target_r, target_c, dt):
-        _lvl = self.active_levels[agent.curr_level]
+        _lvl = self.dungeon_levels[agent.curr_level]
         target_loc = _lvl.dungeon_loc[target_r][target_c]
         target_tile = _lvl.map[target_r][target_c]
 
@@ -1044,7 +960,7 @@ class DungeonMaster:
 
     def monster_summons_monster(self, creator, monster_name, row, col):
         _h = MonsterFactory.get_monster_by_name(self, monster_name, row, col)
-        _lvl = self.active_levels[creator.curr_level]
+        _lvl = self.dungeon_levels[creator.curr_level]
         self._lvl.add_monster_to_dungeon(_h, row, col)
         self.refresh_player_view()
                 
@@ -1052,7 +968,7 @@ class DungeonMaster:
     # might occur to items being picked up.  (Perhaps the item classes could have a method 'on_handled()' that contains
     # that sort of code)
     def player_pick_up(self):
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         _len = _level.size_of_item_stack(self.player.row, self.player.col)
         if _len == 0:
             self.dui.display_message('There is nothing to pick up.')
@@ -1114,7 +1030,7 @@ class DungeonMaster:
     
     def fire_weapon_at_ceiling(self, player, gun):
         _p = self.player
-        _sqr = self.active_levels[_p.curr_level].map[_p.row][_p.col]
+        _sqr = self.dungeon_levels[_p.curr_level].map[_p.row][_p.col]
         if isinstance(_sqr, T.SecurityCamera):
             self.dui.display_message("You shoot the security camera.")
             _sqr.functional = False
@@ -1130,7 +1046,7 @@ class DungeonMaster:
             
     def fire_weapon_at_floor(self, player, gun):
         _p = self.player
-        _sqr = self.active_levels[_p.curr_level].map[_p.row][_p.col]
+        _sqr = self.dungeon_levels[_p.curr_level].map[_p.row][_p.col]
         if isinstance(_sqr, T.Terminal):
             self.dui.display_message("You blast the computer terminal.")
             _sqr.functional = False
@@ -1140,7 +1056,7 @@ class DungeonMaster:
     # I could perhaps merge a bunch of the code between this & throwing weapons?
     # the loop is essentially the same.  Would pass in the appropriate combat resolver
     def fire_weapon(self, shooter, start_r, start_c, direction, gun):
-        _level = self.active_levels[shooter.curr_level]
+        _level = self.dungeon_levels[shooter.curr_level]
         _noise = Noise(8, shooter, start_r, start_c, 'gunfire')
         _level.monsters_react_to_noise(8, _noise)
                 
@@ -1207,7 +1123,7 @@ class DungeonMaster:
     def throw_item_down(self, item):
         _p = self.player
         self.dui.display_message("You toss it to the ground at your feet.")
-        self.item_hits_ground(self.active_levels[_p.curr_level], _p.row, _p.col, item)
+        self.item_hits_ground(self.dungeon_levels[_p.curr_level], _p.row, _p.col, item)
         
     def throw_item_up(self, item):
         _p = self.player
@@ -1217,7 +1133,7 @@ class DungeonMaster:
             _dmg = item.dmg_roll(_p) 
             _p.damaged(self, _dmg, item)
         
-        self.item_hits_ground(self.active_levels[_p.curr_level], _p.row, _p.col, item)
+        self.item_hits_ground(self.dungeon_levels[_p.curr_level], _p.row, _p.col, item)
         
     # function to handle when player throws something
     # should be broken up into a few parts for clarity
@@ -1242,7 +1158,7 @@ class DungeonMaster:
             item_row += dt[0]
             item_col += dt[1]
             
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             _lvl.dungeon_loc[prev_r][prev_c].temp_tile = ''
         
             if self.is_open(item_row, item_col, _lvl.level_num) and _lvl.dungeon_loc[item_row][item_col].occupant == '':
@@ -1390,7 +1306,7 @@ class DungeonMaster:
         else:
             self.dui.display_message('You drop your ' + item.get_full_name() + '.')
             self.player.remove_effects(item)
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             self.item_hits_ground(_lvl, self.player.row, self.player.col, item)
             self.player.energy -= STD_ENERGY_COST
 
@@ -1419,7 +1335,7 @@ class DungeonMaster:
             _file = _files[_pick]
             _files[_pick] = ''
             self.dui.display_message('You drop the ' + _file.get_name() + '.')
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             self.item_hits_ground(_lvl, self.player.row, self.player.col, _file)
         except UnableToAccess:
             pass
@@ -1499,7 +1415,7 @@ class DungeonMaster:
             if chainsaw.charge == 0:
                 self.dui.display_message('Your chainsaw is out of juice.')
             else:
-                _lvl = self.active_levels[self.player.curr_level]
+                _lvl = self.dungeon_levels[self.player.curr_level]
                 _noise = Noise(7, self.player, self.player.row, self.player.col, 'chainsaw')
                 _lvl.monsters_react_to_noise(5, _noise)
                 self.dui.display_message('VrrRRrRRrOOOooOOoOmmm!')
@@ -1538,7 +1454,7 @@ class DungeonMaster:
         if _dt != '':
             _door_r = self.player.row + _dt[0]
             _door_c = self.player.col + _dt[1]
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             _tile = _lvl.map[_door_r][_door_c]
             
             if isinstance(_tile, T.Door):
@@ -1559,7 +1475,7 @@ class DungeonMaster:
                 trap = T.Trap('bomb')
                 trap.explosive = bomb
                 trap.revealed = True # player knows where his own bomb is
-                _lvl = self.active_levels[self.player.curr_level]
+                _lvl = self.dungeon_levels[self.player.curr_level]
                 trap.previous_tile = _lvl.map[self.player.row][self.player.col]
                 _lvl.map[self.player.row][self.player.col] = trap
                 _lvl.eventQueue.push( ('explosion',self.player.row,self.player.col, trap), self.turn+turns)
@@ -1574,7 +1490,7 @@ class DungeonMaster:
         _range = self.__calc_thrown_range(self.player,grenade)
         _target = self.__pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
         _item = Items.Explosion('grenade', 10, 4, 2)
-        self.item_hits_ground(self.active_levels[self.player.curr_level], _target[0], _target[1], _item)
+        self.item_hits_ground(self.dungeon_levels[self.player.curr_level], _target[0], _target[1], _item)
 
     def player_throw_item(self,i):
         was_readied = False
@@ -1627,20 +1543,20 @@ class DungeonMaster:
             
         return True
     
-    def get_terrain_tile(self, loc, r, c, visible, omniscient):
-        _level = self.active_levels[self.player.curr_level]
+    def get_terrain_tile(self, lvl_num, loc, r, c, visible, omniscient):
+        _level = self.dungeon_levels[lvl_num]
         if visible and loc.temp_tile != '':
             return loc.temp_tile
         elif visible and self.is_occupant_visible_to_player(loc.occupant, omniscient):
             return loc.occupant
-        elif not _level.map[r][c].is_recepticle() and _level.size_of_item_stack(r,c) > 0:
+        elif not _level.map[r][c].is_recepticle() and _level.size_of_item_stack(r, c) > 0:
             i = loc.item_stack[-1]  
             return loc.item_stack[-1]   
         else:
             return _level.map[r][c]
             
     def get_tile_info(self,row, col, l_num):
-        _level = self.active_levels[l_num]
+        _level = self.dungeon_levels[l_num]
         if not _level.in_bounds(row, col):
             return DungeonSqrInfo(row,col,False,False,False,None)
         
@@ -1648,7 +1564,7 @@ class DungeonMaster:
         _loc = _level.dungeon_loc[row][col]
         if _loc.visited:
             _visible = _level.dungeon_loc[row][col].visible
-            _terrain = self.get_terrain_tile(_loc, row, col, _visible, True)
+            _terrain = self.get_terrain_tile(l_num, _loc, row, col, _visible, True)
             _si = DungeonSqrInfo(row, col, _visible, True, _loc.lit, _terrain)
             if row == self.player.row and col == self.player.col:
                 _si.name = 'you!'
@@ -1670,15 +1586,15 @@ class DungeonMaster:
     # Ie., when getting sqr info for a square through a camera feed or some such.  In those
     # cases, if omniscient isn't true, the monsters won't be visible.
     def get_sqr_info(self, r, c, l_num, omniscient=False):
-        _level = self.active_levels[l_num]
-        if not _level.in_bounds(r,c):
+        _level = self.dungeon_levels[l_num]
+        if not _level.in_bounds(r, c):
             return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
             
         visible = omniscient or _level.dungeon_loc[r][c].visible
         remembered = visible or _level.dungeon_loc[r][c].visited
 
         _loc = _level.dungeon_loc[r][c]
-        terrain = self.get_terrain_tile(_loc, r, c, visible, omniscient)
+        terrain = self.get_terrain_tile(l_num, _loc, r, c, visible, omniscient)
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
 
@@ -1704,7 +1620,7 @@ class DungeonMaster:
             next_row = monster.row + v_move
             next_col = monster.col + h_move
 
-        _level = self.active_levels[monster.curr_level]
+        _level = self.dungeon_levels[monster.curr_level]
         if not _level.is_clear(next_row, next_col):
             raise IllegalMonsterMove
         else:
@@ -1724,7 +1640,7 @@ class DungeonMaster:
         if not loc.lit or calc_distance(self.player.row, self.player.col, loc.r, loc.c) > 3:
             return 
         
-        _lvl = self.active_levels[self.player.curr_level]
+        _lvl = self.dungeon_levels[self.player.curr_level]
         if hasattr(loc.tile,'revealed') and not loc.tile.revealed:
             loc.tile.revealed = True
             self.alert_player(loc.r, loc.c, "You see " + loc.tile.get_name(2) + ".")
@@ -1743,9 +1659,9 @@ class DungeonMaster:
         _pc = self.player.col
         _sqrs_to_draw = [] 
         self.sight_matrix = {}
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
 
-        if isinstance(_level, CyberspaceLevel):
+        if isinstance(_level, CyberspaceLevel):            
             _perception_roll = randrange(self.player.stats.get_intuition() + 5) 
             _perception_roll += self.player.get_search_bonus(True)
         else:
@@ -1795,11 +1711,11 @@ class DungeonMaster:
         self.refresh_player_view() # This allows a passive search
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         self.check_ground_effects(self.player, self.player.row, self.player.col, _level)
         
     def monster_killed(self, level_num, r, c, by_player):
-        _level = self.active_levels[level_num]
+        _level = self.dungeon_levels[level_num]
         victim = _level.dungeon_loc[r][c].occupant
         
         # drop the monster's stuff, if it has any
@@ -1821,7 +1737,7 @@ class DungeonMaster:
             raise TurnInterrupted
     
     def __move_player(self, curr_r, curr_c, next_r, next_c, dt):
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         self.player.energy -= STD_ENERGY_COST
         _level.dungeon_loc[curr_r][curr_c].visited = True
         self.__agent_moves_to_sqr(next_r, next_c, self.player, _level)
@@ -1995,7 +1911,7 @@ class DungeonMaster:
             level.begin_security_lockdown()
         
     def player_killed(self, killer=''):
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         if _level.is_cyberspace():
             self.dui.display_message('You have been expunged.', True)
             self.player_forcibly_exits_cyberspace()
@@ -2055,7 +1971,7 @@ class DungeonMaster:
         _cursor.row = start_r
         _cursor.col = start_c
         
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         _level.dungeon_loc[start_r][start_c].temp_tile = _cursor
         self.update_sqr(_level, start_r, start_c)
         
@@ -2113,7 +2029,7 @@ class DungeonMaster:
         _lit_flare = Items.LitFlare(self.turn)
         _lit_flare.row = target[0]
         _lit_flare.col = target[1]
-        _level = self.active_levels[self.player.curr_level]
+        _level = self.dungeon_levels[self.player.curr_level]
         self.alert_player(target[0], target[1], 'You light the ' + flare.get_name(1) + '.')
         _level.dungeon_loc[target[0]][target[1]].temp_tile = ''
         _level.eventQueue.push( ('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare), self.turn + _lit_flare.duration)
@@ -2142,7 +2058,7 @@ class DungeonMaster:
         if _roll > self.player.stats.get_intuition():
             return
         
-        _lvl = self.active_levels[self.player.curr_level]
+        _lvl = self.dungeon_levels[self.player.curr_level]
         for r in (-1,0,1):
             for c in (-1,0,1):
                 _sr = self.player.row+r
@@ -2174,29 +2090,13 @@ class DungeonMaster:
  
      # loop over all actors until everyone's energy is below threshold
     def do_turn(self):
-        # Index -1 is for suspended Cyberspace levels.
-        _active_level_nums = [k for k in self.active_levels.keys() if k > -1]
-
-        _sound_alarm = False
-        for _level in self.active_levels.keys():
-            if self.active_levels[_level].security_lockdown and self.turn % 10 == 0:
-                _sound_alarm = True
-
-        if _sound_alarm:
+        if self.dungeon_levels[self.player.curr_level].security_lockdown and self.turn % 10 == 0:
             self.dui.display_message('An alarm is sounding.')
-                
+        
         self.dui.do_player_action()
 
-        # This may have changed as a result of the player moving between levels
-        # on their turn.
-        _active_level_nums = [k for k in self.active_levels.keys() if k > -1]
-
-        #loop over monsters
-        _monsters = []
-        for _level in _active_level_nums: 
-            _monsters += self.active_levels[_level].monsters
-
-        for _m in _monsters:
+        _monsters_who_acted = []
+        for _m in self.dungeon_levels[self.player.curr_level].monsters:
             self.active_agent = _m
             try:
                 if self.active_agent.has_condition('stunned'):
@@ -2206,18 +2106,16 @@ class DungeonMaster:
                         self.active_agent.perform_action()
             except TurnInterrupted:
                 pass
+            _monsters_who_acted.append(_m)
             self.active_agent = ''
         
-        
-        for _level in _active_level_nums:
-            _curr_lvl = self.active_levels[_level]
-            _curr_lvl.resolve_events()          
-            _curr_lvl.end_of_turn()
-    
+        self.dungeon_levels[self.player.curr_level].resolve_events()
+        self.dungeon_levels[self.player.curr_level].end_of_turn()
+
         # restore energy to players and monsters
         # this will change to be a method that also calcs speed modifiers
         self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
-        for _m in _monsters:
+        for _m in _monsters_who_acted:
             _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
         
     def debug_add_item(self, words):
@@ -2229,7 +2127,7 @@ class DungeonMaster:
         try:
             _if = ItemFactory()
             _item = _if.gen_item(_request,1)
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             self.item_hits_ground(_lvl, self.player.row, self.player.col, _item)
         except ItemDoesNotExist:
             self.dui.clear_msg_line()
@@ -2244,7 +2142,7 @@ class DungeonMaster:
         
             _r = self.player.row
             _c = self.player.col
-            _lvl = self.active_levels[self.player.curr_level]
+            _lvl = self.dungeon_levels[self.player.curr_level]
             _picks = []
             for r in (-1,0,1):
                 for c in (-1,0,1):
@@ -2282,7 +2180,7 @@ class DungeonMaster:
             
     def debug_command(self, cmd_text):
         try:
-            _level = self.active_levels[self.player.curr_level]
+            _level = self.dungeon_levels[self.player.curr_level]
             _words = cmd_text.split(' ')
             if _words[0] == 'add':
                 self.debug_add(_words[1:])

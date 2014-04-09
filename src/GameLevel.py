@@ -150,10 +150,41 @@ class GameLevel:
         self.subnet_nodes = []
         self.cameras_active = random() < 0.8
         self.security_active = True
-        self.entrances = []
-        self.exits = []
         self.things_fallen_in_holes = []
-        
+        self.entrance = None
+        self.exit = None
+
+    def find_up_stairs_loc(self):
+        for r in range(self.lvl_length):
+            for c in range(self.lvl_width):
+                _sqr = self.map[r][c]
+                if _sqr.get_type() == UP_STAIRS or isinstance(_sqr, Terrain.HoleInCeiling):
+                    return (r, c)
+                    
+    def find_down_stairs_loc(self):
+        for r in range(self.lvl_length):
+            for c in range(self.lvl_width):
+                _sqr = self.map[r][c]
+                if _sqr.get_type() == DOWN_STAIRS or isinstance(_sqr, Terrain.GapingHole):
+                    return (r, c)
+
+    def get_entrance(self):
+        if not self.entrance:
+            self.entrance = self.find_up_stairs_loc()
+
+        return self.entrance
+
+    def get_exit(self):
+        if not self.exit:
+           self.exit = self.find_down_stairs_loc()
+
+        return self.exit
+
+    def get_list_of_robots(self):
+        robots = [r for r in self.monsters if isinstance(r, Agent.BasicBot)]
+
+        return robots
+
     # It would be nice if instead of alerting all monsters within a 
     # certain radius, if the sound were blocked by walls, muffled by
     # doors etc.  A flood-fill algorithm of some sort?
@@ -197,16 +228,15 @@ class GameLevel:
     # This is assuming for the moment that none of the "things" are monsters
     def things_fell_into_level(self, things):
         # scatter the items around
-        _entrance = self.entrances[0][0]
         _passable = []
         for r in range(-1, 2):
             for c in range(-1, 2):
-                if self.map[_entrance[0] + r][_entrance[1] + c].is_passable():
-                    _passable.append((_entrance[0] + r, _entrance[1] + c))
+                if self.map[self.entrance[0] + r][self.entrance[1] + c].is_passable():
+                    _passable.append((self.entrance[0] + r, self.entrance[1] + c))
 
         for _thing in things:
             if isinstance(_thing, Agent.BaseAgent):
-                _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
+                _sqr = self.get_nearest_clear_space(self.entrance[0], self.entrance[1])
                 self.add_monster_to_dungeon(_thing, _sqr[0], _sqr[1])
             else:
                 _s = choice(_passable)
@@ -221,9 +251,7 @@ class GameLevel:
         
     def size_of_item_stack(self, row, col):
         _loc = self.dungeon_loc[row][col]
-        if not hasattr(_loc, 'item_stack'): return 0
-        
-        return len(_loc.item_stack)
+        return 0 if not hasattr(_loc, 'item_stack') else len(_loc.item_stack)
         
     def add_light_source(self, light_source):
         _sc = Shadowcaster(self.dm, light_source.radius, light_source.row, light_source.col, self.level_num)
@@ -260,10 +288,14 @@ class GameLevel:
         return _pts
         
     def disable_lifts(self):
-        for _e in self.entrances + self.exits:
-            _sqr = self.map[_e[0][0]][_e[0][1]]
-            if _sqr.get_type() in (UP_STAIRS, DOWN_STAIRS):
-                _sqr.activated = False
+        _loc = self.find_up_stairs_loc()
+        _sqr = self.map[_loc[0]][_loc[1]]
+        if _sqr.get_type() == UP_STAIRS:
+            _sqr.activated = False
+        _loc = self.find_down_stairs_loc()
+        _sqr = self.map[_loc[0]][_loc[1]]
+        if _sqr.get_type() == DOWN_STAIRS:
+            _sqr.activated = False
                 
     def douse_squares(self, ls):
         self.eventQueue.pluck(('extinguish', ls.row, ls.col, ls))
@@ -317,9 +349,8 @@ class GameLevel:
         self.clear_occupants()
         _exit_point = (self.dm.player.row, self.dm.player.col)
         _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, 
-                self.category,self.level_num,_exit_point,self.cameras,self.entrances,self.exits,
-                self.security_lockdown, self.subnet_nodes, self.cameras_active, self.security_active,
-                self.things_fallen_in_holes)
+                self.category,self.level_num,_exit_point,self.cameras, self.security_lockdown, self.subnet_nodes, 
+                self.cameras_active, self.security_active, self.things_fallen_in_holes)
 
         return _save_obj
         

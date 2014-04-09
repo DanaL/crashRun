@@ -34,7 +34,7 @@ class MessageResolver(object):
         
     def monster_killed(self, monster, by_player):
         _name = self.resolve_name(monster)
-        _level = self.dm.active_levels[monster.curr_level]
+        _level = self.dm.dungeon_levels[monster.curr_level]
         if by_player:
             if _level.is_cyberspace():
                 options = ['delete', 'expunge']
@@ -73,7 +73,7 @@ class MessageResolver(object):
         alert.show_alert(self.dm, False)
             
     def resolve_name(self, agent):
-        _level = self.dm.active_levels[agent.curr_level]
+        _level = self.dm.dungeon_levels[agent.curr_level]
         if agent == self.dm.player:
             return 'you'
         elif self.dm.is_occupant_visible_to_player(agent):

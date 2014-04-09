@@ -18,7 +18,6 @@
 from random import choice
 from random import randrange
 
-from .LevelManager import LevelManager
 from .Terrain import TerrainTile
 from .Terrain import SUBNET_NODE
 
@@ -58,8 +57,7 @@ class RobotGrandCentral(SubnetNode):
 
     def visit(self, dm, agent):
         dm.alert_player(agent.row, agent.col, "Accessing directory of online robots.")
-        lm = LevelManager(dm, dm.player.curr_level)
-        robots = lm.get_list_of_robots()
+        robots = dm.dungeon_levels[agent.meatspace_level].get_list_of_robots()
 
         if len(robots) == 0:
             dm.alert_player(agent.row, agent.col, "There are no robots currently online.")

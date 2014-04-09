@@ -24,17 +24,10 @@ from .Agent import SecurityControlProgram
 from .CombatResolver import CyberspaceCombatResolver
 from .FieldOfView import get_lit_list
 from .GameLevel import GameLevel
-from .LevelManager import LevelManager
 from .Maze import Maze
 from . import MonsterFactory
 from .Software import get_software_by_name
-from .Terrain import LogicBomb
-from .Terrain import SecurityCamera
-from .Terrain import TerrainFactory
-from .Terrain import CYBERSPACE_FLOOR
-from .Terrain import EXIT_NODE
-from .Terrain import FIREWALL
-from .Terrain import UP_STAIRS
+from . import Terrain as T
 from .Util import do_d10_roll
 
 class TrapSetOff(Exception):
@@ -46,43 +39,35 @@ class CyberspaceLevel(GameLevel):
         self.melee = CyberspaceCombatResolver(dm, dm.dui)
     
     def access_cameras(self):
-        lm = LevelManager(self.dm, self.level_num)
-        if not lm.are_cameras_active():
-            _msg = "You activate the security camera system."
-            lm.set_camera_state(True)
-        else:
-            _msg = "You disable the security camera system."
-            lm.set_camera_state(False)
+        _meat_lvl = self.dm.dungeon_levels[self.dm.player.meatspace_level]
+        _msg = "You %s the security camera system." % ("disable" if _meat_lvl.cameras_active else "activate")
+        _meat_lvl.cameras_active = not _meat_lvl.cameras_active
+
         self.dm.dui.display_message(_msg)
         
     def activate_security_program(self):
-        _scp = SecurityControlProgram(self.dm, 0, 0, self.level_num)
+        _scp = SecurityControlProgram(self.dm, 0, 0, self.dm.player.meatspace_level)
         GameLevel.add_monster(self, _scp)
-        
-    def add_subnet_nodes(self, node_list):
-        for _node in node_list:
-            self.subnet_nodes.append(_node)
-            self.place_sqr(_node, CYBERSPACE_FLOOR)
-            
+  
     def add_monster(self):
         GameLevel.add_monster(self, self.__get_monster())
    
     def __add_daemon_fortress(self):
         _width = randrange(3, 7)
-        _tf = TerrainFactory()
+        _tf = T.TerrainFactory()
         
         # place the fortress
         _start_r = randrange(1, self.lvl_length - _width - 2)
         _start_c = randrange(1, self.lvl_width - _width - 2)
         for col in range(_width + 1):
-            self.map[_start_r][_start_c + col] = _tf.get_terrain_tile(FIREWALL)
-            self.map[_start_r + _width][_start_c + col] = _tf.get_terrain_tile(FIREWALL)
+            self.map[_start_r][_start_c + col] = _tf.get_terrain_tile(T.FIREWALL)
+            self.map[_start_r + _width][_start_c + col] = _tf.get_terrain_tile(T.FIREWALL)
 
         for row in range(1, _width):
-            self.map[_start_r + row][_start_c] =  _tf.get_terrain_tile(FIREWALL)    
-            self.map[_start_r + row][_start_c + _width] =  _tf.get_terrain_tile(FIREWALL)    
+            self.map[_start_r + row][_start_c] =  _tf.get_terrain_tile(T.FIREWALL)    
+            self.map[_start_r + row][_start_c + _width] =  _tf.get_terrain_tile(T.FIREWALL)    
             for col in range(1, _width - 1):
-                self.map[_start_r + row][_start_c + col] = _tf.get_terrain_tile(CYBERSPACE_FLOOR) 
+                self.map[_start_r + row][_start_c + col] = _tf.get_terrain_tile(T.CYBERSPACE_FLOOR) 
 
         _r_delta = randrange(1, _width)
         _c_delta = randrange(1, _width)
@@ -102,8 +87,8 @@ class CyberspaceLevel(GameLevel):
             self.dm.alert_player(player.row, player.col, _msg)
             raise TrapSetOff()
         elif _roll > 15:
-            _tf = TerrainFactory()
-            self.map[row][col] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
+            _tf = T.TerrainFactory()
+            self.map[row][col] = _tf.get_terrain_tile(T.CYBERSPACE_FLOOR)
             _msg = "You delete " + tile.get_name() + "."
             self.dm.alert_player(player.row, player.col, _msg)
         else:
@@ -121,7 +106,7 @@ class CyberspaceLevel(GameLevel):
                 self.add_monster()
         self.dm.virtual_turn += 1
             
-    def generate_level(self):
+    def generate_level(self, meatspace_level):
         self.__generate_map()
         self.__add_daemon_fortress()
         self.__add_traps()
@@ -130,45 +115,47 @@ class CyberspaceLevel(GameLevel):
         self.__add_files()
         self.__set_entry_spot()
 
-        lm = LevelManager(self.dm, self.level_num)
-        self.place_sqr(SecurityCamera(0, lm.are_cameras_active()), CYBERSPACE_FLOOR) 
+        self.place_sqr(T.SecurityCamera(0, True), T.CYBERSPACE_FLOOR) 
+
+        _tf = T.TerrainFactory()
+        self.place_sqr(_tf.get_terrain_tile(T.UP_STAIRS), T.CYBERSPACE_FLOOR)
+        self.place_sqr(_tf.get_terrain_tile(T.DOWN_STAIRS), T.CYBERSPACE_FLOOR)
+
+        _meat_lvl = self.dm.dungeon_levels[meatspace_level]
+        for _node in _meat_lvl.subnet_nodes:
+            self.subnet_nodes.append(_node)
+            self.place_sqr(_node, T.CYBERSPACE_FLOOR)
 
     def is_cyberspace(self):
         return True
         
     def lift_access(self, stairs):
-        if stairs.get_type() == UP_STAIRS:
-            _next_lvl = self.level_num - 1
+        _meat_lvl = self.dm.dungeon_levels[self.dm.player.meatspace_level]
+        if stairs.get_type() == T.UP_STAIRS:
+            _stairs_loc = _meat_lvl.find_up_stairs_loc()
         else:
-            _next_lvl = self.level_num + 1
-            
-        stairs.activated = not stairs.activated
-        if stairs.activated:
+            _stairs_loc = _meat_lvl.find_down_stairs_loc()
+        _meat_stairs = _meat_lvl.map[_stairs_loc[0]][_stairs_loc[1]]          
+        _meat_stairs.activated = not _meat_stairs.activated
+        if _meat_stairs.activated:
             self.dm.dui.display_message('You activate the lift.')
         else:
             self.dm.dui.display_message('You deactivate the lift.')
                 
     def mark_initially_known_sqrs(self, radius):
-        _entrance = self.entrances[0][0]
         for _sqr in get_lit_list(radius):
-            _s = (_entrance[0] + _sqr[0], _entrance[1] + _sqr[1])
+            _s = (self.entrance[0] + _sqr[0], self.entrance[1] + _sqr[1])
             if self.in_bounds(_s[0], _s[1]):
                 self.dungeon_loc[_s[0]][_s[1]].visited = True
 
     def resolve_events(self):
         pass # for the moment, there are no events in cyberspace
-        
-    def set_real_stairs(self, upstairs, downstairs):
-        if upstairs:
-            self.place_sqr(upstairs, CYBERSPACE_FLOOR)
-        if downstairs:
-            self.place_sqr(downstairs, CYBERSPACE_FLOOR)
             
     def __add_exit_nodes(self):
-        _tf = TerrainFactory()
+        _tf = T.TerrainFactory()
         
         for j in range(3):
-            self.place_sqr(_tf.get_terrain_tile(EXIT_NODE), CYBERSPACE_FLOOR)
+            self.place_sqr(_tf.get_terrain_tile(T.EXIT_NODE), T.CYBERSPACE_FLOOR)
     
     def __get_low_level_file(self):
         _r = random()
@@ -228,7 +215,7 @@ class CyberspaceLevel(GameLevel):
             r = randrange(self.lvl_length)
             c = randrange(self.lvl_width)
             
-            if self.map[r][c].get_type() == CYBERSPACE_FLOOR:
+            if self.map[r][c].get_type() == T.CYBERSPACE_FLOOR:
                 self.add_item_to_sqr(r, c, _s)
                 break
 
@@ -248,7 +235,7 @@ class CyberspaceLevel(GameLevel):
             _traps = randrange(8)
        
         for j in range(_traps):
-            self.place_sqr(LogicBomb(), CYBERSPACE_FLOOR)
+            self.place_sqr(T.LogicBomb(), T.CYBERSPACE_FLOOR)
                         
     def __generate_map(self):
         _maze = Maze(self.lvl_length, self.lvl_width)
@@ -256,19 +243,18 @@ class CyberspaceLevel(GameLevel):
         self.lvl_length = _maze.length
         self.lvl_width = _maze.width
         
-        _tf = TerrainFactory()
+        _tf = T.TerrainFactory()
         for r in range(1, self.lvl_length-1):
             for c in range(1, self.lvl_width-1):
-                self.map[r][c] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
+                self.map[r][c] = _tf.get_terrain_tile(T.CYBERSPACE_FLOOR)
         
         # Add a few open spaces
-        _tf = TerrainFactory()
         for j in range(randrange(3, 7)):
             _row = randrange(4, self.lvl_length - 4)
             _col = randrange(4, self.lvl_width - 4)
             for _r in (-1, 0, 1):
                 for _c in (-1, 0 , 1):
-                    self.map[_row + _r][_col + _c] = _tf.get_terrain_tile(CYBERSPACE_FLOOR)
+                    self.map[_row + _r][_col + _c] = _tf.get_terrain_tile(T.CYBERSPACE_FLOOR)
                     
     def __get_monster(self):
         if self.level_num == 1:
@@ -311,12 +297,11 @@ class CyberspaceLevel(GameLevel):
         _m.curr_level = self.level_num
         return _m
         
-    def __set_entry_spot(self):
+    def __set_entry_spot(self):        
         while True:
             r = randrange(1, self.lvl_length-1)
             c = randrange(1, self.lvl_width-1)
             
             if self.is_clear(r, c): 
                 break
-        self.entrances.append([(r, c), None]) 
-        
+        self.entrance = (r, c)

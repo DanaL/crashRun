@@ -95,10 +95,10 @@ class CommandContext(object):
         self.dui.write_screen(self.get_software_list(as_menu), True)
                         
     def get_lvl_length(self, level_num):
-        return self.dm.active_levels[level_num].lvl_length
+        return self.dm.dungeon_levels[level_num].lvl_length
 
     def get_lvl_width(self, level_num):
-        return self.dm.active_levels[level_num].lvl_width
+        return self.dm.dungeon_levels[level_num].lvl_width
 
     def get_player_loc(self):
         return self.dm.get_player_loc()
@@ -106,7 +106,7 @@ class CommandContext(object):
     # Return a section of map (useful for when a screen, or portion thereof needs to be
     # withdrawn)
     def get_section(self, r, c, length, width):
-        _level = self.dm.active_levels[self.dm.player.curr_level]
+        _level = self.dm.dungeon_levels[self.dm.player.curr_level]
         lr = r
         section = []
         while lr < length and lr < _level.lvl_length:
@@ -127,7 +127,7 @@ class CommandContext(object):
         
     def get_status_bar_info(self):
         _p = self.dm.player
-        _lvl = self.dm.active_levels[_p.curr_level]
+        _lvl = self.dm.dungeon_levels[_p.curr_level]
         return StatusBarInfo(_p.get_name(), _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
 
     def get_tile_info(self, row, col):
@@ -164,7 +164,7 @@ class CommandContext(object):
         
 class MeatspaceCC(CommandContext):       
     def attempt_to_disarm(self, trap, row, col):
-        _lvl = self.dm.active_levels[self.dm.player.curr_level]
+        _lvl = self.dm.dungeon_levels[self.dm.player.curr_level]
         _p = self.dm.player
         _rank = _p.skills.get_skill('Bomb Defusing').get_rank()
         if _rank == 0:
@@ -214,7 +214,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message("You are not in the right headspace at the moment.")
             return
 
-        _lvl = self.dm.active_levels[_p.curr_level]
+        _lvl = self.dm.dungeon_levels[_p.curr_level]
         
         _sqr = self.find_actionable_sqrs(_p.row, _p.col)
         if _sqr == None:
@@ -293,7 +293,7 @@ class MeatspaceCC(CommandContext):
       
     def find_actionable_sqrs(self, row, col):
         _sqrs = []
-        _lvl = self.dm.active_levels[self.dm.player.curr_level]
+        _lvl = self.dm.dungeon_levels[self.dm.player.curr_level]
         for r in (-1, 0, 1):
             for c in (-1, 0, 1):
                 _sqr = _lvl.map[row+r][col+c]
@@ -618,7 +618,7 @@ class RemoteRobotCC(MeatspaceCC):
 
     def get_status_bar_info(self):
         _p = self.dm.player
-        _lvl = self.dm.active_levels[_p.curr_level]
+        _lvl = self.dm.dungeon_levels[_p.curr_level]
         _name = "Unit " + _p.get_serial_number()
         return StatusBarInfo(_name, _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
 
@@ -651,7 +651,7 @@ class CyberspaceCC(CommandContext):
             self.dm.cmd_move_player(k)
           
     def do_action(self):
-        _lvl = self.dm.active_levels[self.dm.player.curr_level]
+        _lvl = self.dm.dungeon_levels[self.dm.player.curr_level]
         _p = self.dm.player
         _sqr = _lvl.map[_p.row][_p.col]
         

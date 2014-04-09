@@ -113,7 +113,7 @@ class MeleeResolver(CombatResolver):
             _dt = get_rnd_direction_tuple()
             r = tori.row + _dt[0]
             c = tori.col + _dt[1]
-            _lvl = self.dm.active_levels[uke.curr_level]
+            _lvl = self.dm.dungeon_levels[uke.curr_level]
             uke = _lvl.dungeon_loc[r][c].occupant
     
         if uke == '':

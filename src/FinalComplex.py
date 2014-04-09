@@ -39,15 +39,26 @@ class FinalComplexLevel(GameLevel):
         self.map = dg.map
 
     	# Add location of the down stairs
-        p = self.place_sqr(tf.get_terrain_tile(DOWN_STAIRS), FLOOR)
-        self.entrances.append([p, None])
+        p = self.place_sqr(tf.get_terrain_tile(DOWN_STAIRS), FLOOR)        
+        self.entrance = p
 
         if self.level_num < 18:
              p = self.place_sqr(tf.get_terrain_tile(UP_STAIRS), FLOOR)
-             self.exits.append([p, None])
+             self.exit = p
         else: 
             self.place_sqr(BossTerminal(), FLOOR)
 
     def add_monster(self, monster=''):
         pass
-    	
+    
+    def get_entrance(self):
+        if not self.entrance:
+            self.entrance = self.find_down_stairs_loc()
+
+        return self.entrance
+
+    def get_exit(self):
+        if not self.exit:
+           self.exit = self.find_up_stairs_loc()
+
+        return self.exit

@@ -47,8 +47,8 @@ class ScienceComplexLevel(GameLevel):
         self._ncf.remove_up_stairs_from_rooms()
         self.upStairs = self._ncf.upStairs
         self.downStairs = self._ncf.downStairs
-        self.entrances.append([self.upStairs, None])
-        self.exits.append([self.downStairs, None])
+        self.entrance = self.upStairs
+        self.exit = self.downStairs
     
     def add_monster(self):
         _monster = self.__get_monster()

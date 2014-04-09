@@ -55,23 +55,19 @@ def get_level_from_save_obj(level, obj):
     _lvl_num = obj[6]
     _player_loc = obj[7]
     _cameras = obj[8]
-    _entrances = obj[9]
-    _exits = obj[10]
     _length = len(_map)
     _width = len(_map[0])
-    _sec_lock = obj[11]
-    _subnet_nodes = obj[12]
-    _cameras_active = obj[13]
-    _security = obj[14]
-    _fallen = obj[15]
+    _sec_lock = obj[9]
+    _subnet_nodes = obj[10]
+    _cameras_active = obj[11]
+    _security = obj[12]
+    _fallen = obj[13]
     
     level.eventQueue = _eq
     level.map = _map
     level.dungeon_loc = _locations
     level.light_sources = _light_sources
     level.cameras = _cameras
-    level.entrances = _entrances
-    level.exits = _exits
     level.security_lockdown = _sec_lock
     level.subnet_nodes = _subnet_nodes
     level.cameras_active = _cameras_active
@@ -195,12 +191,6 @@ def save_game(username, save_obj):
     f.close()
     
     pack_files(username)
-    
-def save_level(username, level_num, save_obj):
-    f = open(username + '_' + str(level_num),'wb')
-    p = Pickler(f)
-    p.dump(save_obj)
-    f.close()
 
 def unpack_files(username):
     _filename = username + '.crsg'

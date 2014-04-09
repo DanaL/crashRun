@@ -46,6 +46,25 @@ class ProvingGroundsLevel(GameLevel):
         
         for j in range(randrange(5, 16)):
             self.add_monster()
+
+    def get_entrance(self):
+        if not self.entrance:
+            if self.level_num == 13:
+                self.entrance = self.find_up_stairs_loc()
+            else:
+                self.entrance = self.find_down_stairs_loc()
+
+        return self.entrance
+
+    def get_exit(self):
+        if not self.exit:
+            if self.level_num == 13:
+                self.entrance = self.find_down_stairs_loc()
+            else:
+                self.entrance = self.find_up_stairs_loc()
+
+        return self.exit
+
             
     def generate_map(self):
         self.tf = TerrainFactory()
@@ -87,7 +106,7 @@ class ProvingGroundsLevel(GameLevel):
         # direction in the dungeon switches after level 13
         entrance_dir = 'up' if self.level_num == 13 else 'down'
         self.map[_row][1] = SpecialFloor(entrance_dir)
-        self.entrances.append([(_row, 1), None])
+        self.entrance = (_row, 1)
         self.map[_row][2] = self.tf.get_terrain_tile(FLOOR)
         self.player_start_loc = (_row, 2)
         

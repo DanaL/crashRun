@@ -76,7 +76,7 @@ class Prologue(GameLevel):
         for x in range(1,11):
             self.add_monster()
 
-        self.entrances = [[self.set_start_loc_for_player(), None]]
+        self.entrance = self.set_start_loc_for_player()
             
     def __generate_map(self):
         _map = []

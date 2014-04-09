@@ -108,7 +108,7 @@ class AStarPathFactory:
         return self.__open.pop(_t)[0]
     
     def not_passable(self, row, col):
-        _level = self.dm.active_levels[self.level_num]
+        _level = self.dm.dungeon_levels[self.level_num]
         if not _level.is_clear(row, col) or _level.map[row][col].is_toxic():
             return True
         
@@ -564,7 +564,7 @@ class BaseMonster(BaseAgent, AStarMover):
         self.attitude = 'inactive'
     
     def attack(self, loc):
-        _level = self.dm.active_levels[self.curr_level]
+        _level = self.dm.dungeon_levels[self.curr_level]
         _level.melee.attack(self, _level.get_occupant(loc[0], loc[1]))
         
     def damaged(self, dm, damage, attacker, attack_type='melee'):
@@ -603,7 +603,7 @@ class BaseMonster(BaseAgent, AStarMover):
         return _name
     
     def is_player_adjacent_to_loc(self, row, col):
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         for r in (-1,0,1):
             for c in (-1,0,1):
                 if _lvl.get_occupant(row + r, col + c) == self.dm.player:
@@ -673,7 +673,7 @@ class AltPredator(BaseMonster):
                 self.state = 'scared'
             
             if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
-                _lvl = self.dm.active_levels[self.curr_level]
+                _lvl = self.dm.dungeon_levels[self.curr_level]
                 self.flee_to = furthest_sqr(_lvl, _player_loc, 25, self)
             
             if self.flee_to == None:
@@ -850,7 +850,7 @@ class CeilingCat(CyberspaceMonster):
 
     def not_revealed_action(self):
         _pl = self.dm.get_player_loc()
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         if self.distance_from_player(_pl) <= 1:
             self.revealed = True
             self.dm.update_sqr(_lvl, self.row, self.col)
@@ -898,7 +898,7 @@ class SecurityControlProgram(CyberspaceMonster):
 
     def killed(self, dm, killer):
         # Killing a level's SCP results in security being disabled
-        dm.active_levels[self.curr_level].security_active = False
+        dm.dungeon_levels[self.curr_level].security_active = False
         super(CyberspaceMonster, self).killed(dm, killer)
         
 class GridBug(CyberspaceMonster):
@@ -909,7 +909,7 @@ class GridBug(CyberspaceMonster):
         
     def perform_action(self):
         self.energy -= STD_ENERGY_COST
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         _p = self.dm.get_player_loc()
         for _sqr in [(self.row+1,self.col),(self.row-1,self.col),(self.row,self.col+1),(self.row,self.col-1)]:
             if _p == _sqr:
@@ -928,7 +928,7 @@ class BelligerentProcess(CyberspaceMonster):
             'white', 'belligerent process', row, col, 1, 'male', 3)
         
     def fork(self):
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         _fork = copy(self)
         _sqr = self.get_adj_empty_sqr(_lvl)
         if _sqr != None:
@@ -1361,7 +1361,7 @@ class RepairBot(CleanerBot):
         
     def perform_action(self):
         _triage = PriorityQueue()
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
 
         # check surrounding squares for damaged bots
         for r in range(-1,2):
@@ -1398,7 +1398,7 @@ class Roomba(CleanerBot):
     
     # The roomba will try to clean up the entire square before moving on
     def look_for_trash_to_vacuum(self):
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         _loc = s_lvl.dungeon_loc[self.row][self.col]
         if _lvl.size_of_item_stack(self.row,self.col) > 0:
             _item = _loc.item_stack.pop()
@@ -1464,7 +1464,7 @@ class SurveillanceDrone(CleanerBot):
 
     def perform_action(self):
         self.move()
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         self.check_for_player(6, _lvl.begin_security_lockdown)
         self.energy -= STD_ENERGY_COST
         
@@ -1519,7 +1519,7 @@ class MoreauBot6000(CleanerBot, Unique):
     
     def create_beastman(self):
         _sqrs = []
-        _lvl = self.dm.active_levels[self.curr_level]
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         for _r in (-1, 0, 1):
             for _c in (-1, 0, 1):
                 if _lvl.is_clear(self.row+_r, self.col+_c):
