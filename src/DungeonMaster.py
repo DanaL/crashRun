@@ -194,16 +194,17 @@ class DungeonMaster:
 
         self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
 
-    def terminate_remote_session(self):
+    def terminate_remote_session(self, robot_destroyed):
         # We remove the robot from the list of monsters when we take control, so
         # add it back in.
-        _lvl = self.dungeon_levels[self.player.curr_level]
-        _lvl.monsters.append(self.player)
+        if not robot_destroyed:
+            _lvl = self.dungeon_levels[self.player.curr_level]
+            _lvl.monsters.append(self.player)
 
         _suspended = self.suspended_player.pop()        
         self.player = _suspended
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
-        self.add_player_to_level(-1, self.player)
+        self.add_player_to_level(-1, self.player, True)
 
     def player_forcibly_exits_cyberspace(self):
         self.player.dazed('')
@@ -281,7 +282,7 @@ class DungeonMaster:
         _name = _mr.resolve_name(monster)
         self.dui.display_message('You are displaced by ' + _name, True)
          
-    def add_player_to_level(self, level_num, player):
+    def add_player_to_level(self, level_num, player, suppress_msg=False):
         self.sight_matrix = {}
         player.curr_level = level_num
         _lvl = self.dungeon_levels[level_num]
@@ -290,7 +291,7 @@ class DungeonMaster:
         self.refresh_player_view()
         self.dui.draw_screen()
 
-        if _lvl.is_cyberspace():
+        if not suppress_msg and _lvl.is_cyberspace():
             self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
         if  _lvl.level_num == 1 and not self.player.has_memory('enter complex'):
                 self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
@@ -1723,6 +1724,10 @@ class DungeonMaster:
             for i in items:
                 self.item_hits_ground(_level, r, c, i)
 
+        # This can habit if the player is remote-controlling a robot
+        if victim == self.player:
+            self.player_killed(None)
+
         self.mr.monster_killed(victim, by_player)
         _level.remove_monster(victim, r, c)
         
@@ -1915,7 +1920,14 @@ class DungeonMaster:
             self.player_forcibly_exits_cyberspace()
         
             raise TurnInterrupted
-            
+        elif isinstance(self.player, BasicBot):
+            _p = self.player
+            self.dungeon_levels[_p.curr_level].dungeon_loc[_p.row][_p.col].occupant = ''
+            self.dui.display_message('--CONNECTION TERMINATED.--', True)
+            self.terminate_remote_session(True)
+
+            raise TurnInterrupted
+
         _kn =  killer.get_name(2)
         _msg = 'You have been killed by ' + _kn + '!'
         self.dui.display_message(_msg, 1)

@@ -612,7 +612,7 @@ class RemoteRobotCC(MeatspaceCC):
 
     def force_quit_cyberspace(self):
         if self.dui.query_yes_no("Terminate remote session") == 'y':
-            self.dm.terminate_remote_session()
+            self.dm.terminate_remote_session(False)
         else:
             self.dui.display_message("Nevermind.")
 
