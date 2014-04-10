@@ -191,7 +191,7 @@ class DungeonMaster:
             if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
                 break
         _lvl.monsters.remove(m)
-        
+
         self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
 
     def terminate_remote_session(self):
@@ -203,10 +203,8 @@ class DungeonMaster:
         _suspended = self.suspended_player.pop()        
         self.player = _suspended
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
-        self.dui.set_r_c(_suspended.row, _suspended.col, _suspended.curr_level)
-        self.refresh_player_view()
-        self.dui.draw_screen()
-        
+        self.add_player_to_level(-1, self.player)
+
     def player_forcibly_exits_cyberspace(self):
         self.player.dazed('')
         self.player_exits_cyberspace(randrange(11,21))
