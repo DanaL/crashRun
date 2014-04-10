@@ -95,6 +95,7 @@ from .Util import TurnInterrupted
 
 ANIMATION_PAUSE = 0.02
 FINAL_TURN = 20000
+CYBERSPACE_LEVEL = -1
 
 class UnableToAccess(Exception):
     pass
@@ -204,7 +205,7 @@ class DungeonMaster:
         _suspended = self.suspended_player.pop()        
         self.player = _suspended
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
-        self.add_player_to_level(-1, self.player, True)
+        self.add_player_to_level(CYBERSPACE_LEVEL, self.player, True)
 
     def player_forcibly_exits_cyberspace(self):
         self.player.dazed('')
@@ -220,7 +221,7 @@ class DungeonMaster:
         self.player = self.suspended_player.pop()
         self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
 
-        _wired_level = self.dungeon_levels[-1]
+        _wired_level = self.dungeon_levels[CYBERSPACE_LEVEL]
         _security = _wired_level.security_active        
         _meat_level = self.dungeon_levels[self.player.curr_level]
         _meat_level.security_active = _security
@@ -239,16 +240,15 @@ class DungeonMaster:
     # At this point the active level is still the meatspace level; level passed
     # into the function is the incoming cyberspace level
     def player_enters_cyberspace(self):        
-        self.dungeon_levels[-1] = CyberspaceLevel(self, -1, 20, 70)
-        self.dungeon_levels[-1].generate_level(self.player.curr_level)
+        self.dungeon_levels[CYBERSPACE_LEVEL] = CyberspaceLevel(self, CYBERSPACE_LEVEL, 20, 70)
+        self.dungeon_levels[CYBERSPACE_LEVEL].generate_level(self.player.curr_level)
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         _avatar = self.player.get_cyberspace_avatar(self)
         _avatar.meatspace_level = self.player.curr_level
         self.suspended_player.append(self.player)
         self.player = _avatar
 
-        self.dungeon_levels[-1] = self.dungeon_levels[-1]
-        self.dungeon_levels[-1].mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
+        self.dungeon_levels[CYBERSPACE_LEVEL].mark_initially_known_sqrs(_avatar.skills.get_skill('Hacking').get_rank() + 2)
         _meat_level = self.dungeon_levels[self.player.curr_level]
 
         _up_loc = _meat_level.get_entrance()
@@ -256,12 +256,12 @@ class DungeonMaster:
         _up = _meat_level.map[_up_loc[0]][_up_loc[1]] if _up_loc else None
         _down = _meat_level.map[_down_loc[0]][_down_loc[1]] if _down_loc else None
 
-        self.dungeon_levels[-1].security_active = _meat_level.security_active
+        self.dungeon_levels[CYBERSPACE_LEVEL].security_active = _meat_level.security_active
         if _meat_level.security_active:
-            self.dungeon_levels[-1].activate_security_program()
+            self.dungeon_levels[CYBERSPACE_LEVEL].activate_security_program()
 
-        self.player.row, self.player.col = self.dungeon_levels[-1].entrance
-        self.add_player_to_level(-1, self.player)
+        self.player.row, self.player.col = self.dungeon_levels[CYBERSPACE_LEVEL].entrance
+        self.add_player_to_level(CYBERSPACE_LEVEL, self.player)
     
     # This might result in really stupid behaviour if the stairs were surrounded by a gigantic field of monsters
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)
