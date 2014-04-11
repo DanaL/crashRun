@@ -284,6 +284,7 @@ class DungeonMaster:
          
     def add_player_to_level(self, level_num, player, suppress_msg=False):
         self.sight_matrix = {}
+
         player.curr_level = level_num
         _lvl = self.dungeon_levels[level_num]
         _lvl.dungeon_loc[player.row][player.col].occupant = player
@@ -293,7 +294,8 @@ class DungeonMaster:
 
         if not suppress_msg and _lvl.is_cyberspace():
             self.dui.display_message("You are in a maze of twisty little data-buses, all alike.")
-        if  _lvl.level_num == 1 and not self.player.has_memory('enter complex'):
+
+        if  _lvl.level_num == 1 and isinstance(self.player, Player) and not self.player.has_memory('enter complex'):
                 self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
                 self.player.remember('enter complex')
 
@@ -1923,7 +1925,7 @@ class DungeonMaster:
         elif isinstance(self.player, BasicBot):
             _p = self.player
             self.dungeon_levels[_p.curr_level].dungeon_loc[_p.row][_p.col].occupant = ''
-            self.dui.display_message('--CONNECTION TERMINATED.--', True)
+            self.dui.display_message('--CONNECTION TERMINATED--', True)
             self.terminate_remote_session(True)
 
             raise TurnInterrupted
@@ -2104,6 +2106,15 @@ class DungeonMaster:
             self.dui.display_message('An alarm is sounding.')
         
         self.dui.do_player_action()
+
+        # If the player is controlling a robot, give it a saving throw every few turns
+        if isinstance(self.player, BasicBot) and self.turn % 25 == 0:
+            _hacking = self.suspended_player[0].skills.get_skill('Hacking').get_rank()
+            if self.player.saving_throw(-_hacking):
+                self.dui.display_message('--REMOVED CONNECTION SEVERED BY LOCAL DEFENSE SYSTEMS--', True)
+                self.terminate_remote_session(False)
+
+                return
 
         _monsters_who_acted = []
         for _m in self.dungeon_levels[self.player.curr_level].monsters:

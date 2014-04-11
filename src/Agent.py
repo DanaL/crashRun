@@ -371,6 +371,29 @@ class BaseAgent(BaseTile):
         except:
             pass # if the move is illegal, don't worry about it, he's just wandering waiting for a customer
 
+    # Based on the AD&D 1st edition saving throw tables
+    def saving_throw(self, modifier):
+        if self.level < 3:
+            _save = 14
+        elif self.level < 5:
+            _save = 13
+        elif self.level < 7:
+            _save = 11
+        elif self.level < 9:
+            _save = 10
+        elif self.level < 11:
+            _save = 8
+        elif self.level < 13:
+            _save = 7
+        elif self.level < 15:
+            _save = 5
+        else:
+            _save = 4
+
+        _roll = randint(1, 20) + modifier
+
+        return _roll > _save
+
     def stealth_roll(self):    
         return do_d10_roll(1, 0)
 
