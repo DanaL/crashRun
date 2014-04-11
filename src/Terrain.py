@@ -20,6 +20,7 @@ from random import randrange
 from .BaseTile import BaseTile
 from .FieldOfView import Shadowcaster
 from .Items import ItemFactory
+from .MessageResolver import MessageResolver
 from .Util import VisualAlert
 
 FLOOR = 0
@@ -295,15 +296,18 @@ class Trap(TerrainTile):
 
     def get_ch(self):
         return '^' if self.revealed else '.'
-        
+
     def trigger(self, dm, victim, row, col):
-        pass
+        self.revealed = True        
+        _mr = MessageResolver(dm, dm.dui)
+        _mr.simple_verb_action(victim, ' %s on ' + self.get_name(2) + "!", ['step'])
         
 class LogicBomb(Trap):
     def __init__(self):
         Trap.__init__(self, 'logic bomb', 'darkgreen', 'green')
         
     def trigger(self, dm, victim, row, col):
+        super().trigger(dm, victim, row, col)
         if victim == dm.player:
             dm.alert_player(row, col, 'The shock severs your connection.')
             dm.player_forcibly_exits_cyberspace()
@@ -315,6 +319,7 @@ class ConcussionMine(Trap):
         self.explosive = _if.gen_item("concussion mine")
         
     def trigger(self, dm, victim, row, col):
+        super().trigger(dm, victim, row, col)
         dm.dui.display_message("Whomp!")
         _lvl = dm.dungeon_levels[victim.curr_level]
         _lvl.remove_trap(row, col)
@@ -324,9 +329,14 @@ class GapingHole(Trap):
     def __init__(self):
         Trap.__init__(self, 'gaping hole', 'darkgrey', 'grey')
         self.revealed = True
-        
+
     def trigger(self, dm, victim, row, col):
-        dm.agent_steps_on_hole(victim)
+        if not victim.has_condition("flying"):
+            super().trigger(dm, victim, row, col)
+            dm.agent_steps_on_hole(victim)
+        elif self.revealed:
+            _mr = MessageResolver(dm, dm.dui)
+            _mr.simple_verb_action(victim, ' %s hovering over ' + self.get_name(2) + ".", ['etre'])
         
 class HoleInCeiling(Trap):
     def __init__(self):

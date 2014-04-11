@@ -1798,18 +1798,10 @@ class DungeonMaster:
         if _sqr.get_type() == TOXIC_WASTE:
             self.agent_steps_in_toxic_waste(agent, r, c, level)
         elif _sqr.get_type() == ACID_POOL:
-            self.agent_steps_in_acid_pool(agent, r, c, level)
-            
-        if isinstance(_sqr, T.Trap):
-            if not isinstance(_sqr, T.HoleInCeiling):
-                _mr = MessageResolver(self, self.dui)
-                _mr.simple_verb_action(agent, ' %s on ' + _sqr.get_name(2) + "!", ['step'])
-            self.agent_steps_on_trap(agent, _sqr)
-                    
-    def agent_steps_on_trap(self, agent, trap):
-        trap.revealed = True
-        trap.trigger(self, agent, agent.row, agent.col)
-                
+            self.agent_steps_in_acid_pool(agent, r, c, level)            
+        elif isinstance(_sqr, T.Trap):
+            _sqr.trigger(self, agent, agent.row, agent.col)
+                            
     # Eventually, weight of the item will be a factor
     # I could get rid of the conditionals by have items know their range modifier...
     def __calc_thrown_range(self,agent,item):
