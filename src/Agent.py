@@ -66,18 +66,26 @@ class DamageDesc(object):
 # on (but I might later if that becomes useful)
 class AgentMemory:
     def __init__(self):
-        self.events = []
+        self.events = {}
 
     def has_memory(self, memory):
         return memory in self.events
 
     def remember(self, memory):
         if not self.has_memory(memory):
-            self.events.append(memory)
+            self.events[memory] = 1
+        else:
+            self.events[memory] += 1
+    
+    def memory_count(self, memory):
+        if memory not in self.events:
+            return 0
 
+        return self.events[memory]
+        
     def forget(self, memory):
         try:
-            self.events.remove(memory)
+            del(self.events[memory])            
         except ValueError:
             pass # Don't really care that it wasn't in the memory
 
@@ -1209,10 +1217,11 @@ class Ninja(RelentlessPredator):
         
         self.energy -= STD_ENERGY_COST
                   
-class BasicBot(RelentlessPredator):
+class BasicBot(RelentlessPredator, AgentMemory):
     bot_number = 0
 
     def __init__(self):
+        AgentMemory.__init__(self)
         _num = ("%X" % BasicBot.bot_number).zfill(4)
         BasicBot.bot_number += 1    
         self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))

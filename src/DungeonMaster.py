@@ -179,6 +179,8 @@ class DungeonMaster:
     def player_remotes_to_robot(self, robot):
         # Stash the current Cyberspace level so that it can be resotred when the player
         # returns to it. 
+        robot.remember("remote controlled")
+
         _cyber_coord = (self.player.row, self.player.col)
         
         self.suspended_player.append(self.player)
@@ -2110,34 +2112,38 @@ class DungeonMaster:
         # If the player is controlling a robot, give it a saving throw every few turns
         if isinstance(self.player, BasicBot) and self.turn % 25 == 0:
             _hacking = self.suspended_player[0].skills.get_skill('Hacking').get_rank()
-            if self.player.saving_throw(-_hacking):
-                self.dui.display_message('--REMOVED CONNECTION SEVERED BY LOCAL DEFENSE SYSTEMS--', True)
+
+            # For each previous time the robot has bene controlled and thrown off the control, we'll give it a 
+            # bonus to escape control again.
+            _mod = self.player.memory_count("remote controlled") - _hacking
+            if self.player.saving_throw(_mod):                
+                self.dui.display_message('--REMOTE CONNECTION SEVERED BY LOCAL DEFENSE SYSTEMS--', True)                
+                self.dungeon_levels[self.player.curr_level].resolve_events()
+                self.dungeon_levels[self.player.curr_level].end_of_turn()
                 self.terminate_remote_session(False)
+        else:
+            _monsters_who_acted = []
+            for _m in self.dungeon_levels[self.player.curr_level].monsters:
+                self.active_agent = _m
+                try:
+                    if self.active_agent.has_condition('stunned'):
+                        self.active_agent.stunned(self.dui)
+                    else:
+                        while _m.energy >= _m.ENERGY_THRESHOLD:
+                            self.active_agent.perform_action()
+                except TurnInterrupted:
+                    pass
+                _monsters_who_acted.append(_m)
+                self.active_agent = ''
+            
+            self.dungeon_levels[self.player.curr_level].resolve_events()
+            self.dungeon_levels[self.player.curr_level].end_of_turn()
 
-                return
-
-        _monsters_who_acted = []
-        for _m in self.dungeon_levels[self.player.curr_level].monsters:
-            self.active_agent = _m
-            try:
-                if self.active_agent.has_condition('stunned'):
-                    self.active_agent.stunned(self.dui)
-                else:
-                    while _m.energy >= _m.ENERGY_THRESHOLD:
-                        self.active_agent.perform_action()
-            except TurnInterrupted:
-                pass
-            _monsters_who_acted.append(_m)
-            self.active_agent = ''
-        
-        self.dungeon_levels[self.player.curr_level].resolve_events()
-        self.dungeon_levels[self.player.curr_level].end_of_turn()
-
-        # restore energy to players and monsters
-        # this will change to be a method that also calcs speed modifiers
-        self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
-        for _m in _monsters_who_acted:
-            _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
+            # restore energy to players and monsters
+            # this will change to be a method that also calcs speed modifiers
+            self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
+            for _m in _monsters_who_acted:
+                _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
         
     def debug_add_item(self, words):
         _request = ""

@@ -55,6 +55,17 @@ class RobotGrandCentral(SubnetNode):
     def __init__(self):
         TerrainTile.__init__(self,"'",'darkblue','black','blue',1,0,1,0,'subnet node',SUBNET_NODE)
 
+    def attempt_to_remote(self, dm, robot):
+        _hacking = dm.player.skills.get_skill('Hacking').get_rank()
+
+        # For each previous time the robot has bene controlled and thrown off the control, we'll give it a 
+        # bonus to escape control again.
+        _mod = robot.memory_count("remote controlled") - _hacking
+        if not robot.saving_throw(_mod):
+            dm.player_remotes_to_robot(robot)
+        else:
+            dm.alert_player(dm.player.row, dm.player.col, "Remote connection refused.")
+
     def visit(self, dm, agent):
         dm.alert_player(agent.row, agent.col, "Accessing directory of online robots.")
         robots = dm.dungeon_levels[agent.meatspace_level].get_list_of_robots()
@@ -70,12 +81,16 @@ class RobotGrandCentral(SubnetNode):
                 menu.append((ch, r.get_name(1) + " " + r.get_serial_number(), ch))
                 count += 1
         
-            _choice = ''
-            while _choice == '':
+            _continue = True
+            while _continue:
                 _choice = dm.dui.ask_menued_question(header, menu)
-            
+                if _choice == '':
+                    dm.dui.display_message("Nevermind.")
+                    return
+                else:
+                    _continue = False
             _robot = robots[ord(_choice) - ord('a')]
-            dm.player_remotes_to_robot(_robot)            
+            self.attempt_to_remote(dm, _robot)
 
 def get_dance_node():
     _dn = SkillBuilderNode('Dancing', 'Miscellaneous')
