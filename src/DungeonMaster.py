@@ -653,8 +653,14 @@ class DungeonMaster:
     def player_moves_down_a_level(self):
         _lvl = self.dungeon_levels[self.player.curr_level]
         sqr = _lvl.map[self.player.row][self.player.col]
-        if isinstance(sqr, T.Trap) and isinstance(sqr.previous_tile, T.DownStairs):
-            sqr = sqr.previous_tile
+        if isinstance(sqr, T.Trap):
+            if isinstance(sqr, T.GapingHole) and self.player.has_condition("flying"):
+                self.dui.display_message("You fly down the hole.", True)
+                self.__determine_next_level('down', (self.player.row, self.player.col), _lvl)
+                self.player.energy -= STD_ENERGY_COST
+                return
+            elif hasattr(sqr, 'previous_tile') and isinstance(sqr.previous_tile, T.DownStairs):
+                sqr = sqr.previous_tile
 
         if isinstance(sqr, T.DownStairs):
             if  sqr.activated:
@@ -670,8 +676,16 @@ class DungeonMaster:
         sqr = _lvl.map[self.player.row][self.player.col]
         if isinstance(sqr, T.Trap):
             if isinstance(sqr, T.HoleInCeiling):
-                self.dui.display_message("You can't jump high enough.")
-                self.player.energy -= STD_ENERGY_COST
+                if self.player.has_condition("flying"):
+                    self.dui.display_message("You fly up the hole in the ceiling.", True)
+                    self.__determine_next_level('up', (self.player.row, self.player.col), _lvl)
+                    self.player.energy -= STD_ENERGY_COST
+                else:
+                    self.dui.display_message("You can't jump high enough.")
+                    self.player.energy -= STD_ENERGY_COST
+                return
+            elif isinstance(sqr, T.GapingHole):
+                self.dui.display_message('You cannot go up here.')
                 return
             elif isinstance(sqr.previous_tile, T.UpStairs):
                 sqr = sqr.previous_tile
