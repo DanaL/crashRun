@@ -27,6 +27,7 @@ import sdl2.ext as sdl2ext
 import sdl2.sdlttf as sdlttf
 
 from .DungeonMaster import GameOver
+from .GamePersistence import get_preferences
 
 # RGB values for colours used in system
 colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
@@ -119,7 +120,12 @@ class DisplayGuts(object):
                     
     def pause_for_more(self):
         self.display_on_msg_line('-- more --')
-        self.wait_for_key_input()
+
+        if get_preferences()["enter to clear pause"]:
+            while self.wait_for_key_input() != 'return': 
+                pass
+        else:
+            self.wait_for_key_input()
         self.clear_msg_line()
 
     def redraw_screen(self):

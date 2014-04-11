@@ -34,7 +34,7 @@ def save_preferences(prefs):
     
 def get_preferences():
     if not path.exists('prefs.txt'):
-        _prefs = {"auto unlock doors" : True, "bump to open doors" : True}
+        _prefs = {"auto unlock doors" : True, "bump to open doors" : True, "enter to clear pause" : True}
         save_preferences(_prefs)
     else:
         _prefs = {}
