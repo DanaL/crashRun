@@ -141,6 +141,7 @@ class DisplayGuts(object):
 
             SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
+            self.__msg_cursor = 0
             
     def set_r_c(self, r, c, level_num):
         if self.cc.get_lvl_width(level_num) < self.display_cols:
