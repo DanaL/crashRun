@@ -48,6 +48,7 @@ class DisplayGuts(object):
         self.dui = dui                
         self.map_r = ''
         self.map_c = ''
+        self.display_mode = 'standard'
 
         sdlttf.TTF_Init()
         self.font = sdlttf.TTF_OpenFont(str.encode("VeraMono.ttf"), 18)
@@ -158,6 +159,9 @@ class DisplayGuts(object):
             SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
             self.__msg_cursor = 0
+        
+        if self.display_mode == 'remote':
+            self.write_sidebar()
             
     def set_r_c(self, r, c, level_num):
         if self.cc.get_lvl_width(level_num) < self.display_cols:
@@ -204,10 +208,12 @@ class DisplayGuts(object):
 
     def switch_to_normal_display(self):
         self.display_cols = self.max_cols
-        
+        self.display_mode = 'standard'
+
     def switch_to_remote_display(self):
         self.display_cols = self.max_cols - SIDEBAR_WIDTH
         self.clear_sidebar()
+        self.display_mode = 'remote'
 
     def write_sidebar(self):
         self.clear_sidebar()

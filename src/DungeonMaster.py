@@ -551,6 +551,7 @@ class DungeonMaster:
         
         if isinstance(self.player, BasicBot):
             self.dui.set_command_context(RemoteRobotCC(self, self.dui))
+            self.dui.switch_to_remote_display()
         elif self.dungeon_levels[self.player.curr_level].is_cyberspace():
             self.dui.set_command_context(CyberspaceCC(self, self.dui))
         else:

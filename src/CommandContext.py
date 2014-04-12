@@ -633,6 +633,7 @@ class RemoteRobotCC(MeatspaceCC):
         for r in range(meat.row - 4, meat.row + 5):
             for c in range(meat.col - 4, meat.col + 5):
                 sees = (r, c) in visible
+                print(sees)
                 sqr = self.dm.get_sqr_info_for_agent(r, c, meat, sees)
                 if sees:
                     sqr.lit = True
