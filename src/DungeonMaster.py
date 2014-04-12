@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
+from copy import copy
 from copy import deepcopy
 from datetime import datetime
 from time import localtime, strftime, sleep
@@ -1631,14 +1632,39 @@ class DungeonMaster:
         _level = self.dungeon_levels[agent.curr_level]
         if not _level.in_bounds(r, c):
             return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
-            
-        visible = omniscient or _level.dungeon_loc[r][c].visible
-        remembered = visible or _level.dungeon_loc[r][c].visited
+        
+        _loc = _level.dungeon_loc[r][c]    
+        visible = omniscient or _loc.visible
+        remembered = visible or _loc.visited
 
-        _loc = _level.dungeon_loc[r][c]
         terrain = self.get_terrain_tile(agent, _loc, r, c, visible, omniscient)
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
+
+    # Variant of get_sqr_info_for_agent() that uses passed-in set of visible squares,
+    # ignoring the dungeon_loc's visible property. When I wrote the former function,
+    # the player was the only perspecitve I was showing. Now that the player can control
+    # robots, things get complicated because that visible value will be set by what the 
+    # robot can see. So when displaying the sidebar of what the player sees near his body
+    # he would be able to see through walls to what the robot can see.
+    def get_sqr_info_using_set(self, r, c, agent, visible_sqrs):
+        _level = self.dungeon_levels[agent.curr_level]
+        if not _level.in_bounds(r, c):
+            return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
+
+        # We need override the sight matrix with the passed in list of visible
+        # squares temporarily (for purposes of determining whether a square's 
+        # occupant is visible)
+        _temp_sight_matrix = self.sight_matrix
+        self.sight_matrix = visible_sqrs
+        _visible = (r, c) in visible_sqrs
+        _loc = copy(_level.dungeon_loc[r][c])
+        _loc.lit = _visible
+        _remembered = _loc.visited
+        _terrain = self.get_terrain_tile(agent, _loc, r, c, _visible, False)
+        self.sight_matrix = _temp_sight_matrix
+
+        return DungeonSqrInfo(r, c, _visible, _remembered, _loc.lit, _terrain)
 
     def __not_in_sight_matrix(self, j):
         return j not in self.sight_matrix
