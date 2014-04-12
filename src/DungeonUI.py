@@ -340,7 +340,13 @@ class DungeonUI(object):
                 _prefs[_result] = not _prefs[_result]
                 
         save_preferences(_prefs)
-            
+    
+    def switch_to_normal_display(self):
+        self.guts.switch_to_normal_display()
+
+    def switch_to_remote_display(self):
+        self.guts.switch_to_remote_display()
+
     # I will eventually use pick_from_list to drive 
     # pick_inventory_item
     def pick_inventory_item(self, msg):
@@ -601,3 +607,7 @@ class DungeonUI(object):
 
     def wait_for_input(self):
         return self.guts.wait_for_key_input()
+
+    def write_sidebar(self):
+        self.guts.write_sidebar()
+        

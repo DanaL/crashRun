@@ -297,7 +297,10 @@ class BaseAgent(BaseTile):
             if isinstance(e[1], Items.BatteryPowered) and e[1] == 0:
                 continue
             self.apply_effect(e, False)
-            
+    
+    def calc_curr_vision_radius(self):
+        return 0 if self.has_condition("blind") else self.vision_radius
+        
     def calc_ac(self):
         self.__curr_ac = self.__base_ac + self.inventory.get_armour_value() 
         self.__curr_ac += self.get_defense_modifier()

@@ -76,7 +76,7 @@ class MessageResolver(object):
         _level = self.dm.dungeon_levels[agent.curr_level]
         if agent == self.dm.player:
             return 'you'
-        elif self.dm.is_occupant_visible_to_player(agent):
+        elif self.dm.is_occupant_visible_to_agent(self.dm.player, agent):
             return agent.get_name()
         else:
             return 'it'

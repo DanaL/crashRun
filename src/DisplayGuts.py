@@ -36,10 +36,13 @@ colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 's
     'yellow':(255,255,0), 'yellow-orange':(255,200,0), 'orange':(255,165,0), 'orchid':(218,112,214), 
     'plum':(221,160,221), 'bright pink':(255,105,180), 'pink':(255,20,147)}
 
+SIDEBAR_WIDTH = 10
+
 class DisplayGuts(object):
     def __init__(self, dr, dc, fs, window_title, dui):
         self.display_rows = dr
         self.display_cols = dc
+        self.max_cols = dc
         self.font_size = fs
         self.__msg_cursor = 0
         self.dui = dui                
@@ -103,16 +106,23 @@ class DisplayGuts(object):
         if redraw: self.redraw_screen()
     
     def clear_msg_line(self):
-        SDL_FillRect(self.screen, SDL_Rect(0, 0, self.display_cols * self.fwidth, self.fheight), 0)
+        SDL_FillRect(self.screen, SDL_Rect(0, 0, self.max_cols * self.fwidth, self.fheight), 0)
         SDL_UpdateWindowSurface(self.window)
         self.__msg_cursor = 0
 
     def clear_screen(self, fullscreen):
         start_row = 0 if fullscreen else self.fheight
 
-        width = self.display_cols * self.fwidth
+        width = self.max_cols * self.fwidth
         height = self.display_rows * self.fheight
         SDL_FillRect(self.screen, SDL_Rect(0, start_row, width, height), 0)
+        SDL_UpdateWindowSurface(self.window)
+
+    def clear_sidebar(self):
+        max_width = self.max_cols * self.fwidth
+        width = SIDEBAR_WIDTH * self.fwidth
+        height = self.display_rows * self.fheight - 1
+        SDL_FillRect(self.screen, SDL_Rect(max_width - width, self.fheight, width, height), 0)
         SDL_UpdateWindowSurface(self.window)
 
     def fetch_colour(self,colour):
@@ -184,7 +194,7 @@ class DisplayGuts(object):
                 maxCol = tile.c
         width = maxCol - baseCol
 
-        columnOffset = self.display_cols // 2 - width // 2
+        columnOffset = self.max_cols // 2 - width // 2
 
         for tile in vision:
             fgbg = tile.get_fg_bg()
@@ -192,6 +202,46 @@ class DisplayGuts(object):
 
         SDL_UpdateWindowSurface(self.window)
 
+    def switch_to_normal_display(self):
+        self.display_cols = self.max_cols
+        
+    def switch_to_remote_display(self):
+        self.display_cols = self.max_cols - SIDEBAR_WIDTH
+        self.clear_sidebar()
+
+    def write_sidebar(self):
+        self.clear_sidebar()
+        blocks = self.cc.get_sidebar_view()
+        offset_r = blocks[0][0] - 5
+        offset_c = blocks[0][1] - 5
+        for block in blocks[1]:
+            fg, bg = block.get_fg_bg()
+            r = block.r - offset_r
+            c = block.c - offset_c + self.display_cols 
+            
+            self.write_sqr(block.get_ch(), fg, bg, r, c, False)
+
+        _player = self.cc.get_meatspace_player()
+        pr = SDL_Rect((self.display_cols + 1) * self.fwidth, 11 * self.fheight, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(_player.get_name()), colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+
+        pr = SDL_Rect((self.display_cols + 1) * self.fwidth, 12 * self.fheight, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode("HP: " + str(_player.curr_hp)), colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+
+        pr = SDL_Rect((self.display_cols + 1) * self.fwidth, 13 * self.fheight, 0, 0)
+        colour = SDL_Color(255, 255, 255)
+        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode("Max: " + str(_player.max_hp)), colour)
+        SDL_BlitSurface(txt, None, self.screen, pr)
+        SDL_FreeSurface(txt)
+
+        SDL_UpdateWindowSurface(self.window)
+        
     def update_block(self, block):
         _low_actual_r = self.display_rows
         _high_actual_r = 0
@@ -234,7 +284,7 @@ class DisplayGuts(object):
             line += 'Complex Level: ' + str(info.level)
 
         #Clear the line first
-        SDL_FillRect(self.screen, SDL_Rect(0, self.fheight * self.display_rows - self.fheight, self.display_cols * self.fwidth, self.fheight), 0)
+        SDL_FillRect(self.screen, SDL_Rect(0, self.fheight * self.display_rows - self.fheight, self.max_cols * self.fwidth, self.fheight), 0)
         pr = SDL_Rect(0, self.fheight * self.display_rows - self.fheight, 0, 0)
         colour = SDL_Color(255, 255, 255)
         txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(line), colour)
@@ -303,7 +353,7 @@ class DisplayGuts(object):
 
     def split_message(self, message, pause_for_more):
         self.__msg_cursor = 0
-        _index = message[:self.display_cols - 12].rfind(" ")
+        _index = message[:self.max_cols - 12].rfind(" ")
         self.write_message(message[:_index].strip(), True)
         self.write_message(message[_index:].strip(), pause_for_more)
 
@@ -311,7 +361,7 @@ class DisplayGuts(object):
         if self.msg_overflow(message):
             self.pause_for_more()
 
-        if len(message) > self.display_cols - 12:
+        if len(message) > self.max_cols - 12:
             self.split_message(message, pause)    
             return
         

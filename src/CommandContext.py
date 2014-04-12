@@ -19,6 +19,7 @@ import string
 from random import randrange
 
 from .Agent import STD_ENERGY_COST
+from .FieldOfView import Shadowcaster
 from . import Items
 from . import Inventory
 from .Inventory import AlreadyWearingSomething
@@ -102,18 +103,21 @@ class CommandContext(object):
 
     def get_player_loc(self):
         return self.dm.get_player_loc()
-        
+
     # Return a section of map (useful for when a screen, or portion thereof needs to be
     # withdrawn)
     def get_section(self, r, c, length, width):
-        _level = self.dm.dungeon_levels[self.dm.player.curr_level]
+        return self.get_section_of_level(r, c, length, width, self.dm.player, False)
+    
+    def get_section_of_level(self, r, c, length, width, agent, omniscient):
+        _level = self.dm.dungeon_levels[agent.curr_level]
         lr = r
         section = []
-        while lr < length and lr < _level.lvl_length:
+        while lr < r + length and lr < _level.lvl_length:
             lc = c  
             row = []
-            while lc < width and lc < _level.lvl_width:
-                sqr = self.dm.get_sqr_info(lr, lc, self.dm.player.curr_level)
+            while lc < c + width and lc < _level.lvl_width:
+                sqr = self.dm.get_sqr_info_for_agent(lr, lc, agent, omniscient)                
                 row.append(sqr)
 
                 lc += 1
@@ -121,7 +125,7 @@ class CommandContext(object):
             lr += 1
         
         return section
-    
+
     def get_sqr_info(self, row, col):
         return self.dm.get_sqr_info(row, col)
         
@@ -615,6 +619,26 @@ class RemoteRobotCC(MeatspaceCC):
             self.dm.terminate_remote_session(False)
         else:
             self.dui.display_message("Nevermind.")
+
+    def get_meatspace_player(self):
+        return self.dm.suspended_player[0]
+
+    def get_sidebar_view(self):
+        meat = self.dm.suspended_player[0]
+        sc = Shadowcaster(self.dm, meat.calc_curr_vision_radius(), meat.row, meat.col, meat.curr_level)
+        visible = sc.calc_visible_list()
+        visible[(meat.row, meat.col)] = 0
+        
+        blocks = []
+        for r in range(meat.row - 4, meat.row + 5):
+            for c in range(meat.col - 4, meat.col + 5):
+                sees = (r, c) in visible
+                sqr = self.dm.get_sqr_info_for_agent(r, c, meat, sees)
+                if sees:
+                    sqr.lit = True
+                blocks.append(sqr)
+        
+        return ((meat.row, meat.col), blocks)
 
     def get_status_bar_info(self):
         _p = self.dm.player

@@ -173,7 +173,7 @@ class Terminal(Equipment):
         vision = []
         for f in feed:
             dm.dungeon_levels[dm.player.curr_level].dungeon_loc[f[0]][f[1]].visited = True
-            sqr = dm.get_sqr_info(f[0], f[1], dm.player.curr_level, True)
+            sqr = dm.get_sqr_info_for_agent(f[0], f[1], dm.player, True)
             vision.append(sqr)
 
         dui.clear_msg_line()

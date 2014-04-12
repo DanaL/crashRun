@@ -185,7 +185,7 @@ class DungeonMaster:
         
         self.suspended_player.append(self.player)
         self.player = robot
-
+        
         robot.light_radius = robot.vision_radius
         _lvl = self.dungeon_levels[robot.curr_level]
         self.dui.set_command_context(RemoteRobotCC(self, self.dui))
@@ -194,6 +194,9 @@ class DungeonMaster:
             if isinstance(m, BasicBot) and m.serial_number == robot.serial_number:
                 break
         _lvl.monsters.remove(m)
+
+        self.dui.switch_to_remote_display()
+        self.dui.write_sidebar()
 
         self.dui.display_message("SSH tunnel successful. Remote robot session engaged.")
 
@@ -204,8 +207,11 @@ class DungeonMaster:
             _lvl = self.dungeon_levels[self.player.curr_level]
             _lvl.monsters.append(self.player)
 
+        self.leaving_level_cleanup()
+
         _suspended = self.suspended_player.pop()        
         self.player = _suspended
+        self.dui.switch_to_normal_display()
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
         self.add_player_to_level(CYBERSPACE_LEVEL, self.player, True)
 
@@ -269,7 +275,7 @@ class DungeonMaster:
     # Hopefully this is a rare, degenerate case (although if the player enters a level into a Science Lab...)
     #
     # Fixes: reject the move if the player is going to end up 2 or 3 squares away from stairs.  What to do with 
-    # the monster?  Push him back down the stairs?  Or have him wait until he can enter the level?  (The later
+    # the monster?  Push them back down the stairs?  Or have them wait until they can enter the level?  (The later
     # would be really strange to code). 
     #
     # Simpler may be to not generate labs in rooms with stairs.
@@ -283,12 +289,29 @@ class DungeonMaster:
         _mr = MessageResolver(self, self.dui)
         _name = _mr.resolve_name(monster)
         self.dui.display_message('You are displaced by ' + _name, True)
-         
+    
+    # When the player leaves the level they are on, mark the squares they could last see as
+    # not lit. This never mattered until a player could remote into robots. When terminating
+    # the remote session, they could still see the light squares from the robot.
+    def leaving_level_cleanup(self):
+        lvl = self.dungeon_levels[self.player.curr_level]
+        for loc in self.sight_matrix:    
+            lvl.dungeon_loc[loc[0]][loc[1]].lit = False
+
     def add_player_to_level(self, level_num, player, suppress_msg=False):
         self.sight_matrix = {}
 
-        player.curr_level = level_num
+        # Check to see if there is a monster standing on the stairs when the player
+        # arrives.
         _lvl = self.dungeon_levels[level_num]
+        _occ = _lvl.dungeon_loc[player.row][player.col].occupant
+        if _occ not in ('', player):
+            nc = _lvl.get_nearest_clear_space(_occ.row, _occ.col)
+            _lvl.dungeon_loc[nc[0]][nc[1]].occupant = _occ
+            _occ.row, _occ.col = nc
+            self.dui.display_message("You displace " + _occ.get_name(), True)
+        
+        player.curr_level = level_num
         _lvl.dungeon_loc[player.row][player.col].occupant = player
         self.dui.set_r_c(player.row, player.col, level_num)
         self.refresh_player_view()
@@ -398,6 +421,7 @@ class DungeonMaster:
             else:
                 self.__monster_displaces_player(_sqr, _monster, next_level_num)
 
+        self.leaving_level_cleanup()
         self.add_player_to_level(next_level_num, self.player)
 
         # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
@@ -571,7 +595,7 @@ class DungeonMaster:
         return False
 
     def monster_fires_missile(self, monster, target_r, target_c, dmg_dice, dmg_rolls, radius):
-        if not self.is_occupant_visible_to_player(monster):
+        if not self.is_occupant_visible_to_agent(agent, monster):
             _monster_name = "It"
         else:
             _monster_name = monster.get_name()
@@ -709,7 +733,7 @@ class DungeonMaster:
     def mark_invisible_monster(self, loc, row, col):
         _occ = BaseTile('I', 'white', 'black', 'white', 'it')
         loc.temp_tile = _occ
-        self.dui.update_view(self.get_sqr_info(row, col, self.player.curr_level, True))
+        self.dui.update_view(self.get_sqr_info_for_agent(row, col, self.player, True))
         
     def cmd_move_player(self, direction):
         self.dui.clear_msg_line()
@@ -1542,29 +1566,29 @@ class DungeonMaster:
         except CannotDropReadiedArmour:
             self.dui.display_message('Perhaps you should try taking it off first?')
             
-    def is_occupant_visible_to_player(self, occupant, omniscient=False):
+    def is_occupant_visible_to_agent(self, agent, occupant, omniscient=False):
         if occupant == '':
             return False
-    
-        if occupant.curr_level != self.player.curr_level:
+
+        if occupant.curr_level != agent.curr_level:
             return False
 
-        if not omniscient and self.__not_in_sight_matrix((occupant.row,occupant.col)):
+        if not omniscient and self.__not_in_sight_matrix((occupant.row, occupant.col)):
             return False
             
-        if occupant.is_cloaked() and not self.player.can_see_cloaked():
+        if occupant.is_cloaked() and not agent.can_see_cloaked():
             return False
-        
+
         if hasattr(occupant, 'revealed') and not occupant.revealed:
             return False
             
         return True
     
-    def get_terrain_tile(self, lvl_num, loc, r, c, visible, omniscient):
-        _level = self.dungeon_levels[lvl_num]
+    def get_terrain_tile(self, agent, loc, r, c, visible, omniscient):
+        _level = self.dungeon_levels[agent.curr_level]
         if visible and loc.temp_tile != '':
             return loc.temp_tile
-        elif visible and self.is_occupant_visible_to_player(loc.occupant, omniscient):
+        elif visible and self.is_occupant_visible_to_agent(agent, loc.occupant, omniscient):
             return loc.occupant
         elif not _level.map[r][c].is_recepticle() and _level.size_of_item_stack(r, c) > 0:
             i = loc.item_stack[-1]  
@@ -1581,7 +1605,7 @@ class DungeonMaster:
         _loc = _level.dungeon_loc[row][col]
         if _loc.visited:
             _visible = _level.dungeon_loc[row][col].visible
-            _terrain = self.get_terrain_tile(l_num, _loc, row, col, _visible, True)
+            _terrain = self.get_terrain_tile(agent, _loc, row, col, _visible, True)
             _si = DungeonSqrInfo(row, col, _visible, True, _loc.lit, _terrain)
             if row == self.player.row and col == self.player.col:
                 _si.name = 'you!'
@@ -1602,8 +1626,8 @@ class DungeonMaster:
     # omniscient means if the player can see the square from outside his normal vision set.
     # Ie., when getting sqr info for a square through a camera feed or some such.  In those
     # cases, if omniscient isn't true, the monsters won't be visible.
-    def get_sqr_info(self, r, c, l_num, omniscient=False):
-        _level = self.dungeon_levels[l_num]
+    def get_sqr_info_for_agent(self, r, c, agent, omniscient=False):
+        _level = self.dungeon_levels[agent.curr_level]
         if not _level.in_bounds(r, c):
             return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
             
@@ -1611,7 +1635,7 @@ class DungeonMaster:
         remembered = visible or _level.dungeon_loc[r][c].visited
 
         _loc = _level.dungeon_loc[r][c]
-        terrain = self.get_terrain_tile(l_num, _loc, r, c, visible, omniscient)
+        terrain = self.get_terrain_tile(agent, _loc, r, c, visible, omniscient)
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
 
@@ -1648,7 +1672,7 @@ class DungeonMaster:
             
     def update_sqr(self, level, r , c):
         if self.can_player_see_location(r, c, level.level_num):
-            self.dui.update_view(self.get_sqr_info(r, c, level.level_num))
+            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player))
 
     def passive_search(self, loc):
         if self.player.has_condition('dazed'): 
@@ -1684,7 +1708,7 @@ class DungeonMaster:
         else:
             _perception_roll = 0
         
-        _vr = 0 if self.player.has_condition("blind") else self.player.vision_radius
+        _vr = self.player.calc_curr_vision_radius()
         sc = Shadowcaster(self, _vr, _pr, _pc, self.player.curr_level)
         _visible = sc.calc_visible_list()
         
@@ -1703,20 +1727,20 @@ class DungeonMaster:
             _level.dungeon_loc[_s[0]][_s[1]].visited = True
             _level.dungeon_loc[_s[0]][_s[1]].lit = True
             
-            _loc = self.get_sqr_info(_s[0],_s[1], self.player.curr_level)
+            _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player)
             if _perception_roll > 14:
                 self.passive_search(_loc)
-                _loc = self.get_sqr_info(_s[0],_s[1], self.player.curr_level)
+                _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player)
                 
             _sqrs_to_draw.append(_loc)
 
         # now we need to 'extinguish' squares that are not longer lit
         for s in filter(self.__not_in_sight_matrix, self.last_sight_matrix):
             self.__loc_out_of_sight(s, _level)
-            _sqrs_to_draw.append(self.get_sqr_info(s[0],s[1], _level.level_num))
+            _sqrs_to_draw.append(self.get_sqr_info_for_agent(s[0],s[1], self.player))
 
         self.dui.update_block(_sqrs_to_draw)
-        self.dui.update_view(self.get_sqr_info(self.player.row, self.player.col, self.player.curr_level))
+        self.dui.update_view(self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player))
         
     # Called when a square moves out of sight range
     def __loc_out_of_sight(self, loc, level):
@@ -1750,7 +1774,7 @@ class DungeonMaster:
         _level.remove_monster(victim, r, c)
         
         if self.can_player_see_location(r, c, level_num):
-            self.dui.update_view(self.get_sqr_info(r, c, level_num))
+            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player))
 
         if by_player:
             self.player.add_xp(victim.get_xp_value())
@@ -2070,7 +2094,7 @@ class DungeonMaster:
 
     def refresh_player(self):
         self.refresh_player_view()
-        sqr = self.get_sqr_info(self.player.row, self.player.col, self.player.curr_level)
+        sqr = self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player)
         self.dui.update_view(sqr)
 
     def search(self):
@@ -2151,6 +2175,9 @@ class DungeonMaster:
             for _m in _monsters_who_acted:
                 _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
         
+        if isinstance(self.player, BasicBot):
+            self.dui.write_sidebar()
+
     def debug_add_item(self, words):
         _request = ""
         for _word in words:
