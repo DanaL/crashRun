@@ -353,7 +353,7 @@ class DungeonUI(object):
         i = self.cc.get_inventory_list()
 
         if not i:
-            self.__write_message('You aren\'t carrying anything.', False)
+            self.guts.write_message('You aren\'t carrying anything.', False)
             raise EmptyInventory
 
         self.display_message(msg + ' ')
@@ -610,4 +610,4 @@ class DungeonUI(object):
 
     def write_sidebar(self):
         self.guts.write_sidebar()
-        
+

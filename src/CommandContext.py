@@ -651,6 +651,9 @@ class RemoteRobotCC(MeatspaceCC):
         else:
             super().pick_up()
 
+    def save_weapon_config(self):
+        self.dui.display_message("Function not available.")
+
     def swap_weapons(self):
         self.dui.display_message("Error 404: external limbs not found.")
 
@@ -660,6 +663,9 @@ class RemoteRobotCC(MeatspaceCC):
     def use_item(self):
         self.dui.display_message("That EMACS extension was not installed.")
 
+    def wear_armour(self):
+        self.dui.display_message("Your body isn't the right shape to wear armour.")
+        
     def wield_weapon(self):
         self.dui.display_message("You need some major upgrades before doing that.")
 

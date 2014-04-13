@@ -2097,7 +2097,8 @@ class DungeonMaster:
 
     def search(self):
         _roll = randrange(50) 
-        if _roll > self.player.stats.get_intuition():
+        _target = self.player.stats.get_intuition() if hasattr(self.player, "stats") else 10
+        if _roll > _target:
             return
         
         _lvl = self.dungeon_levels[self.player.curr_level]
@@ -2143,7 +2144,7 @@ class DungeonMaster:
 
             # For each previous time the robot has bene controlled and thrown off the control, we'll give it a 
             # bonus to escape control again.
-            _mod = self.player.memory_count("remote controlled") - _hacking
+            _mod = self.player.memory_count("remote controlled") - _hacking - 2
             if self.player.saving_throw(_mod):                
                 self.dui.display_message('--REMOTE CONNECTION SEVERED BY LOCAL DEFENSE SYSTEMS--', True)                
                 self.dungeon_levels[self.player.curr_level].resolve_events()
