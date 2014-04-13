@@ -96,16 +96,12 @@ class CyberspaceLevel(GameLevel):
             self.dm.alert_player(player.row, player.col, _msg)
         
     def end_of_turn(self):
-        if self.dm.virtual_turn % 20 == 0:
-            self.dm.player.add_hp(1)
-        
         if self.dm.virtual_turn % 50 == 0:
             for m in self.monsters:
                 m.add_hp(1)
             if random() < 0.5:
                 self.add_monster()
-        self.dm.virtual_turn += 1
-            
+        
     def generate_level(self, meatspace_level):
         self.__generate_map()
         self.__add_daemon_fortress()

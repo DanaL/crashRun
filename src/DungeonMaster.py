@@ -2122,7 +2122,27 @@ class DungeonMaster:
 
         try:
             while True:
+                if not self.dungeon_levels[self.player.curr_level].is_cyberspace():
+                    self.turn += 1
+                else:
+                    self.virtual_turn += 1
+
                 self.do_turn()
+                if isinstance(self.player, BasicBot):
+                    self.dui.write_sidebar()
+
+                if not self.dungeon_levels[self.player.curr_level].is_cyberspace():
+                    self.player.check_for_withdrawal_effects()
+                    self.player.check_for_expired_conditions()
+                            
+                    _drained = self.player.inventory.drain_batteries()
+                    if len(_drained) > 0:
+                        self.items_discharged(self.player, _drained)
+                    if self.turn % 15 == 0:
+                        self.player.regenerate()
+                elif self.virtual_turn % 20 == 0:
+                    self.player.add_hp(1)
+                    
         except GameOver:
             return
 
@@ -2138,8 +2158,10 @@ class DungeonMaster:
         
         self.dui.do_player_action()
 
+        _controlling_bot = isinstance(self.player, BasicBot)
+
         # If the player is controlling a robot, give it a saving throw every few turns
-        if isinstance(self.player, BasicBot) and self.turn % 25 == 0:
+        if _controlling_bot and self.turn % 25 == 0:
             _hacking = self.suspended_player[0].skills.get_skill('Hacking').get_rank()
 
             # For each previous time the robot has bene controlled and thrown off the control, we'll give it a 
@@ -2150,9 +2172,16 @@ class DungeonMaster:
                 self.dungeon_levels[self.player.curr_level].resolve_events()
                 self.dungeon_levels[self.player.curr_level].end_of_turn()
                 self.terminate_remote_session(False)
-        else:
-            _monsters_who_acted = []
-            for _m in self.dungeon_levels[self.player.curr_level].monsters:
+                return
+
+        _active_lvls = [self.dungeon_levels[self.player.curr_level]]
+        if _controlling_bot:
+            if self.suspended_player[0].curr_level != self.player.curr_level:
+                _active_lvls.append(self.dungeon_levels[self.suspended_player[0].curr_level])
+
+        _monsters_who_acted = []
+        for _lvl in _active_lvls:
+            for _m in _lvl.monsters:
                 self.active_agent = _m
                 try:
                     if self.active_agent.has_condition('stunned'):
@@ -2165,18 +2194,15 @@ class DungeonMaster:
                 _monsters_who_acted.append(_m)
                 self.active_agent = ''
             
-            self.dungeon_levels[self.player.curr_level].resolve_events()
-            self.dungeon_levels[self.player.curr_level].end_of_turn()
+            _lvl.resolve_events()
+            _lvl.end_of_turn()
 
-            # restore energy to players and monsters
-            # this will change to be a method that also calcs speed modifiers
-            self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
-            for _m in _monsters_who_acted:
-                _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
+        # restore energy to players and monsters
+        # this will change to be a method that also calcs speed modifiers
+        self.player.energy += self.player.base_energy + self.player.sum_effect_bonuses('speed')
+        for _m in _monsters_who_acted:
+            _m.energy += _m.base_energy + _m.sum_effect_bonuses('speed')
         
-        if isinstance(self.player, BasicBot):
-            self.dui.write_sidebar()
-
     def debug_add_item(self, words):
         _request = ""
         for _word in words:

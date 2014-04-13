@@ -304,27 +304,14 @@ class GameLevel:
             self.dungeon_loc[_d[0]][_d[1]].lit = False
 
     def end_of_turn(self):
-        _player = self.dm.player
-        _player.check_for_withdrawal_effects()
-        _player.check_for_expired_conditions()
-                    
-        _drained = _player.inventory.drain_batteries()
-        if len(_drained) > 0:
-            self.dm.items_discharged(_player, _drained)
-
         for _m in self.monsters:
             _m.check_for_expired_conditions()
         
-        if self.dm.turn % 15 == 0:
-            self.dm.player.regenerate()
-            
         if self.dm.turn % 50 == 0:
             for m in self.monsters:
                 m.regenerate()
             if random() < 0.5:
                 self.add_monster()
-        
-        self.dm.turn += 1
             
     def end_security_lockdown(self):
         self.security_lockdown = False
