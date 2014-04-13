@@ -226,7 +226,7 @@ class BaseAgent(BaseTile):
         self.curr_level = 0
         self.sight_matrix = {}
         self.last_sight_matrix = {}
-        
+
     def add_hp(self, delta):
         self.curr_hp += delta
 
@@ -638,16 +638,16 @@ class BaseMonster(BaseAgent, AStarMover):
             
         return _name
     
-    def is_player_adjacent_to_loc(self, row, col):
+    def is_agent_adjacent_to_loc(self, row, col, agent):
         _lvl = self.dm.dungeon_levels[self.curr_level]
         for r in (-1,0,1):
             for c in (-1,0,1):
-                if _lvl.get_occupant(row + r, col + c) == self.dm.player:
+                if _lvl.get_occupant(row + r, col + c) == agent:
                     return True
         return False
     
-    def is_player_adjacent(self):
-        return self.is_player_adjacent_to_loc(self.row, self.col)
+    def is_agent_adjacent(self, agent):
+        return self.is_agent_adjacent_to_loc(self.row, self.col, agent)
                 
     def is_player_visible(self):
         player_loc = self.dm.get_player_loc()
@@ -689,6 +689,12 @@ class AltPredator(BaseMonster):
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.state = ''
 
+    # I want to make this a little more sophisticated. A monster should remember beings it has
+    # been hurt by, and make attacking them a precedent over attacking the player. So their priority
+    # in this case would be: (1) attack someone who has hurt me (2) look for the player and go after them.
+    # If the player is remote-controlling a robot they won't recognize them. (BasicBots and decendents should
+    # get a 'disbelief' check affected by the player's Robot Psychology skill to realize the player is 
+    # controlling the robot)
     def perform_action(self):
         if self.attitude == 'inactive':
             self.energy = 0
@@ -699,7 +705,7 @@ class AltPredator(BaseMonster):
         try:
             self.__check_morale()
             
-            if self.is_player_adjacent():
+            if self.is_agent_adjacent(self.dm.player):
                 self.attack(_player_loc)
             else:
                 self.move_to(_player_loc)
@@ -719,7 +725,7 @@ class AltPredator(BaseMonster):
             else:
                 fled = self.move_to_unbound(self.flee_to)
                 
-            if not fled and self.is_player_adjacent():
+            if not fled and self.is_agent_adjacent(self.dm.player):
                 self.attack(_player_loc)
             
         self.energy -= STD_ENERGY_COST
@@ -779,7 +785,7 @@ class HumanFoe(AltPredator):
     def should_put_on_armour(self, pieces):
         if len(pieces) == 0:
             return False
-        if self.is_player_adjacent():
+        if self.is_agent_adjacent(self.dm.player):
             return False
         if self.is_player_visible() and self.curr_hp < self.max_hp:
             return False
@@ -986,7 +992,7 @@ class BelligerentProcess(CyberspaceMonster):
             
     def perform_action(self):
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent():
+        if self.is_agent_adjacent(self.dm.player):
             # The process only forks itself if it's beside the player just so
             # that we don't have the process flood the level before the player
             # can even find it.
@@ -1035,7 +1041,7 @@ class RelentlessPredator(BaseMonster):
     def perform_action(self):
         player_loc = self.dm.get_player_loc()
         
-        if self.is_player_adjacent():
+        if self.is_agent_adjacent(self.dm.player):
             self.attack(player_loc)
         else:
             self.move_to(player_loc)
@@ -1066,7 +1072,7 @@ class Shooter(RelentlessPredator):
             
         # By preference, pick a square that's not adjacent to the player
         try:
-            _non_adj = [_p for _p in _good_sqs if not self.is_player_adjacent_to_loc(_p[0], _p[1])]
+            _non_adj = [_p for _p in _good_sqs if not self.is_agent_adjacent_to_loc(_p[0], _p[1], self.dm.player)]
             if len(_non_adj) > 0:
                 _ch = choice(_non_adj)
             else:
@@ -1175,7 +1181,7 @@ class ZombieMathematician(RelentlessPredator):
             level=7)
             
     def perform_action(self):
-        if self.is_player_adjacent() and randrange(5) == 0:
+        if self.is_agent_adjacent(self.dm.player) and randrange(5) == 0:
             _msg = self.get_articled_name() + ' babbles equations at you.'
             self.dm.alert_player(self.row, self.col, _msg)
             self.dm.handle_attack_effects(self, self.dm.player, ['mathematics'])
@@ -1213,7 +1219,7 @@ class Ninja(RelentlessPredator):
     def perform_action(self):
         player_loc = self.dm.get_player_loc()
         
-        if self.is_player_adjacent():
+        if self.is_agent_adjacent(self.dm.player):
             if random() < 0.25:
                 self.__hop(player_loc)
             self.attack(player_loc)
@@ -1447,7 +1453,7 @@ class Roomba(CleanerBot):
         self.look_for_trash_to_vacuum()
         
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent() and not self.robot_psych_check(self.dm.player):
+        if self.is_agent_adjacent(self.dm.player) and not self.robot_psych_check(self.dm.player):
             self.attack(player_loc)
             self.try_to_vacuum(player_loc)
         
@@ -1466,14 +1472,14 @@ class Incinerator(CleanerBot):
 
     def __go_about_business(self):
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent() and not self.robot_psych_check(self.dm.player):
+        if self.is_agent_adjacent(self.dm.player) and not self.robot_psych_check(self.dm.player):
             self.attack(player_loc)
         else:
             self.move()
                 
     def __seek_and_destroy(self):
         player_loc = self.dm.get_player_loc()
-        if self.is_player_adjacent():
+        if self.is_agent_adjacent(self.dm.player):
             self.attack(player_loc)
         else:
             self.move_to(player_loc)
@@ -1605,7 +1611,7 @@ class Roomba3000(Roomba, Unique):
     def perform_action(self):
         _pl = self.dm.get_player_loc()
         if self.is_player_visible():
-            if self.is_player_adjacent():
+            if self.is_agent_adjacent(self.dm.player):
                 self.attack((_pl[0],_pl[1]))
                 self.try_to_vacuum((_pl[0],_pl[1]), 3)
             else:
