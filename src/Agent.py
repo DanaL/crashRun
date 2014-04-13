@@ -224,6 +224,8 @@ class BaseAgent(BaseTile):
         self.base_energy = self.ENERGY_THRESHOLD
         self.dead = False
         self.curr_level = 0
+        self.sight_matrix = {}
+        self.last_sight_matrix = {}
         
     def add_hp(self, delta):
         self.curr_hp += delta
@@ -300,7 +302,7 @@ class BaseAgent(BaseTile):
     
     def calc_curr_vision_radius(self):
         return 0 if self.has_condition("blind") else self.vision_radius
-        
+
     def calc_ac(self):
         self.__curr_ac = self.__base_ac + self.inventory.get_armour_value() 
         self.__curr_ac += self.get_defense_modifier()

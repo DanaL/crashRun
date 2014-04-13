@@ -157,8 +157,6 @@ class DungeonMaster:
         self.version = version
         self.turn = 0
         self.virtual_turn = 0 # Time is kept seperately in cyberspace
-        self.sight_matrix = {}
-        last_sight_matrix = {}
         self.suspended_player = []
 
     def get_meatspace_dmg_msg(self, delta, curr_hp):
@@ -252,6 +250,7 @@ class DungeonMaster:
         self.dungeon_levels[CYBERSPACE_LEVEL] = CyberspaceLevel(self, CYBERSPACE_LEVEL, 20, 70)
         self.dungeon_levels[CYBERSPACE_LEVEL].generate_level(self.player.curr_level)
         self.dui.set_command_context(CyberspaceCC(self, self.dui))
+        self.leaving_level_cleanup()
         _avatar = self.player.get_cyberspace_avatar(self)
         _avatar.meatspace_level = self.player.curr_level
         self.suspended_player.append(self.player)
@@ -296,11 +295,11 @@ class DungeonMaster:
     # the remote session, they could still see the light squares from the robot.
     def leaving_level_cleanup(self):
         lvl = self.dungeon_levels[self.player.curr_level]
-        for loc in self.sight_matrix:    
+        for loc in self.player.sight_matrix:    
             lvl.dungeon_loc[loc[0]][loc[1]].lit = False
 
     def add_player_to_level(self, level_num, player, suppress_msg=False):
-        self.sight_matrix = {}
+        self.player.sight_matrix = {}
 
         # Check to see if there is a monster standing on the stairs when the player
         # arrives.
@@ -597,7 +596,7 @@ class DungeonMaster:
         return False
 
     def monster_fires_missile(self, monster, target_r, target_c, dmg_dice, dmg_rolls, radius):
-        if not self.is_occupant_visible_to_agent(agent, monster):
+        if not self.is_occupant_visible_to_agent(self.player, monster):
             _monster_name = "It"
         else:
             _monster_name = monster.get_name()
@@ -1158,7 +1157,7 @@ class DungeonMaster:
             self.update_sqr(_level, bullet_row, bullet_col)
             self.update_sqr(_level, prev_r,prev_c)
             
-            if (bullet_row,bullet_col) in self.sight_matrix:
+            if (bullet_row,bullet_col) in self.player.sight_matrix:
                 sleep(ANIMATION_PAUSE) 
 
         _level.dungeon_loc[bullet_row][bullet_col].temp_tile =  '' 
@@ -1575,7 +1574,7 @@ class DungeonMaster:
         if occupant.curr_level != agent.curr_level:
             return False
 
-        if not omniscient and self.__not_in_sight_matrix((occupant.row, occupant.col)):
+        if not omniscient and (occupant.row, occupant.col) not in agent.sight_matrix:
             return False
             
         if occupant.is_cloaked() and not agent.can_see_cloaked():
@@ -1641,42 +1640,14 @@ class DungeonMaster:
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
 
-    # Variant of get_sqr_info_for_agent() that uses passed-in set of visible squares,
-    # ignoring the dungeon_loc's visible property. When I wrote the former function,
-    # the player was the only perspecitve I was showing. Now that the player can control
-    # robots, things get complicated because that visible value will be set by what the 
-    # robot can see. So when displaying the sidebar of what the player sees near his body
-    # he would be able to see through walls to what the robot can see.
-    def get_sqr_info_using_set(self, r, c, agent, visible_sqrs):
-        _level = self.dungeon_levels[agent.curr_level]
-        if not _level.in_bounds(r, c):
-            return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
-
-        # We need override the sight matrix with the passed in list of visible
-        # squares temporarily (for purposes of determining whether a square's 
-        # occupant is visible)
-        _temp_sight_matrix = self.sight_matrix
-        self.sight_matrix = visible_sqrs
-        _visible = (r, c) in visible_sqrs
-        _loc = copy(_level.dungeon_loc[r][c])
-        _loc.lit = _visible
-        _remembered = _loc.visited
-        _terrain = self.get_terrain_tile(agent, _loc, r, c, _visible, False)
-        self.sight_matrix = _temp_sight_matrix
-
-        return DungeonSqrInfo(r, c, _visible, _remembered, _loc.lit, _terrain)
-
-    def __not_in_sight_matrix(self, j):
-        return j not in self.sight_matrix
-    
     # This only really deals with visual information, should add audio, also
     def alert_player(self, r, c, message, pause_for_more=False):
-        if (r,c) in self.sight_matrix:
+        if (r,c) in self.player.sight_matrix:
             message = message[0].upper() + message[1:]
             self.dui.display_message(message, pause_for_more)
 
     def can_player_see_location(self, r, c, level_num):
-        return level_num == self.player.curr_level and (r,c) in self.sight_matrix
+        return level_num == self.player.curr_level and (r,c) in self.player.sight_matrix
 
     # Update a monster's location, and update the player's view if necessary
     def move_monster(self, monster, h_move, v_move):
@@ -1722,11 +1693,11 @@ class DungeonMaster:
             
     # If all is true, refresh all squares, whether they've been changed or not
     def refresh_player_view(self, all=False):
-        self.last_sight_matrix = self.sight_matrix
+        self.player.last_sight_matrix = self.player.sight_matrix
         _pr = self.player.row
         _pc = self.player.col
         _sqrs_to_draw = [] 
-        self.sight_matrix = {}
+        self.player.sight_matrix = {}
         _level = self.dungeon_levels[self.player.curr_level]
 
         if isinstance(_level, CyberspaceLevel):            
@@ -1749,7 +1720,7 @@ class DungeonMaster:
                 if _sqr in _visible: _sqrs.append(_sqr)
         
         for _s in _sqrs:
-            self.sight_matrix[_s] = 0
+            self.player.sight_matrix[_s] = 0
             _level.dungeon_loc[_s[0]][_s[1]].visible = True
             _level.dungeon_loc[_s[0]][_s[1]].visited = True
             _level.dungeon_loc[_s[0]][_s[1]].lit = True
@@ -1762,7 +1733,7 @@ class DungeonMaster:
             _sqrs_to_draw.append(_loc)
 
         # now we need to 'extinguish' squares that are not longer lit
-        for s in filter(self.__not_in_sight_matrix, self.last_sight_matrix):
+        for s in [s for s in self.player.last_sight_matrix if s not in self.player.sight_matrix]:
             self.__loc_out_of_sight(s, _level)
             _sqrs_to_draw.append(self.get_sqr_info_for_agent(s[0],s[1], self.player))
 
