@@ -150,6 +150,8 @@ class Player(BaseAgent, AgentMemory):
             alert = Alert(self.row, self.col, _msg, '')
             alert.show_alert(dm, False)
         
+        self.dm.dui.update_status_bar()
+        
     def get_articled_name(self):
         return 'you'
 

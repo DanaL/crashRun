@@ -2189,6 +2189,13 @@ class DungeonMaster:
                     else:
                         while _m.energy >= _m.ENERGY_THRESHOLD:
                             self.active_agent.perform_action()
+
+                    # The Player class updates the status bar upon injury but
+                    # when the player is controlling a bot, this won't happen
+                    # so we need to manually update to keep the player's HP etc
+                    # up to date.
+                    if _controlling_bot:
+                        self.dui.update_status_bar()
                 except TurnInterrupted:
                     pass
                 _monsters_who_acted.append(_m)
