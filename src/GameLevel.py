@@ -289,13 +289,16 @@ class GameLevel:
         
     def disable_lifts(self):
         _loc = self.find_up_stairs_loc()
-        _sqr = self.map[_loc[0]][_loc[1]]
-        if _sqr.get_type() == UP_STAIRS:
-            _sqr.activated = False
+        if _loc != None:
+            _sqr = self.map[_loc[0]][_loc[1]]
+            if _sqr.get_type() == UP_STAIRS:
+                _sqr.activated = False
+
         _loc = self.find_down_stairs_loc()
-        _sqr = self.map[_loc[0]][_loc[1]]
-        if _sqr.get_type() == DOWN_STAIRS:
-            _sqr.activated = False
+        if _loc != None:
+            _sqr = self.map[_loc[0]][_loc[1]]
+            if _sqr.get_type() == DOWN_STAIRS:
+                _sqr.activated = False
                 
     def douse_squares(self, ls):
         self.eventQueue.pluck(('extinguish', ls.row, ls.col, ls))
