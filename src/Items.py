@@ -166,7 +166,7 @@ class ItemStack(BaseItem):
             return self.__items[0].get_signature()
             
     def get_full_name(self):
-        return self.get_name()
+        return self.get_name(1)
 
     def get_weight(self):
         if not self.__items:
@@ -707,7 +707,8 @@ class ItemFactory:
             if it[1] == 'Medkit':
                 return Medkit(it[1], it[2], it[3], it[4], it[5])
             else:
-                return Pharmaceutical(it[1], it[2], it[3], it[4], it[5])
+                return Pharmace
+                utical(it[1], it[2], it[3], it[4], it[5])
         elif it[0] == 'armour':
             a = Armour(name= item_name,area= it[1],fg= it[2],lt= it[3],w= it[4],acm= it[6],acb= it[5],i =0)
             for effect in it[7]:

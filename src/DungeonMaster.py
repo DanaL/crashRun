@@ -411,7 +411,6 @@ class DungeonMaster:
             self.player.row, self.player.col = _gfo.entrance                
         else:
             # Moving to an existing level
-            self.dungeon_levels[next_level_num].resolve_events()
             if curr_level.level_num > next_level_num:
                 _sqr = self.dungeon_levels[next_level_num].get_exit()
             else:

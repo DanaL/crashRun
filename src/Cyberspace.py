@@ -144,9 +144,6 @@ class CyberspaceLevel(GameLevel):
             if self.in_bounds(_s[0], _s[1]):
                 self.dungeon_loc[_s[0]][_s[1]].visited = True
 
-    def resolve_events(self):
-        pass # for the moment, there are no events in cyberspace
-            
     def __add_exit_nodes(self):
         _tf = T.TerrainFactory()
         
