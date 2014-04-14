@@ -707,8 +707,7 @@ class ItemFactory:
             if it[1] == 'Medkit':
                 return Medkit(it[1], it[2], it[3], it[4], it[5])
             else:
-                return Pharmace
-                utical(it[1], it[2], it[3], it[4], it[5])
+                return Pharmaceutical(it[1], it[2], it[3], it[4], it[5])
         elif it[0] == 'armour':
             a = Armour(name= item_name,area= it[1],fg= it[2],lt= it[3],w= it[4],acm= it[6],acb= it[5],i =0)
             for effect in it[7]:

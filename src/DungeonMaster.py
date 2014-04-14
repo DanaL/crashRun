@@ -349,7 +349,34 @@ class DungeonMaster:
             _lvl.remove_monster(victim, victim.row, victim.col)
             self.update_sqr(_lvl,  victim.row, victim.col)
             _lvl.things_fallen_in_holes.append(victim)
-            
+    
+    def generate_next_level(self, curr_level, next_level_num):
+        if curr_level.category == 'prologue':
+            _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
+        elif curr_level.category == 'old complex':
+            if curr_level.level_num < 4:
+                _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
+            else:
+                _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
+        elif curr_level.category == 'mines':
+            if curr_level.level_num < 7:
+                _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
+            else:
+                _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
+        elif curr_level.category == 'science complex':
+            if curr_level.level_num < 11:
+                _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
+            else:
+                _gfo = GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1')
+        elif curr_level.category == 'mini-boss 1':
+            _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
+        elif curr_level.level_num == 13:
+            _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
+        else:
+            _gfo = GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex')
+        _gfo.generate_level()
+        self.dungeon_levels[next_level_num] = _gfo  
+
     def __determine_next_level(self, direction, exit_point, curr_level):
         _exit_sqr = curr_level.map[exit_point[0]][exit_point[1]]
         _things_to_transfer = []
@@ -383,32 +410,8 @@ class DungeonMaster:
         # I think I can move these into the game level classes.  A game level can/should
         # know what the next level is.        
         if not next_level_num in self.dungeon_levels:
-            if curr_level.category == 'prologue':
-                _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
-            elif curr_level.category == 'old complex':
-                if curr_level.level_num < 4:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
-                else:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
-            elif curr_level.category == 'mines':
-                if curr_level.level_num < 7:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'mines')
-                else:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
-            elif curr_level.category == 'science complex':
-                if curr_level.level_num < 11:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 50, 70, 'science complex')
-                else:
-                    _gfo = GetGameFactoryObject(self, next_level_num, 60, 80, 'mini-boss 1')
-            elif curr_level.category == 'mini-boss 1':
-                _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
-            elif curr_level.level_num == 13:
-                _gfo = GetGameFactoryObject(self, next_level_num, 25, 90, 'proving grounds')
-            else:
-                _gfo = GetGameFactoryObject(self, next_level_num, 40, 75, 'final complex')
-            _gfo.generate_level()
-            self.dungeon_levels[next_level_num] = _gfo
-            self.player.row, self.player.col = _gfo.entrance                
+            self.generate_next_level(curr_level, next_level_num)
+            self.player.row, self.player.col = self.dungeon_levels[next_level_num].entrance                
         else:
             # Moving to an existing level
             if curr_level.level_num > next_level_num:
@@ -423,12 +426,7 @@ class DungeonMaster:
 
         self.leaving_level_cleanup()
         self.add_player_to_level(next_level_num, self.player)
-
-        # If the player fell through a gaping hole made by a destroyed lift, we need to make sure the up
-        # lift in the new level is also wrecked.  At this point, curr_lvl is the newly entered level.
-        if isinstance(_exit_sqr, T.GapingHole):
-            self.dungeon_levels[self.player.curr_level].map[self.player.row][self.player.col] = T.HoleInCeiling()
-        
+    
         if _things_to_transfer:
             self.dungeon_levels[self.player.curr_level].things_fell_into_level(_things_to_transfer)
             self.refresh_player_view()
@@ -1886,7 +1884,56 @@ class DungeonMaster:
                 victim.dazed(explosive)
         else:
             victim.damaged(self, dmg, '', ['explosion'])
-            
+
+    def destroy_stairs(self, level, row, col, stair_type):
+        _hole = None
+        _lvl_num = level.level_num
+        if _lvl_num < self.player.curr_level:                    
+            alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '')
+            alert.show_alert(self, False)
+
+        if stair_type == T.DOWN_STAIRS:
+            _level_of_hole = level
+            _hole = (row, col)
+            level.map[row][col] = T.GapingHole()
+            if not _lvl_num + 1 in self.dungeon_levels:
+                self.generate_next_level(level, _lvl_num + 1)
+
+            _up = self.dungeon_levels[_lvl_num + 1].find_up_stairs_loc()
+            self.dungeon_levels[_lvl_num + 1].map[_up[0]][_up[1]] = T.HoleInCeiling()
+            if _lvl_num + 1 == self.player.curr_level:
+                _msg = "BOOM! A cloud of plaster and rubble falls from the ceiling."
+                _alt = "The ceiling rattles above you."
+                alert = VisualAlert(_up[0], _up[1], _msg, _alt)
+                alert.show_alert(self, False)
+                self.update_sqr(self.dungeon_levels[level.level_num + 1], _up[0], _up[1])
+        elif stair_type == T.UP_STAIRS:
+            level.map[row][col] = T.HoleInCeiling()
+            _hole = self.dungeon_levels[_lvl_num - 1].find_down_stairs_loc()
+            _loc = self.dungeon_levels[_lvl_num - 1].dungeon_loc[_hole[0]][_hole[1]]
+            _level_of_hole = self.dungeon_levels[_lvl_num - 1]
+            _level_of_hole.map[_hole[0]][_hole[1]] = T.GapingHole()
+            if _lvl_num - 1 == self.player.curr_level:                    
+                _msg =  "BOOM! You see a section of the floor cave in."
+                _alt = "You feel the floor shake."
+                alert = VisualAlert(_hole[0], _hole[1], _msg, _alt)
+                alert.show_alert(self, False)
+        
+        _sqr = _level_of_hole.map[_hole[0]] [_hole[1]]
+        _loc = _level_of_hole.dungeon_loc[_hole[0]] [_hole[1]]
+        if _loc.occupant != '':
+            if _level_of_hole == self.player.curr_level:
+                self.dui.display_message("The floor suddenly gives way below " + _loc.occupant.get_articled_name() + "!")
+            self.agent_steps_on_hole(_loc.occupant)
+
+        # An items on the square?
+        if hasattr(_loc, 'item_stack'):
+            _stack = _loc.item_stack
+            for _item in _stack:
+                self.item_hits_ground(_level_of_hole, _hole[0], _hole[1], _item)
+            _loc.item_stack = []
+            self.update_sqr(_level_of_hole, _hole[0], _hole[1])
+
     def handle_explosion(self, level, row, col, source):
         explosive = source.explosive    
         noise = Noise(10, source, row, col, 'explosion')
@@ -1894,19 +1941,22 @@ class DungeonMaster:
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
         if dmg > 0:
-            alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
-            alert.show_alert(self, False)
+            if level.level_num == self.player.curr_level:
+                alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
+                alert.show_alert(self, False)
 
             # Kludgy -- handling this here instead of when I loop over the terrain tiles
             # in the explosion beecause I only want to destroy the lift when the bomb was
             # set direction on it.
             _sqr = level.map[row][col]
-            if _sqr.get_type() == T.DOWN_STAIRS or (hasattr(_sqr, 'previous_tile') and _sqr.previous_tile.get_type() == T.DOWN_STAIRS):
-                alert = VisualAlert(row, col, "The lift is destroyed in the explosion", '')
-                alert.show_alert(self, False)
-                _trap = T.GapingHole()
-                level.map[row][col] = _trap
-
+            _type = _sqr.get_type()
+            if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
+                self.destroy_stairs(level, row, col, _type)
+            elif hasattr(_sqr, 'previous_tile'):
+                _type = _sqr.previous_tile.get_type()
+                if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
+                    self.destroy_stairs(level, row, col, _type)
+                
         bullet = Items.Bullet('*', 'white')
 
         # As a hack, I'm using the shadowcaster to calculate the area of effect.  Explosions
