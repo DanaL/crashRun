@@ -134,7 +134,7 @@ class BatteryPowered:
 # passed two items with different signatures)
 class ItemStack(BaseItem):
     def __init__(self, bi):
-        BaseItem.__init__(self, bi.get_name(), bi.get_category(), bi.get_ch(), 
+        BaseItem.__init__(self, bi.get_name(1), bi.get_category(), bi.get_ch(), 
             bi.fg_colour, bi.lit_colour, 1)
         self.set_prev_slot(bi.get_prev_slot())
 
@@ -146,10 +146,11 @@ class ItemStack(BaseItem):
     
     def get_name(self, p=0):
         if not self.__items:
-            return BaseItem.get_name(self)
+            return super().get_name(p)
         elif len(self.__items) == 1:
-            return self.__items[0].get_full_name()
-        else:
+            _name = self.__items[0].get_name(p)
+            return _name
+        else:                    
             msg = '%d %s' % (len(self.__items), self.__items[0].get_name(1))
             if msg[-1] == 'y':
                 msg = msg[0:-1] + 'ies'

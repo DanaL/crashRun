@@ -936,7 +936,7 @@ class DungeonMaster:
     def __pick_up_software(self, agent, software):
         try:
             agent.software.upload(software)
-            self.mr.pick_up_message(agent, software)
+            self.mr.pick_up_message(agent, software, '')
         except OutOfWetwareMemory:
             if agent == self.player:
                 self.dui.display_message('Out of diskspace error.')
@@ -962,8 +962,8 @@ class DungeonMaster:
                 level.douse_squares(i)
                 return
             
-            self.mr.pick_up_message(agent, i)
-            agent.inventory.add_item(i)         
+            _slot = agent.inventory.add_item(i)
+            self.mr.pick_up_message(agent, i, _slot)
         except InventorySlotsFull:
             if agent == self.player:
                 _msg = 'There is no more room in your backpack for the '
@@ -2133,7 +2133,6 @@ class DungeonMaster:
                 _lvl.extinguish_light_source(_event[3])
                 self.events.pluck(('extinguish', _event[3].row, _event[3].col, _event[3]))
         
-
     def start_play(self):
         self.refresh_player()
         self.dui.update_status_bar()

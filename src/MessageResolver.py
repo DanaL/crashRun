@@ -60,15 +60,19 @@ class MessageResolver(object):
         else:
             return _verbs[verb][agent == self.dm.player]
             
-    def pick_up_message(self, agent, item):
+    def pick_up_message(self, agent, item, slot):
         _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'pick')
-        _item = item.get_full_name()
+        _item = item.get_name(1)
+
         _art = get_correct_article(_item)
         _msg += ' up '
         if _art != '':
             _msg += _art + ' '
-        _msg += _item + '.'
-        
+        if slot == '':
+            _msg += _item + '.'
+        else:
+            _msg += _item + ' (' + slot + ').'
+
         alert = VisualAlert(agent.row, agent.col, _msg, '')
         alert.show_alert(self.dm, False)
             

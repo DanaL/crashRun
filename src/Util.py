@@ -136,12 +136,12 @@ def convert_locations_to_dir(row0, col0, row1, col1):
             return 'sw'
         
 def get_correct_article(word):
-    if word[-1] == 's':
+    if word[0] in ['0','1','2','3','4','5','6','7','8','9']:
+        return ''
+    elif word[-1] == 's':
         return 'some'
     elif word[0].lower() in ['a','e','i','o','u']:
         return 'an'
-    elif word[0] in ['0','1','2','3','4','5','6','7','8','9']:
-        return ''
     else:
         return 'a'
 

@@ -421,7 +421,7 @@ class MeatspaceCC(CommandContext):
             else:
                 try:
                     _player.inventory.unready_armour(_ch)
-                    self.dui.display_message('You remove the ' + _item.get_full_name())
+                    self.dui.display_message('You remove the ' + _item.get_name(1))
                     if _item.get_name(1) == 'stylish sunglasses':
                         self.dui.display_message('You can see much better without those shades on.')
                     _player.remove_effects(_item)
@@ -543,7 +543,7 @@ class MeatspaceCC(CommandContext):
         if _primary == '':
             self.dui.display_message('Your primary hand is now empty.')
         else:
-            self.dui.display_message('The %s is in your primary hand.' % (_primary.get_full_name()))
+            self.dui.display_message('The %s is in your primary hand.' % (_primary.get_name(1)))
             
         self.dm.player.energy -= STD_ENERGY_COST
     
@@ -554,9 +554,9 @@ class MeatspaceCC(CommandContext):
             self.dui.clear_msg_line()
             self.dui.display_message('VrRRrRrroOOoOom!!')
         elif item.hands_required == 2:
-            self.dui.display_message('You hold the %s in both hands' % (item.get_full_name()))
+            self.dui.display_message('You hold the %s in both hands' % (item.get_name(1)))
         else:
-            self.dui.display_message('%s (primary weapon)' % (item.get_full_name()))
+            self.dui.display_message('%s (primary weapon)' % (item.get_name(1)))
             
     def use_weapon_config(self, slot):
         _player = self.dm.player

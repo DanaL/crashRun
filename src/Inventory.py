@@ -135,17 +135,20 @@ class Inventory:
             self.__weight += item.get_weight()
             
             try:
-                self.__check_for_stack(item)
+                return self.__check_for_stack(item)
             except NoStackFound:
                 # If the item was in the player's inventory before, try to put it
                 # back in that spot and keep __next_slot intact, otherwise use
                 # __next_slot
-                pslot = item.get_prev_slot()
-                if pslot != '' and self.__inv[pslot] == '':
-                    self.__inv[pslot] = i
+                prev_slot = item.get_prev_slot()
+                if prev_slot != '' and self.__inv[prev_slot] == '':
+                    self.__inv[prev_slot] = i
+                    return prev_slot
                 else:
                     self.__inv[self.__next_slot] = i
+                    _s = self.__next_slot
                     self.__set_next_slot()
+                    return _s
 
     def __check_for_stack(self,item):
         if item.is_stackable():
@@ -156,7 +159,7 @@ class Inventory:
                     else:
                         self.__inv[k] = (ItemStack(self.__inv[k][0]),self.__inv[k][1])
                         self.__inv[k][0].add_item(item)
-                    return
+                    return k
 
         raise NoStackFound
 
@@ -405,7 +408,7 @@ class Inventory:
             letter = chr(self.lc+j)
         
             if self.__inv[letter] != '' and self.__inv[letter][1] == category:
-                name = self.__inv[letter][0].get_full_name() 
+                name = self.__inv[letter][0].get_name(1) 
                 name = get_correct_article(name) + ' ' + name
 
                 if self.__inv[letter] == self.__primary_weapon:
