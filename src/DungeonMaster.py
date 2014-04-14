@@ -325,12 +325,15 @@ class DungeonMaster:
                 self.dui.display_message('Another visitor!  Stay awhile...Stay FOREVER!!')
                 self.player.remember('enter complex')
 
-    def __check_for_monsters_surrounding_stairs(self, level):
+    def __check_for_monsters_surrounding_stairs(self, level, exit):
+        _is_hole = isinstance(exit, T.HoleInCeiling)
         _monsters = []
         for r in (-1,0,1):
             for c in (-1,0,1):
                 _occ = level.dungeon_loc[self.player.row+r][self.player.col+c].occupant
                 if _occ != '' and _occ != self.player:
+                    if _is_hole and not _occ.has_condition('flying'):
+                        continue
                     if _occ.attitude != 'inactive' and not _occ.has_condition('stunned'):
                         _monsters.append(_occ)
 
@@ -396,7 +399,7 @@ class DungeonMaster:
             
         if not isinstance(_exit_sqr, T.GapingHole):
             # Monsters don't jump into the hole after the player...
-            _monsters = self.__check_for_monsters_surrounding_stairs(curr_level)
+            _monsters = self.__check_for_monsters_surrounding_stairs(curr_level, _exit_sqr)
             if len(_monsters) > 0:
                 _monster = choice(_monsters)
                 curr_level.remove_monster(_monster, _monster.row, _monster.col)
@@ -1924,7 +1927,8 @@ class DungeonMaster:
         if _loc.occupant != '':
             if _level_of_hole == self.player.curr_level:
                 self.dui.display_message("The floor suddenly gives way below " + _loc.occupant.get_articled_name() + "!")
-            self.agent_steps_on_hole(_loc.occupant)
+            if not _loc.occupant.has_condition("flying"):
+                self.agent_steps_on_hole(_loc.occupant)
 
         # An items on the square?
         if hasattr(_loc, 'item_stack'):
@@ -2337,7 +2341,9 @@ class DungeonMaster:
             self.debug_add_monster(words[1:])
         elif words[0] == 'xp':
             self.debug_add_xp(words[1])
-            
+        elif words[0] == 'condition':
+            self.player.conditions.append(((words[1], 0, 0), self.player))
+
     def debug_command(self, cmd_text):
         try:
             _level = self.dungeon_levels[self.player.curr_level]
