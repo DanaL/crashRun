@@ -38,6 +38,7 @@ from .CommandContext import CyberspaceCC
 from .CommandContext import RemoteRobotCC
 from .Cyberspace import CyberspaceLevel
 from .Cyberspace import TrapSetOff
+from .PriorityQueue import PriorityQueue
 from .FieldOfView import get_lit_list
 from .FieldOfView import Shadowcaster
 from .FinalComplex import FinalComplexLevel
@@ -457,6 +458,7 @@ class DungeonMaster:
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
             self.player.check_for_withdrawal_effects()
+            self.events = PriorityQueue()
             BasicBot.bot_number = randrange(100) + 10
 
         self.start_play()
@@ -540,11 +542,12 @@ class DungeonMaster:
         for _sp in stuff[5]:
             _sp.dm = self
         self.suspended_player = stuff[5]
-        
+        self.events = stuff[6]
+
         _lvls = stuff[3]
         for _lvl_num in _lvls.keys():
             _lvl = _lvls[_lvl_num]
-            self.dungeon_levels[_lvl_num] = GetGameFactoryObject(self, _lvl[6], len(_lvl[0]), len(_lvl[0][0]), _lvl[5])
+            self.dungeon_levels[_lvl_num] = GetGameFactoryObject(self, _lvl[5], len(_lvl[0]), len(_lvl[0][0]), _lvl[4])
             get_level_from_save_obj(self.dungeon_levels[_lvl_num], _lvl)
         
         self.player.dm = self
@@ -576,7 +579,7 @@ class DungeonMaster:
 
             for _sp in self.suspended_player:
                 _sp.dm = None
-            _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player)
+            _save_obj = (self.turn, self.virtual_turn, self.player, _lvls, BasicBot.bot_number, self.suspended_player, self.events)
             save_game(self.game_name, _save_obj)
             self.dui.display_high_scores(5)
             self.dui.clear_msg_line() 
@@ -1332,7 +1335,7 @@ class DungeonMaster:
         light.col = col
         light.duration = self.turn + light.charge
 
-        level.eventQueue.push( ('extinguish', light.row, light.col, light), light.duration)
+        self.events.push(('extinguish', light.row, light.col, light, level.level_num), light.duration)
         level.add_light_source(light)
         self.refresh_player_view()
 
@@ -1520,7 +1523,7 @@ class DungeonMaster:
                 _lvl = self.dungeon_levels[self.player.curr_level]
                 trap.previous_tile = _lvl.map[self.player.row][self.player.col]
                 _lvl.map[self.player.row][self.player.col] = trap
-                _lvl.eventQueue.push( ('explosion',self.player.row,self.player.col, trap), self.turn+turns)
+                self.events.push(('explosion',self.player.row,self.player.col, trap, self.player.curr_level), self.turn+turns)
                 self.dui.display_message('You set the bomb.  Best clear out.')
             except ValueError:
                 self.player.inventory.add_item(bomb)
@@ -2074,7 +2077,7 @@ class DungeonMaster:
         _level = self.dungeon_levels[self.player.curr_level]
         self.alert_player(target[0], target[1], 'You light the ' + flare.get_name(1) + '.')
         _level.dungeon_loc[target[0]][target[1]].temp_tile = ''
-        _level.eventQueue.push( ('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare), self.turn + _lit_flare.duration)
+        self.events.push(('extinguish', _lit_flare.row, _lit_flare.col, _lit_flare, _level.level_num), self.turn + _lit_flare.duration)
         self.item_hits_ground(_level, target[0], target[1], _lit_flare)
         _level.add_light_source(_lit_flare)
         self.refresh_player_view()
@@ -2112,7 +2115,25 @@ class DungeonMaster:
                     _sqr.revealed = True
                     self.update_sqr(_lvl,_sr,_sc)
         self.player.energy -= STD_ENERGY_COST
+
+    def resolve_events(self):
+        while len(self.events) > 0 and self.events.peekAtNextPriority() <= self.turn:
+            _event = self.events.pop()
+            _lvl_num = _event[4]
+            _lvl = self.dungeon_levels[_lvl_num]
+
+            if _event[0] == 'explosion':
+                self.handle_explosion(_lvl, _event[1], _event[2], _event[3])
+                # bomb is returned, return tile to what it was
+                _sqr = _lvl.map[_event[1]][_event[2]]
+                if isinstance(_sqr, T.Trap) and hasattr(_sqr, "previous_tile"):
+                    _lvl.map[_event[1]][_event[2]] = _sqr.previous_tile
+                    self.update_sqr(_lvl, _event[1], _event[2])
+            elif _event[0] == 'extinguish':
+                _lvl.extinguish_light_source(_event[3])
+                self.events.pluck(('extinguish', _event[3].row, _event[3].col, _event[3]))
         
+
     def start_play(self):
         self.refresh_player()
         self.dui.update_status_bar()
@@ -2142,7 +2163,8 @@ class DungeonMaster:
                         self.player.regenerate()
                 elif self.virtual_turn % 20 == 0:
                     self.player.add_hp(1)
-                    
+                
+                self.resolve_events()                 
         except GameOver:
             return
 
@@ -2169,7 +2191,6 @@ class DungeonMaster:
             _mod = self.player.memory_count("remote controlled") - _hacking - 2
             if self.player.saving_throw(_mod):                
                 self.dui.display_message('--REMOTE CONNECTION SEVERED BY LOCAL DEFENSE SYSTEMS--', True)                
-                self.dungeon_levels[self.player.curr_level].resolve_events()
                 self.dungeon_levels[self.player.curr_level].end_of_turn()
                 self.terminate_remote_session(False)
                 return
@@ -2201,7 +2222,6 @@ class DungeonMaster:
                 _monsters_who_acted.append(_m)
                 self.active_agent = ''
             
-            _lvl.resolve_events()
             _lvl.end_of_turn()
 
         # restore energy to players and monsters

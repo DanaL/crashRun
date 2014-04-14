@@ -182,7 +182,7 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message("You disarm the " + trap.get_name() + ".")
             _lvl.add_item_to_sqr(row, col, trap.explosive)
             _lvl.remove_trap(row, col)
-            _lvl.eventQueue.pluck(('explosion', row, col, trap))
+            self.dm.events.pluck(('explosion', row, col, trap))
         elif _roll > _score * 2:
             self.dui.display_message("Whoops! You set off " + trap.get_name() + ".")
             trap.trigger(self.dm, _p, row, col)

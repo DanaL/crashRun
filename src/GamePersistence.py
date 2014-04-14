@@ -48,22 +48,20 @@ def get_preferences():
 def get_level_from_save_obj(level, obj):
     _map = obj[0]
     _locations = obj[1]
-    _eq = obj[2]
-    _light_sources = obj[3]
-    _monsters = obj[4]
-    _category = obj[5]
-    _lvl_num = obj[6]
-    _player_loc = obj[7]
-    _cameras = obj[8]
+    _light_sources = obj[2]
+    _monsters = obj[3]
+    _category = obj[4]
+    _lvl_num = obj[5]
+    _player_loc = obj[6]
+    _cameras = obj[7]
     _length = len(_map)
     _width = len(_map[0])
-    _sec_lock = obj[9]
-    _subnet_nodes = obj[10]
-    _cameras_active = obj[11]
-    _security = obj[12]
-    _fallen = obj[13]
+    _sec_lock = obj[8]
+    _subnet_nodes = obj[9]
+    _cameras_active = obj[10]
+    _security = obj[11]
+    _fallen = obj[12]
     
-    level.eventQueue = _eq
     level.map = _map
     level.dungeon_loc = _locations
     level.light_sources = _light_sources

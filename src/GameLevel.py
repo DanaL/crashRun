@@ -30,7 +30,6 @@ from .Terrain import GRASS
 from .Terrain import ROAD
 from .Terrain import UP_STAIRS
 from .Terrain import DOWN_STAIRS
-from .PriorityQueue import PriorityQueue
 from .FieldOfView import Shadowcaster
 from .Terrain import TerrainTile
 from . import MonsterFactory
@@ -135,7 +134,6 @@ class ItemChart:
 class GameLevel:
     def __init__(self, dm, level_num, length, width, category):
         self.dm = dm
-        self.eventQueue = PriorityQueue()
         self.cameras = {}
         self.light_sources = []
         self.security_lockdown = False
@@ -301,7 +299,6 @@ class GameLevel:
                 _sqr.activated = False
                 
     def douse_squares(self, ls):
-        self.eventQueue.pluck(('extinguish', ls.row, ls.col, ls))
         self.light_sources.remove(ls)
         for _d in ls.illuminates:
             self.dungeon_loc[_d[0]][_d[1]].lit = False
@@ -338,7 +335,7 @@ class GameLevel:
 
         self.clear_occupants()
         _exit_point = (self.dm.player.row, self.dm.player.col)
-        _save_obj = (self.map,self.dungeon_loc,self.eventQueue,self.light_sources,self.monsters, 
+        _save_obj = (self.map,self.dungeon_loc,self.light_sources,self.monsters, 
                 self.category,self.level_num,_exit_point,self.cameras, self.security_lockdown, self.subnet_nodes, 
                 self.cameras_active, self.security_active, self.things_fallen_in_holes)
 
@@ -392,19 +389,6 @@ class GameLevel:
     def remove_monster(self, monster, row, col):
         self.dungeon_loc[row][col].occupant = ''
         self.monsters.remove(monster)
-
-    def resolve_events(self):
-        while len(self.eventQueue) > 0 and self.eventQueue.peekAtNextPriority() <= self.dm.turn:
-            event = self.eventQueue.pop()
-            if event[0] == 'explosion':
-                self.dm.handle_explosion(self, event[1],event[2],event[3])
-                # bomb is returned, return tile to what it was
-                _sqr = self.map[event[1]][event[2]]
-                if isinstance(_sqr, Terrain.Trap) and hasattr(_sqr, "previous_tile"):
-                    self.map[event[1]][event[2]] = _sqr.previous_tile
-                    self.dm.update_sqr(self, event[1], event[2])
-            elif event[0] == 'extinguish':
-                self.extinguish_light_source(event[3])
 
     def clear_occupants(self):
         for row in self.dungeon_loc:
