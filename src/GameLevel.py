@@ -148,7 +148,6 @@ class GameLevel:
         self.subnet_nodes = []
         self.cameras_active = random() < 0.8
         self.security_active = True
-        self.things_fallen_in_holes = []
         self.entrance = None
         self.exit = None
 
@@ -232,8 +231,14 @@ class GameLevel:
             
         self.dungeon_loc[row][col].item_stack.append(item)
     
-    # This is assuming for the moment that none of the "things" are monsters
-    def things_fell_into_level(self, things):
+    def thing_falls_in_hole(self, thing):
+        _next_level_num = self.get_next_deeper_level_num()
+        if _next_level_num not in self.dm.dungeon_levels:
+            self.dm.generate_next_level(self, _next_level_num)
+
+        self.dm.dungeon_levels[_next_level_num].thing_falls_into_level(thing)
+
+    def thing_falls_into_level(self, thing):
         # scatter the items around
         _passable = []
         _entrance = self.get_entrance()
@@ -243,19 +248,18 @@ class GameLevel:
                 if self.map[_entrance[0] + r][_entrance[1] + c].is_passable():
                     _passable.append((_entrance[0] + r, _entrance[1] + c))
 
-        for _thing in things:
-            if isinstance(_thing, Agent.BaseAgent):
-                _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
-                self.add_monster_to_dungeon(_thing, _sqr[0], _sqr[1])
-                if self.level_num == self.dm.player.curr_level:
-                    _msg = "%s crashes down from the ceiling!" % _thing.get_name(2)
-                    _va = VisualAlert(_sqr[0], _sqr[1], _msg, "You hear a distant clatter.")
-                    _va.show_alert(self.dm, True)
-            else:
-                _s = choice(_passable)
-                if isinstance(_thing, Items.WithOffSwitch) and _thing.on:
-                    _thing.on = False
-                self.dm.item_hits_ground(self, _s[0], _s[1], _thing)
+        if isinstance(thing, Agent.BaseAgent):
+            _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
+            self.add_monster_to_dungeon(thing, _sqr[0], _sqr[1])
+            if self.level_num == self.dm.player.curr_level:
+                _msg = "%s crashes down from the ceiling!" % thing.get_name(2)
+                _va = VisualAlert(_sqr[0], _sqr[1], _msg, "You hear a distant clatter.")
+                _va.show_alert(self.dm, True)
+        else:
+            _s = choice(_passable)
+            if isinstance(thing, Items.WithOffSwitch) and thing.on:
+                thing.on = False
+            self.dm.item_hits_ground(self, _s[0], _s[1], thing)
     
     def remove_trap(self, row, col):
         _tf = TerrainFactory()
@@ -352,7 +356,7 @@ class GameLevel:
         _exit_point = (self.dm.player.row, self.dm.player.col)
         _save_obj = (self.map,self.dungeon_loc,self.light_sources,self.monsters, 
                 self.category,self.level_num,_exit_point,self.cameras, self.security_lockdown, self.subnet_nodes, 
-                self.cameras_active, self.security_active, self.things_fallen_in_holes)
+                self.cameras_active, self.security_active)
 
         return _save_obj
         

@@ -352,7 +352,7 @@ class DungeonMaster:
             _lvl.remove_monster(victim, victim.row, victim.col)
             self.update_sqr(_lvl,  victim.row, victim.col)
             _next = self.dungeon_levels[_lvl.get_next_deeper_level_num()]
-            _next.things_fell_into_level([victim])
+            _next.thing_falls_into_level(victim)
 
     def generate_next_level(self, curr_level, next_level_num):
         if curr_level.category == 'prologue':
@@ -395,9 +395,7 @@ class DungeonMaster:
                 next_level_num = curr_level.level_num + 1
             else:
                 next_level_num = curr_level.level_num - 1
-            _things_to_transfer += curr_level.things_fallen_in_holes
-            curr_level.things_fallen_in_holes = []
-            
+ 
         if not isinstance(_exit_sqr, T.GapingHole):
             # Monsters don't jump into the hole after the player...
             _monsters = self.__check_for_monsters_surrounding_stairs(curr_level, _exit_sqr)
@@ -430,10 +428,6 @@ class DungeonMaster:
 
         self.leaving_level_cleanup()
         self.add_player_to_level(next_level_num, self.player)
-    
-        if _things_to_transfer:
-            self.dungeon_levels[self.player.curr_level].things_fell_into_level(_things_to_transfer)
-            self.refresh_player_view()
             
     def start_game(self, dui):
         self.prefs = get_preferences()
@@ -1767,7 +1761,7 @@ class DungeonMaster:
             for i in items:
                 self.item_hits_ground(_level, r, c, i)
 
-        # This can habit if the player is remote-controlling a robot
+        # This can happen if the player is remote-controlling a robot
         if victim == self.player:
             self.player_killed(None)
 
@@ -1862,7 +1856,7 @@ class DungeonMaster:
             self.update_sqr(level, r, c)
             self.alert_player(r, c, item.get_name() + ' falls down the hole.')
             if not isinstance(item, Items.Explosion) and not isinstance(item, Items.LitFlare):
-                level.things_fallen_in_holes.append(item)
+                level.thing_falls_in_hole(item)
             return
             
         if isinstance(item, Items.Explosion):
