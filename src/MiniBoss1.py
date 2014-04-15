@@ -151,6 +151,19 @@ class MiniBoss1Level(GameLevel):
         if _monster.get_name(True).startswith('pigoon'):
             self.add_pack('pigoon', 2, 4, _monster.row, _monster.col)    
                 
+    def get_entrance(self):
+        if not self.entrance:
+            self.entrance = self.find_up_stairs_loc()
+        return self.entrance
+
+    def get_exit(self):
+        if not self.exit:
+            for r in range(self.lvl_length):
+                for c in range(self.lvl_width):
+                    _sqr = self.map[r][c]
+                    if isinstance(_sqr, SpecialDoor):
+                        return (r, c)
+
     def __get_monster(self):
         _rnd =  randrange(0,23)
         if _rnd in range(0,3):

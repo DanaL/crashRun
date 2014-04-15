@@ -166,7 +166,7 @@ class GameLevel:
                 _sqr = self.map[r][c]
                 if _sqr.get_type() == UP_STAIRS or isinstance(_sqr, Terrain.HoleInCeiling):
                     return (r, c)
-                    
+        
     def find_down_stairs_loc(self):
         for r in range(self.lvl_length):
             for c in range(self.lvl_width):
@@ -176,13 +176,19 @@ class GameLevel:
 
     def get_entrance(self):
         if not self.entrance:
-            self.entrance = self.find_up_stairs_loc()
+            if self.level_num < 14:
+                self.entrance = self.find_up_stairs_loc()
+            else:
+                self.entrance = self.find_down_stairs_loc()
 
         return self.entrance
 
     def get_exit(self):
         if not self.exit:
-           self.exit = self.find_down_stairs_loc()
+            if self.level_num < 14:
+                self.exit = self.find_down_stairs_loc()
+            else:
+                self.exit = self.find_up_stairs_loc();
 
         return self.exit
 
@@ -241,15 +247,18 @@ class GameLevel:
     def thing_falls_into_level(self, thing):
         # scatter the items around
         _passable = []
-        _entrance = self.get_entrance()
+        if self.level_num > 13:
+            _hole = self.get_exit()
+        else:
+            _hole = self.get_entrance()
         
         for r in range(-1, 2):
             for c in range(-1, 2):
-                if self.map[_entrance[0] + r][_entrance[1] + c].is_passable():
-                    _passable.append((_entrance[0] + r, _entrance[1] + c))
+                if self.map[_hole[0] + r][_hole[1] + c].is_passable():
+                    _passable.append((_hole[0] + r, _hole[1] + c))
 
         if isinstance(thing, Agent.BaseAgent):
-            _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
+            _sqr = self.get_nearest_clear_space(_hole[0], _hole[1])
             self.add_monster_to_dungeon(thing, _sqr[0], _sqr[1])
             if self.level_num == self.dm.player.curr_level:
                 _msg = "%s crashes down from the ceiling!" % thing.get_name(2)

@@ -26,7 +26,7 @@ from .Terrain import FLOOR
 
 class FinalComplexLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):
-        GameLevel.__init__(self, dm, level_num, length, width, 'proving grounds')
+        GameLevel.__init__(self, dm, level_num, length, width, 'final complex')
         
     def generate_level(self):
         self.map = []
@@ -50,15 +50,3 @@ class FinalComplexLevel(GameLevel):
 
     def add_monster(self, monster=''):
         pass
-    
-    def get_entrance(self):
-        if not self.entrance:
-            self.entrance = self.find_down_stairs_loc()
-
-        return self.entrance
-
-    def get_exit(self):
-        if not self.exit:
-           self.exit = self.find_up_stairs_loc()
-
-        return self.exit

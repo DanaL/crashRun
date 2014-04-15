@@ -47,24 +47,30 @@ class ProvingGroundsLevel(GameLevel):
         for j in range(randrange(5, 16)):
             self.add_monster()
 
+    def find_special_floor_loc(self, direction):
+        for r in range(self.lvl_length):
+            for c in range(self.lvl_width):
+                _sqr = self.map[r][c]
+                if isinstance(_sqr, Terrain.SpecialFloor) and _sqr.direction == direction:
+                    return (r, c)
+
     def get_entrance(self):
         if not self.entrance:
             if self.level_num == 13:
-                self.entrance = self.find_up_stairs_loc()
+                self.entrance = self.find_special_floor_loc('up')
             else:
-                self.entrance = self.find_down_stairs_loc()
-
+                self.entrance = self.find_special_floor_loc('down')
+                
         return self.entrance
 
     def get_exit(self):
         if not self.exit:
             if self.level_num == 13:
-                self.entrance = self.find_down_stairs_loc()
+                self.exit = self.find_special_floor_loc('down')
             else:
-                self.entrance = self.find_up_stairs_loc()
+                self.exit = self.find_up_stairs_loc()
 
         return self.exit
-
             
     def generate_map(self):
         self.tf = TerrainFactory()

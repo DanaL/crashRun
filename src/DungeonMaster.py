@@ -385,17 +385,10 @@ class DungeonMaster:
         _exit_sqr = curr_level.map[exit_point[0]][exit_point[1]]
         _things_to_transfer = []
         if direction == 'up':
-            # After level 14, dungeon level increases as we go up.
-            if curr_level.level_num < 14:
-                next_level_num = curr_level.level_num - 1
-            else:
-                next_level_num = curr_level.level_num + 1
+            next_level_num = curr_level.get_next_higher_level_num()
         else:
-            if curr_level.level_num < 14:
-                next_level_num = curr_level.level_num + 1
-            else:
-                next_level_num = curr_level.level_num - 1
- 
+            next_level_num = curr_level.get_next_deeper_level_num()
+        
         if not isinstance(_exit_sqr, T.GapingHole):
             # Monsters don't jump into the hole after the player...
             _monsters = self.__check_for_monsters_surrounding_stairs(curr_level, _exit_sqr)
@@ -413,11 +406,11 @@ class DungeonMaster:
         # know what the next level is.        
         if not next_level_num in self.dungeon_levels:
             self.generate_next_level(curr_level, next_level_num)
-            self.player.row, self.player.col = self.dungeon_levels[next_level_num].entrance                
+            self.player.row, self.player.col = self.dungeon_levels[next_level_num].get_entrance()                
         else:
             # Moving to an existing level
-            if curr_level.level_num > next_level_num:
-                _sqr = self.dungeon_levels[next_level_num].get_exit()
+            if curr_level.level_num > next_level_num:            
+                _sqr = self.dungeon_levels[next_level_num].get_exit()                
             else:
                 _sqr = self.dungeon_levels[next_level_num].get_entrance()
 
@@ -429,7 +422,7 @@ class DungeonMaster:
         self.leaving_level_cleanup()
         self.add_player_to_level(next_level_num, self.player)
         self.refresh_player_view()
-         
+
     def start_game(self, dui):
         self.prefs = get_preferences()
         self.dungeon_levels = {}
@@ -1893,24 +1886,29 @@ class DungeonMaster:
             _level_of_hole = level
             _hole = (row, col)
             level.map[row][col] = T.GapingHole()
-            if not _lvl_num + 1 in self.dungeon_levels:
-                self.generate_next_level(level, _lvl_num + 1)
+            _next_lvl_num = level.get_next_deeper_level_num()
+            if not _next_lvl_num in self.dungeon_levels:
+                self.generate_next_level(level, _next_lvl_num)
 
-            _up = self.dungeon_levels[_lvl_num + 1].find_up_stairs_loc()
-            self.dungeon_levels[_lvl_num + 1].map[_up[0]][_up[1]] = T.HoleInCeiling()
-            if _lvl_num + 1 == self.player.curr_level:
+            _up = self.dungeon_levels[_next_lvl_num].find_up_stairs_loc()
+            self.dungeon_levels[_next_lvl_num].map[_up[0]][_up[1]] = T.HoleInCeiling()
+            if _next_lvl_num == self.player.curr_level:
                 _msg = "BOOM! A cloud of plaster and rubble falls from the ceiling."
                 _alt = "The ceiling rattles above you."
                 alert = VisualAlert(_up[0], _up[1], _msg, _alt)
                 alert.show_alert(self, False)
-                self.update_sqr(self.dungeon_levels[level.level_num + 1], _up[0], _up[1])
+                self.update_sqr(self.dungeon_levels[_next_lvl_num], _up[0], _up[1])
         elif stair_type == T.UP_STAIRS:
             level.map[row][col] = T.HoleInCeiling()
-            _hole = self.dungeon_levels[_lvl_num - 1].find_down_stairs_loc()
-            _loc = self.dungeon_levels[_lvl_num - 1].dungeon_loc[_hole[0]][_hole[1]]
-            _level_of_hole = self.dungeon_levels[_lvl_num - 1]
+            _other_lvl_num = level.get_next_higher_level_num()
+            if not _other_lvl_num in self.dungeon_levels:
+                self.generate_next_level(level, _other_lvl_num)
+
+            _hole = self.dungeon_levels[_other_lvl_num].find_down_stairs_loc()            
+            _loc = self.dungeon_levels[_other_lvl_num].dungeon_loc[_hole[0]][_hole[1]]
+            _level_of_hole = self.dungeon_levels[_other_lvl_num]
             _level_of_hole.map[_hole[0]][_hole[1]] = T.GapingHole()
-            if _lvl_num - 1 == self.player.curr_level:                    
+            if _other_lvl_num == self.player.curr_level:                    
                 _msg =  "BOOM! You see a section of the floor cave in."
                 _alt = "You feel the floor shake."
                 alert = VisualAlert(_hole[0], _hole[1], _msg, _alt)
@@ -1930,7 +1928,9 @@ class DungeonMaster:
             for _item in _stack:
                 self.item_hits_ground(_level_of_hole, _hole[0], _hole[1], _item)
             _loc.item_stack = []
-            self.update_sqr(_level_of_hole, _hole[0], _hole[1])
+            #self.update_sqr(_level_of_hole, _hole[0], _hole[1])
+
+        self.refresh_player_view()
 
     def handle_explosion(self, level, row, col, source):
         explosive = source.explosive    
