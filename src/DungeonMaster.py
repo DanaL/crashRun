@@ -351,8 +351,9 @@ class DungeonMaster:
         else:
             _lvl.remove_monster(victim, victim.row, victim.col)
             self.update_sqr(_lvl,  victim.row, victim.col)
-            _lvl.things_fallen_in_holes.append(victim)
-    
+            _next = self.dungeon_levels[_lvl.get_next_deeper_level_num()]
+            _next.things_fell_into_level([victim])
+
     def generate_next_level(self, curr_level, next_level_num):
         if curr_level.category == 'prologue':
             _gfo = GetGameFactoryObject(self, next_level_num, 20, 70, 'old complex')
@@ -1754,7 +1755,6 @@ class DungeonMaster:
         self.dui.clear_msg_line()
         self.player.energy -= STD_ENERGY_COST
         _level = self.dungeon_levels[self.player.curr_level]
-        self.check_ground_effects(self.player, self.player.row, self.player.col, _level)
         
     def monster_killed(self, level_num, r, c, by_player):
         _level = self.dungeon_levels[level_num]
@@ -1831,7 +1831,6 @@ class DungeonMaster:
             self.dui.display_message('There are several items here.')
         
     def check_ground_effects(self, agent, r, c, level):
-        _loc = level.dungeon_loc[r][c]
         _sqr = level.map[r][c]
         
         if _sqr.get_type() == TOXIC_WASTE:
@@ -1922,8 +1921,8 @@ class DungeonMaster:
                 alert = VisualAlert(_hole[0], _hole[1], _msg, _alt)
                 alert.show_alert(self, False)
         
-        _sqr = _level_of_hole.map[_hole[0]] [_hole[1]]
-        _loc = _level_of_hole.dungeon_loc[_hole[0]] [_hole[1]]
+        _sqr = _level_of_hole.map[_hole[0]][_hole[1]]
+        _loc = _level_of_hole.dungeon_loc[_hole[0]][_hole[1]]
         if _loc.occupant != '':
             if _level_of_hole == self.player.curr_level:
                 self.dui.display_message("The floor suddenly gives way below " + _loc.occupant.get_articled_name() + "!")
@@ -1944,7 +1943,10 @@ class DungeonMaster:
         level.monsters_react_to_noise(explosive.blast_radius * 1.5, noise)
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
-                
+        if dmg > 0 and level.level_num == self.player.curr_level:
+            alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
+            alert.show_alert(self, False)
+
         bullet = Items.Bullet('*', 'white')
 
         # As a hack, I'm using the shadowcaster to calculate the area of effect.  Explosions
@@ -1986,10 +1988,6 @@ class DungeonMaster:
             level.begin_security_lockdown()
  
         if dmg > 0:
-            if level.level_num == self.player.curr_level:
-                alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
-                alert.show_alert(self, False)
-
             # Kludgy -- handling this here instead of when I loop over the terrain tiles
             # in the explosion beecause I only want to destroy the lift when the bomb was
             # set direction on it.

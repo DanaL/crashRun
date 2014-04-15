@@ -1422,8 +1422,8 @@ class RepairBot(CleanerBot):
         
 class Roomba(CleanerBot):
     def __init__(self, dm, row, col):
-        BasicBot.__init__(self)
-        CleanerBot.__init__(self, vision_radius=5, ac=18, hp_low=15, hp_high=20, dmg_dice=3, 
+        CleanerBot.__init__(self)
+        BaseMonster.__init__(self, vision_radius=5, ac=18, hp_low=15, hp_high=20, dmg_dice=3, 
             dmg_rolls=1, ab=2, dm=dm, ch='o', fg='darkgrey', bg='black', lit='grey',
             name='roomba', row=row, col=col, xp_value=20, gender='male', level=5)
         self.attitude = 'indifferent'
@@ -1442,7 +1442,7 @@ class Roomba(CleanerBot):
     # The roomba will try to clean up the entire square before moving on
     def look_for_trash_to_vacuum(self):
         _lvl = self.dm.dungeon_levels[self.curr_level]
-        _loc = s_lvl.dungeon_loc[self.row][self.col]
+        _loc = _lvl.dungeon_loc[self.row][self.col]
         if _lvl.size_of_item_stack(self.row,self.col) > 0:
             _item = _loc.item_stack.pop()
             self.dm.pick_up_item(self, _lvl, _item)

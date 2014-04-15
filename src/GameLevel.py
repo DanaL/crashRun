@@ -152,6 +152,15 @@ class GameLevel:
         self.entrance = None
         self.exit = None
 
+    # These next two functions are the "altitude" of the dungeon because after the
+    # Proving Grounds the floors are like a tower that go up higher. (Whereas level_num
+    # is more or less the difficulty level)
+    def get_next_deeper_level_num(self):
+        return self.level_num + 1 if self.level_num < 14 else self.level_num - 1
+
+    def get_next_higher_level_num(self):
+        return self.level_num - 1 if self.level_num < 14 else self.level_num + 1
+
     def find_up_stairs_loc(self):
         for r in range(self.lvl_length):
             for c in range(self.lvl_width):
@@ -227,15 +236,21 @@ class GameLevel:
     def things_fell_into_level(self, things):
         # scatter the items around
         _passable = []
+        _entrance = self.get_entrance()
+        
         for r in range(-1, 2):
             for c in range(-1, 2):
-                if self.map[self.entrance[0] + r][self.entrance[1] + c].is_passable():
-                    _passable.append((self.entrance[0] + r, self.entrance[1] + c))
+                if self.map[_entrance[0] + r][_entrance[1] + c].is_passable():
+                    _passable.append((_entrance[0] + r, _entrance[1] + c))
 
         for _thing in things:
             if isinstance(_thing, Agent.BaseAgent):
-                _sqr = self.get_nearest_clear_space(self.entrance[0], self.entrance[1])
+                _sqr = self.get_nearest_clear_space(_entrance[0], _entrance[1])
                 self.add_monster_to_dungeon(_thing, _sqr[0], _sqr[1])
+                if self.level_num == self.dm.player.curr_level:
+                    _msg = "%s crashes down from the ceiling!" % _thing.get_name(2)
+                    _va = VisualAlert(_sqr[0], _sqr[1], _msg, "You hear a distant clatter.")
+                    _va.show_alert(self.dm, True)
             else:
                 _s = choice(_passable)
                 if isinstance(_thing, Items.WithOffSwitch) and _thing.on:

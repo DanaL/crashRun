@@ -204,7 +204,7 @@ class OldComplexLevel(GameLevel):
             self.dispatch_security_bots()
             if self.dm.player.curr_level == self.level_num:
                 alert = AudioAlert(self.dm.player.row, self.dm.player.col, 'An alarm begins to sound.', '')
-                alert.show_alert(self.dm, False, self.level_num)
+                alert.show_alert(self.dm, False)
 
             for _m in self.monsters:
                 _m.attitude = 'hostile'
