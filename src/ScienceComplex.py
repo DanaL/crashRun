@@ -25,6 +25,7 @@ from . import MonsterFactory
 from .Rooms import add_science_complex_rooms
 from . import SubnetNode
 from . import Terrain
+from .Util import AudioAlert
 
 class ScienceComplexLevel(GameLevel):
     def __init__(self, dm, level_num, length, width):
@@ -163,7 +164,10 @@ class ScienceComplexLevel(GameLevel):
             self.security_lockdown = True
             self.disable_lifts()
             self.dispatch_security_bots()
-            self.dm.dui.display_message('An alarm begins to sound.')
+            if self.dm.player.curr_level == self.level_num:
+                alert = AudioAlert(self.dm.player.row, self.dm.player.col, 'An alarm begins to sound.', '')
+                alert.show_alert(self.dm, False)
+
             for _m in self.monsters:
                 _m.attitude = 'hostile'
                 

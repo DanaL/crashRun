@@ -1944,22 +1944,6 @@ class DungeonMaster:
         level.monsters_react_to_noise(explosive.blast_radius * 1.5, noise)
                     
         dmg = sum(randrange(1, explosive.damage_dice+1) for r in range(explosive.die_rolls))
-        if dmg > 0:
-            if level.level_num == self.player.curr_level:
-                alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
-                alert.show_alert(self, False)
-
-            # Kludgy -- handling this here instead of when I loop over the terrain tiles
-            # in the explosion beecause I only want to destroy the lift when the bomb was
-            # set direction on it.
-            _sqr = level.map[row][col]
-            _type = _sqr.get_type()
-            if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
-                self.destroy_stairs(level, row, col, _type)
-            elif hasattr(_sqr, 'previous_tile'):
-                _type = _sqr.previous_tile.get_type()
-                if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
-                    self.destroy_stairs(level, row, col, _type)
                 
         bullet = Items.Bullet('*', 'white')
 
@@ -2000,7 +1984,24 @@ class DungeonMaster:
         
         if explosive.get_name(1) != 'flash bomb':   
             level.begin_security_lockdown()
-        
+ 
+        if dmg > 0:
+            if level.level_num == self.player.curr_level:
+                alert = AudioAlert(row, col, 'BOOM!!', 'The floor shakes briefly.')
+                alert.show_alert(self, False)
+
+            # Kludgy -- handling this here instead of when I loop over the terrain tiles
+            # in the explosion beecause I only want to destroy the lift when the bomb was
+            # set direction on it.
+            _sqr = level.map[row][col]
+            _type = _sqr.get_type()
+            if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
+                self.destroy_stairs(level, row, col, _type)
+            elif hasattr(_sqr, 'previous_tile'):
+                _type = _sqr.previous_tile.get_type()
+                if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
+                    self.destroy_stairs(level, row, col, _type)
+
     def player_killed(self, killer=''):
         _level = self.dungeon_levels[self.player.curr_level]
         if _level.is_cyberspace():
