@@ -428,7 +428,8 @@ class DungeonMaster:
 
         self.leaving_level_cleanup()
         self.add_player_to_level(next_level_num, self.player)
-            
+        self.refresh_player_view()
+         
     def start_game(self, dui):
         self.prefs = get_preferences()
         self.dungeon_levels = {}
@@ -669,9 +670,9 @@ class DungeonMaster:
         _sqr = self.dungeon_levels[self.player.curr_level].map[row][col]
         
         try:
-            self.__determine_next_level(_sqr.direction, (row, col))
+            self.__determine_next_level(_sqr.direction, (row, col), self.dungeon_levels[self.player.curr_level])
         except AttributeError:
-            self.__determine_next_level('down', (row, col))
+            self.__determine_next_level('down', (row, col), self.dungeon_levels[self.player.curr_level])
        
     def player_moves_down_a_level(self):
         _lvl = self.dungeon_levels[self.player.curr_level]

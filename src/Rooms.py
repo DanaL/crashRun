@@ -240,7 +240,8 @@ def make_moreau_room(dm, room, level):
         place_item(room, level, _box)
         
 def check_for_moreau_room(dm,level):
-    if 'Moreau' in dm.player.events: return False
+    if dm.player.has_memory('Moreau'):
+        return False
     
     _odds = (level.level_num - 7) * 25
     if randrange(100) < _odds:
@@ -253,7 +254,7 @@ def make_science_complex_room(dm, rooms, level):
         del rooms[_key] # don't want to use the same room twice!
 
         if check_for_moreau_room(dm, level):
-            dm.player.events.append('Moreau')
+            dm.player.remember('Moreau')            
             make_moreau_room(dm, _room, level)
         else:
             _roll = randrange(4)

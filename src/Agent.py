@@ -1056,6 +1056,7 @@ class Shooter(RelentlessPredator):
         
     def pick_loc_to_move_to(self, p_loc):
         _good_sqs = []
+        _lvl = self.dm.dungeon_levels[self.curr_level]
         for _dr in (-1, 0 , 1):
             for _dc in (-1, 0 ,1):
                 if _dr != 0 or _dc != 0:
@@ -1064,7 +1065,7 @@ class Shooter(RelentlessPredator):
                     _angle = calc_angle_between(_new_r, _new_c, p_loc[0], p_loc[1])
                     _distance = calc_distance(_new_r, _new_c, p_loc[0], p_loc[1])
                     
-                    if _angle % 45 == 0 and _distance <= self.range and self.dm.is_clear(_new_r, _new_c):
+                    if _angle % 45 == 0 and _distance <= self.range and _lvl.is_clear(_new_r, _new_c):
                         _good_sqs.append((_new_r, _new_c, _distance))
         
         if len(_good_sqs) == 0:
@@ -1338,8 +1339,8 @@ class CleanerBot(BasicBot):
 
 class DocBot(CleanerBot):    
     def __init__(self, dm, row, col):
-        BasicBot.__init__(self)
-        CleanerBot.__init__(self, vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=6, 
+        CleanerBot.__init__(self)
+        BaseMonster.__init__(self, vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=6, 
             dmg_rolls=2, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
     
@@ -1369,8 +1370,8 @@ class DocBot(CleanerBot):
 # Robot who repairs other robots
 class RepairBot(CleanerBot):
     def __init__(self,dm,row,col):
-        BasicBot.__init__(self)
-        CleanerBot.__init__(self, vision_radius=6, ac=18, hp_low=15, hp_high=20, dmg_dice=6, 
+        CleanerBot.__init__(self)
+        BaseMonster.__init__(self, vision_radius=6, ac=18, hp_low=15, hp_high=20, dmg_dice=6, 
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
@@ -1553,7 +1554,8 @@ class ExperimentalHoboInfiltrationDroid41K(AltPredator, Unique):
            
 class MoreauBot6000(CleanerBot, Unique):
     def __init__(self, dm, row, col):
-        CleanerBot.__init__(self, vision_radius=8, ac=22, hp_low=25, hp_high=35, dmg_dice=6, 
+        CleanerBot.__init__(self)
+        BaseMonster.__init__(self, vision_radius=8, ac=22, hp_low=25, hp_high=35, dmg_dice=6, 
                   dmg_rolls=1, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', 
                   lit='yellow-orange', name='MoreauBot 6000', row=row, col=col, xp_value=40,
                   gender='male', level=8)
