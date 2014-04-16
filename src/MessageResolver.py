@@ -31,7 +31,8 @@ class MessageResolver(object):
     def __init__(self, dm, dui):
         self.dm = dm
         self.dui = dui
-        
+        self.true_player = self.dm.get_true_player()
+
     def monster_killed(self, monster, by_player):
         _name = self.resolve_name(monster)
         _level = self.dm.dungeon_levels[monster.curr_level]
@@ -82,6 +83,8 @@ class MessageResolver(object):
             return 'you'
         elif self.dm.is_occupant_visible_to_agent(self.dm.player, agent):
             return agent.get_name()
+        elif self.dm.is_occupant_visible_to_agent(self.dm.get_true_player(), agent):
+            return agent.get_name()
         else:
             return 'it'
     
@@ -105,22 +108,26 @@ class MessageResolver(object):
         _mess = self.resolve_name(victim) + ' ' + _verb + ' hit.'
         self.dm.alert_player(victim.row, victim.col, _mess)
         
-    def show_hit_message(self, tori, uke, verb):
+    def show_hit_message(self, tori, uke, verb):        
         if tori == self.dm.player:
             _mess = 'You ' + self.parse(tori, verb) + ' ' +   \
                                     self.resolve_name(uke) + '!'
         elif tori.get_name() in ('the lolcat', 'the ceiling cat'):
             _mess = self.resolve_name(tori) + ' has bited you.'
-        else:
+        elif uke == self.dm.player:
             _mess = self.resolve_name(tori) + ' hits you!'
-        
+        elif uke == self.true_player:
+            _mess = self.resolve_name(tori) + ' hits your meatsack!'
+        else: 
+            _mess = self.resolve_name(tori) + ' hits ' + self.resolve_name(uke)
+            
         self.dm.alert_player(tori.row, tori.col, _mess)
     
     def show_miss_message(self, tori, uke):
-        if uke == self.dm.player:
+        if uke == self.dm.player or uke == self.true_player:
             _mess = self.resolve_name(tori) + ' misses you!'
         else:
-            _mess = 'You miss ' + self.resolve_name(uke) + '!'
+            _mess = "%s %s %s!" % (self.resolve_name(tori), self.parse(tori, 'miss'), self.resolve_name(uke))
         
         self.dm.alert_player(uke.row, uke.col, _mess)
         

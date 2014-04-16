@@ -372,7 +372,10 @@ class BaseAgent(BaseTile):
         return False
         
     def killed(self, dm, killer):
-        self.dead = True    
+        self.dead = True
+        if hasattr(killer, 'last_attacker') and killer.last_attacker == self:
+            killer.last_attacker = None
+            
         dm.monster_killed(self.curr_level, self.row, self.col, killer == dm.player)
         
     def make_random_move(self):
@@ -603,7 +606,8 @@ class BaseMonster(BaseAgent, AStarMover):
         _level = self.dm.dungeon_levels[self.curr_level]
         _level.melee.attack(self, _level.get_occupant(loc[0], loc[1]))
         
-    def damaged(self, dm, damage, attacker, attack_type='melee'):
+    def damaged(self, dm, damage, attacker, attack_type='melee'):        
+        self.last_attacker = attacker
         self.attitude = 'hostile'
         super(BaseMonster, self).damaged(dm, damage, attacker, attack_type)
         
@@ -700,21 +704,26 @@ class AltPredator(BaseMonster):
             self.energy = 0
             return
         
-        _player_loc = self.dm.get_player_loc()
+        if hasattr(self, 'last_attacker') and self.last_attacker != None:
+            _target = self.last_attacker
+        else:
+            _target = self.dm.get_true_player()
+
+        _target_loc = (_target.row, _target.col, _target.curr_level)
          
         try:
             self.__check_morale()
             
-            if self.is_agent_adjacent(self.dm.player):
-                self.attack(_player_loc)
+            if self.is_agent_adjacent(_target):
+                self.attack(_target_loc)
             else:
-                self.move_to(_player_loc)
+                self.move_to(_target_loc)
         except MoraleCheckFailed:
             if self.state != 'scared':
                 self.dm.alert_player(self.row,self.col,'The ' + self.get_name() +' turns to flee!')
                 self.state = 'scared'
             
-            if not hasattr(self, "flee_to") or self.distance(_player_loc) < 3:
+            if not hasattr(self, "flee_to") or self.distance(_target_loc) < 3:
                 _lvl = self.dm.dungeon_levels[self.curr_level]
                 self.flee_to = furthest_sqr(_lvl, _player_loc, 25, self)
             
@@ -725,7 +734,7 @@ class AltPredator(BaseMonster):
             else:
                 fled = self.move_to_unbound(self.flee_to)
                 
-            if not fled and self.is_agent_adjacent(self.dm.player):
+            if not fled and self.is_agent_adjacent(_target):
                 self.attack(_player_loc)
             
         self.energy -= STD_ENERGY_COST

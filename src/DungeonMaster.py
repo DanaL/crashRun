@@ -428,7 +428,6 @@ class DungeonMaster:
         self.dungeon_levels = {}
 
         self.dui = dui
-        self.mr = MessageResolver(self, self.dui)
         msg = ['Welcome to crashRun!','  Copyright 2010 by Dana Larose','  Distributed under the terms of the GNU General Public License.','  See license.txt for details.',' ','  Press any key to begin']
         self.dui.write_screen(msg, False)
         self.dui.wait_for_input()
@@ -450,6 +449,7 @@ class DungeonMaster:
             self.events = PriorityQueue()
             BasicBot.bot_number = randrange(100) + 10
 
+        self.mr = MessageResolver(self, self.dui)        
         self.start_play()
         
     def begin_new_game(self,player_name):
@@ -1634,10 +1634,15 @@ class DungeonMaster:
 
     # This only really deals with visual information, should add audio, also
     def alert_player(self, r, c, message, pause_for_more=False):
-        if (r,c) in self.player.sight_matrix:
+        _true = self.get_true_player()
+
+        if (r, c) in self.player.sight_matrix:
             message = message[0].upper() + message[1:]
             self.dui.display_message(message, pause_for_more)
-
+        elif not _true is self.player and (r, c) in _true.sight_matrix:
+            message = message[0].upper() + message[1:]
+            self.dui.display_message(message, pause_for_more)
+            
     def can_player_see_location(self, r, c, level_num):
         return level_num == self.player.curr_level and (r,c) in self.player.sight_matrix
 
@@ -2136,7 +2141,15 @@ class DungeonMaster:
         _alt = 'You wish you\'d sprung for a watch with a Braille interface.'
         alert = VisualAlert(self.player.row, self.player.col, _msg, _alt)
         alert.show_alert(self, False)
-        
+
+    def get_true_player(self):
+        if self.player.curr_level == -1:
+            return self.player
+        elif len(self.suspended_player) > 0:
+            return self.suspended_player[0]
+        else:
+            return self.player
+
     def get_player_loc(self):
         return (self.player.row, self.player.col, self.player.curr_level)
 
