@@ -91,9 +91,7 @@ class AgentMemory:
 
     def damaged(self, dm, damage, attacker, attack_type='melee'):
         self.attitude = 'hostile'
-        if attacker == dm.player:
-            self.remember('damaged by player')            
-        
+                  
 class AStarPathFactory: 
     def __init__(self, dm, start, goal, level_num):
         self.__start = start
@@ -655,12 +653,14 @@ class BaseMonster(BaseAgent, AStarMover):
                 
     def is_player_visible(self):
         player_loc = self.dm.get_player_loc()
+        coord = (player_loc[0], player_loc[1])
         d = self.distance_from_player(player_loc)
 
         if d <= self.vision_radius:
             sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col, self.curr_level)
             mv = sc.calc_visible_list()
-            return player_loc in mv
+            return coord in mv
+
         return False
                 
     def set_dm_ref(self,dm):
@@ -766,7 +766,9 @@ class FeralDog(AltPredator, AgentMemory):
     def perform_action(self):
         # If they see the player and he hasn't hurt them before, they will ignore him
         # if he's wearing fatigues (the just assume he's one of them)
-        if not self.has_memory('damaged by player') and self.is_player_visible():
+        _last = None if not hasattr(self, 'last_attacker') else self.last_attacker
+        
+        if not _last is self.dm.get_true_player() and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
                 self.attitude = 'passive'
@@ -828,7 +830,9 @@ class Junkie(HumanFoe, AgentMemory):
 
         # If they see the player and he hasn't hurt them before, they will ignore him
         # if he's wearing fatigues (they just assume he's one of them)
-        if not self.has_memory('damaged by player') and self.is_player_visible():
+        _last = None if not hasattr(self, 'last_attacker') else self.last_attacker
+
+        if not _last is self.dm.get_true_player() and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
                 self.attitude = 'passive'
