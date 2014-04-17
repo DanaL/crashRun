@@ -1568,13 +1568,13 @@ class DungeonMaster:
 
         if not omniscient and (occupant.row, occupant.col) not in agent.sight_matrix:
             return False
-            
+        
         if occupant.is_cloaked() and not agent.can_see_cloaked():
             return False
 
         if hasattr(occupant, 'revealed') and not occupant.revealed:
             return False
-            
+
         return True
     
     def get_terrain_tile(self, agent, loc, r, c, visible, omniscient):

@@ -1462,10 +1462,11 @@ class Roomba(CleanerBot):
     def perform_action(self):
         self.look_for_trash_to_vacuum()
         
-        player_loc = self.dm.get_player_loc()
-        if self.is_agent_adjacent(self.dm.player) and not self.robot_psych_check(self.dm.player):
-            self.attack(player_loc)
-            self.try_to_vacuum(player_loc)
+        _player = self.dm.get_true_player()
+        _player_loc = (_player.row, _player.col, _player.curr_level)
+        if self.is_agent_adjacent(_player) and not self.robot_psych_check(_player):
+            self.attack(_player_loc)
+            self.try_to_vacuum(_player_loc)
         
         self.energy -= STD_ENERGY_COST
         

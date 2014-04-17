@@ -628,13 +628,16 @@ class RemoteRobotCC(MeatspaceCC):
         sc = Shadowcaster(self.dm, meat.calc_curr_vision_radius(), meat.row, meat.col, meat.curr_level)
         visible = sc.calc_visible_list()
         visible[(meat.row, meat.col)] = 0
-        
+
         blocks = []
         for r in range(meat.row - 4, meat.row + 5):
             for c in range(meat.col - 4, meat.col + 5):
-                sqr = self.dm.get_sqr_info_for_agent(r, c, meat) #, visible)
                 if (r, c) in visible:
-                    sqr.lit = True
+                    self.dm.dungeon_levels[meat.curr_level].dungeon_loc[r][c].visible = True
+                    self.dm.dungeon_levels[meat.curr_level].dungeon_loc[r][c].lit = True
+                    #sqr.lit = True
+                    #sqr.visible = True
+                sqr = self.dm.get_sqr_info_for_agent(r, c, meat)
                 blocks.append(sqr)
         
         return ((meat.row, meat.col), blocks)
