@@ -209,7 +209,7 @@ class Player(BaseAgent, AgentMemory):
         return _bonus
     
     def killed(self, dm, killer):
-        dm.player_killed(killer)
+        dm.player_killed(killer, self)
     
     def add_xp(self, xp):
         self.__xp += xp

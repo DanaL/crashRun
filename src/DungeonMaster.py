@@ -1762,7 +1762,7 @@ class DungeonMaster:
 
         # This can happen if the player is remote-controlling a robot
         if victim == self.player:
-            self.player_killed(None)
+            self.player_killed(None, victim)
 
         self.mr.monster_killed(victim, by_player)
         _level.remove_monster(victim, r, c)
@@ -2000,14 +2000,14 @@ class DungeonMaster:
                 if _type in (T.DOWN_STAIRS, T.UP_STAIRS):
                     self.destroy_stairs(level, row, col, _type)
 
-    def player_killed(self, killer=''):
+    def player_killed(self, killer, victim):
         _level = self.dungeon_levels[self.player.curr_level]
         if _level.is_cyberspace():
             self.dui.display_message('You have been expunged.', True)
             self.player_forcibly_exits_cyberspace()
         
             raise TurnInterrupted
-        elif isinstance(self.player, BasicBot):
+        elif isinstance(victim, BasicBot):
             _p = self.player
             self.dungeon_levels[_p.curr_level].dungeon_loc[_p.row][_p.col].occupant = ''
             self.dui.display_message('--CONNECTION TERMINATED--', True)
@@ -2015,12 +2015,19 @@ class DungeonMaster:
 
             raise TurnInterrupted
 
+        if len(self.suspended_player) > 0:
+            # If the player's body was killed while he was possessing a robot
+            # switch self.player back to the body for end-game purposes.
+            self.player = self.suspended_player[0]
+            self.dui.switch_to_normal_display()
+            self.dui.set_command_context(CyberspaceCC(self, self.dui))
+            
         _kn =  killer.get_name(2)
         _msg = 'You have been killed by ' + _kn + '!'
         self.dui.display_message(_msg, 1)
         
         _xp_lvl = self.player.level
-        _msg = "%s (level %d), killed on level %d by %s"
+        _msg = "%s (level %d), killed on level %d by %s."
         _msg %= (self.player.get_name(), _xp_lvl, _level.level_num, _kn)
         
         _points = self.player.get_curr_xp() # will be more complex than this someday!
