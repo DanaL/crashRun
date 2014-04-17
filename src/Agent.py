@@ -212,12 +212,10 @@ class BaseAgent(BaseTile):
         self.unarmed_rolls = unarmed_dmg_rolls
         self.__gender = gender
         self.row = row
-        self.col = col
-        self.inventory = Inventory()
+        self.col = col        
         self.__base_ac = ac
         self.conditions = []
         self.melee_type = 'melee'
-        self.calc_ac()
         self.energy = self.ENERGY_THRESHOLD
         self.base_energy = self.ENERGY_THRESHOLD
         self.dead = False
@@ -508,6 +506,9 @@ class BaseAgent(BaseTile):
             _msg = self.get_articled_name() + ' ' + _mr.parse(self, 'etre') + ' stunned.'
             self.dm.alert_player(self.row, self.col, _msg)
     
+    def pick_up_verb(self):
+        return 'pick'
+
     # This is different from shocked in that is it a physical attack.  Concussion mine
     # or some such, rather than electricity. This one also lasts until they shake it off.
     def stun_attack(self, attacker):
@@ -599,7 +600,9 @@ class BaseMonster(BaseAgent, AStarMover):
         self.curr_hp = randrange(hp_low,hp_high+1)
         self.max_hp = self.curr_hp
         self.attitude = 'inactive'
-    
+        self.inventory = Inventory(26)
+        self.calc_ac()
+        
     def attack(self, loc):
         _level = self.dm.dungeon_levels[self.curr_level]
         _level.melee.attack(self, _level.get_occupant(loc[0], loc[1]))
@@ -725,7 +728,7 @@ class AltPredator(BaseMonster):
             
             if not hasattr(self, "flee_to") or self.distance(_target_loc) < 3:
                 _lvl = self.dm.dungeon_levels[self.curr_level]
-                self.flee_to = furthest_sqr(_lvl, _player_loc, 25, self)
+                self.flee_to = furthest_sqr(_lvl, _target_loc, 25, self)
             
             if self.flee_to == None:
                 va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "")
@@ -1250,7 +1253,7 @@ class BasicBot(RelentlessPredator, AgentMemory):
         _num = ("%X" % BasicBot.bot_number).zfill(4)
         BasicBot.bot_number += 1    
         self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))
-        self.can_pick_up = True
+        self.can_pick_up = False
 
     def get_serial_number(self):
         return self.serial_number
@@ -1443,6 +1446,8 @@ class Roomba(CleanerBot):
         self.attitude = 'indifferent'
         self.conditions.append((('light protection',0,0), self))
         self.melee_type = 'vacuum'
+        self.can_pick_up = True
+        self.inventory = Inventory(8)
 
     def try_to_vacuum(self, loc, odds=4):
         if randrange(odds) == 0:
@@ -1473,7 +1478,10 @@ class Roomba(CleanerBot):
             self.try_to_vacuum(_player_loc)
         
         self.energy -= STD_ENERGY_COST
-        
+    
+    def pick_up_verb(self):
+        return "vacuum"
+
 class Incinerator(CleanerBot):
     def __init__(self, dm, row, col):
         BasicBot.__init__(self)
@@ -1518,8 +1526,7 @@ class SurveillanceDrone(CleanerBot):
             name='surveillance drone', row=row, col=col, xp_value=3, gender='male', level=2)
         self.conditions.append((('flying', 0, 0), self))
         BasicBot.__init__(self)
-        self.can_pick_up = False
-
+        
     def perform_action(self):
         self.move()
         _lvl = self.dm.dungeon_levels[self.curr_level]

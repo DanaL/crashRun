@@ -19,6 +19,7 @@ import string
 from random import randrange
 
 from .Agent import STD_ENERGY_COST
+from .Agent import Roomba
 from .FieldOfView import Shadowcaster
 from . import Items
 from . import Inventory
@@ -652,6 +653,8 @@ class RemoteRobotCC(MeatspaceCC):
         if not self.dm.player.can_pick_up:
             self.dui.display_message("Your model didn't come standard with arms.")
         else:
+            if isinstance(self.dm.player, Roomba):
+                self.dui.display_message("Whooosh!")
             super().pick_up()
 
     def save_weapon_config(self):

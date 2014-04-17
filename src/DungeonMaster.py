@@ -27,6 +27,7 @@ import string
 from .Agent import BaseAgent
 from .Agent import BaseMonster
 from .Agent import BasicBot
+from .Agent import Roomba
 from .Agent import IllegalMonsterMove
 from .Agent import STD_ENERGY_COST
 from .BaseTile import BaseTile
@@ -951,12 +952,12 @@ class DungeonMaster:
                 level.douse_squares(i)
                 return
             
-            _slot = agent.inventory.add_item(i)
+            _slot = agent.inventory.add_item(i)            
             self.mr.pick_up_message(agent, i, _slot)
         except InventorySlotsFull:
             if agent == self.player:
-                _msg = 'There is no more room in your backpack for the '
-                _msg += i.get_name() + '.'
+                _recepticle = 'chassis' if isinstance(self.player, Roomba) else 'backpack'
+                _msg = 'There is no more room in your %s for %s.' % (_recepticle, i.get_name())                
                 self.dui.display_message(_msg)
             self.item_hits_ground(level, agent.row, agent.col, i)
             raise PickUpAborted
@@ -997,7 +998,17 @@ class DungeonMaster:
         _lvl = self.dungeon_levels[creator.curr_level]
         self._lvl.add_monster_to_dungeon(_h, row, col)
         self.refresh_player_view()
-                
+             
+    def pickup_lit_flare(self, level, row, col, flare):
+        if isinstance(self.player, Roomba):
+            self.dui.display_message("Eliminating fire hazard as per Safety Protocol 88A1A.")
+        else:
+            self.dui.display_message('Youch!  You burn your hand on the lit flare!')
+            self.item_hits_ground(level, row, col, flare)
+            self.player.damaged(self, randrange(1,5), '', ['burn'])
+        
+        self.player.energy -= STD_ENERGY_COST
+
     # I'll have to eventually add code to check for being burderened, as well as special behaviour that
     # might occur to items being picked up.  (Perhaps the item classes could have a method 'on_handled()' that contains
     # that sort of code)
@@ -1011,10 +1022,7 @@ class DungeonMaster:
             item = _level.dungeon_loc[self.player.row][self.player.col].item_stack.pop()
 
             if item.get_category() == 'Tool' and item.get_name(1) == 'lit flare':
-                self.dui.display_message('Youch!  You burn your hand on the lit flare!')
-                self.item_hits_ground(_level, self.player.row, self.player.col,item)
-                self.player.damaged(self, randrange(1,5), '', ['burn'])
-                self.player.energy -= STD_ENERGY_COST
+                self.pickup_lit_flare(_level, self.player.row, self.player.col, item)
                 return
                 
             try:
@@ -2021,7 +2029,7 @@ class DungeonMaster:
             self.player = self.suspended_player[0]
             self.dui.switch_to_normal_display()
             self.dui.set_command_context(CyberspaceCC(self, self.dui))
-            
+
         _kn =  killer.get_name(2)
         _msg = 'You have been killed by ' + _kn + '!'
         self.dui.display_message(_msg, 1)

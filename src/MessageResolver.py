@@ -62,7 +62,7 @@ class MessageResolver(object):
             return _verbs[verb][agent == self.dm.player]
             
     def pick_up_message(self, agent, item, slot):
-        _msg = self.resolve_name(agent) + ' ' + self.parse(agent, 'pick')
+        _msg = self.resolve_name(agent) + ' ' + self.parse(agent, agent.pick_up_verb())
         _item = item.get_name(1)
 
         _art = get_correct_article(_item)

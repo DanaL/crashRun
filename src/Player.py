@@ -116,13 +116,14 @@ class Player(BaseAgent, AgentMemory):
         BaseAgent.__init__(self,12,10,1,2,'@','white','black','white',name,row,col,'')
     
         self.__calc_initial_hp()
-        self.calc_ac()
         self.__calc_next_level()
         self.software = Wetboard(3,10)
         self.weapon_configs = {}
         self.reload_memory = None
         self.is_avatar = False
-
+        self.inventory = Inventory(26)
+        self.calc_ac()
+        
     def get_cyberspace_avatar(self, dm):
         _avatar = copy(self)
         _avatar.is_avatar = True

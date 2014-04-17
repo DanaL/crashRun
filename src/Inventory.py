@@ -51,12 +51,12 @@ class CannotWieldSomethingYouAreWearing(Exception):
 # stores tuples of the form (item,category)
 class Inventory:
     lc = ord('a')
-    lcr = list(range(lc + 0, lc + 25))
-
-    def __init__(self):
+    
+    def __init__(self, max_size = 25):
         self.__inv = {}
-
-        for j in range(0,26):
+        self.max_size = max_size
+        
+        for j in range(0, max_size):
             self.__inv[chr(self.lc+j)] = ''
 
         self.__weight = 0
@@ -77,9 +77,9 @@ class Inventory:
         if self.__next_slot == '':
             self.__next_slot = 'a'
             
-        for j in range(26):
+        for j in range(self.max_size):
             _slot = chr(ord(self.__next_slot) + j )
-            if _slot > 'z': 
+            if _slot > chr(ord('a') + self.max_size - 1): 
                 _slot = 'a'
                 self.__next_slot = 'a'
             
@@ -116,10 +116,10 @@ class Inventory:
 
         return effects
 
-    def add_item(self,item,readied=0):              
+    def add_item(self, item, readied=0):              
         if self.__next_slot == '':
             try:
-                self.__check_for_stack(item)
+                return self.__check_for_stack(item)
             except NoStackFound:
                 raise InventorySlotsFull
         else:
@@ -141,7 +141,7 @@ class Inventory:
                 # back in that spot and keep __next_slot intact, otherwise use
                 # __next_slot
                 prev_slot = item.get_prev_slot()
-                if prev_slot != '' and self.__inv[prev_slot] == '':
+                if prev_slot in self.__inv.keys() and prev_slot != '' and self.__inv[prev_slot] == '':
                     self.__inv[prev_slot] = i
                     return prev_slot
                 else:
@@ -156,10 +156,11 @@ class Inventory:
                 if self.__inv[k] != '' and item.get_signature() == self.__inv[k][0].get_signature():
                     if self.__inv[k][0].__class__ == ItemStack:
                         self.__inv[k][0].add_item(item)
+                        return k
                     else:
                         self.__inv[k] = (ItemStack(self.__inv[k][0]),self.__inv[k][1])
                         self.__inv[k][0].add_item(item)
-                    return k
+                        return k
 
         raise NoStackFound
 
@@ -170,7 +171,7 @@ class Inventory:
             self.__next_slot = slot
 
     def destroy_item(self, item):
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '' and self.__inv[letter][0] == item:
                 self.unready_item(letter)
@@ -205,7 +206,7 @@ class Inventory:
     
     def drain_batteries(self):
         _drained = []
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '':
                 _item = self.__inv[letter][0]
@@ -219,7 +220,7 @@ class Inventory:
     def steal_item(self, max_count, can_steal_readied):
         _count = max_count
         _choices = []
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '':
                 if can_steal_readied or not self.is_readied(self.__inv[letter][0]):
@@ -362,14 +363,14 @@ class Inventory:
         return self.__weight
 
     def dump(self):
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '':
                 print((self.__inv[letter], self.__inv[letter][0].get_name()))
 
     def get_dump(self):
         dump = []
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             if self.__inv[letter] != '':
                 dump.append(self.__inv[letter][0])
@@ -379,7 +380,7 @@ class Inventory:
     def get_full_menu(self):
         _menu = {}
         
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
             
             if self.__inv[letter] != '':
@@ -404,7 +405,7 @@ class Inventory:
     def get_menu(self,category):
         menu = []
 
-        for j in range(0,26):
+        for j in range(0, self.max_size):
             letter = chr(self.lc+j)
         
             if self.__inv[letter] != '' and self.__inv[letter][1] == category:
@@ -425,7 +426,7 @@ class Inventory:
     
     def find_items_by_name(self, name):
         _items = []
-        for j in range(0, 26):
+        for j in range(0, self.max_size):
             _letter = chr(self.lc+j)
             if self.__inv[_letter] != '' and self.__inv[_letter][0].get_name(1) == name:
                 _items.append(self.__inv[_letter][0])
@@ -433,7 +434,7 @@ class Inventory:
         return _items
         
     def contains_item(self, item):
-        for j in range(0, 26):
+        for j in range(0, self.max_size):
             _letter = chr(self.lc+j)
             if self.__inv[_letter] != '' and self.__inv[_letter][0] == item:
                 return True
@@ -441,7 +442,7 @@ class Inventory:
         return False
     
     def get_slot_for_item(self, item):
-        for j in range(0, 26):
+        for j in range(0, self.max_size):
             _letter = chr(self.lc+j)
             if self.__inv[_letter] != '' and self.__inv[_letter][0] == item:
                 return _letter
