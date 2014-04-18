@@ -1459,17 +1459,18 @@ class Roomba(CleanerBot):
                     self.dm.alert_player(self.row, self.col, _mess)
     
     # The roomba will try to clean up the entire square before moving on
-    def look_for_trash_to_vacuum(self):
+    def vacuum(self):
         _lvl = self.dm.dungeon_levels[self.curr_level]
         _loc = _lvl.dungeon_loc[self.row][self.col]
         if _lvl.size_of_item_stack(self.row,self.col) > 0:
             _item = _loc.item_stack.pop()
             self.dm.pick_up_item(self, _lvl, _item)
-        else:
-            self.move()
+            return True
+        return False
                 
     def perform_action(self):
-        self.look_for_trash_to_vacuum()
+        if not self.vacuum():
+            self.move()
         
         _player = self.dm.get_true_player()
         _player_loc = (_player.row, _player.col, _player.curr_level)

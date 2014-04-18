@@ -655,7 +655,9 @@ class RemoteRobotCC(MeatspaceCC):
         else:
             if isinstance(self.dm.player, Roomba):
                 self.dui.display_message("Whooosh!")
-            super().pick_up()
+                self.dm.player.vacuum()
+            else:
+                super().pick_up()
 
     def save_weapon_config(self):
         self.dui.display_message("Function not available.")
