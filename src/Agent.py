@@ -1421,13 +1421,36 @@ class DocBot(CleanerBot):
         
 # Robot who repairs other robots
 class RepairBot(CleanerBot):
-    def __init__(self,dm,row,col):
+    def __init__(self, dm, row, col):
         CleanerBot.__init__(self)
         BaseMonster.__init__(self, vision_radius=6, ac=18, hp_low=15, hp_high=20, dmg_dice=6, 
             dmg_rolls=1, ab=2, dm=dm, ch='i', fg='yellow-orange', bg='black', lit='yellow',
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
     
+    def execute_functions(self, dui):
+        dui.display_message("Select damaged unit.", True)
+        _dir = dui.get_direction()
+
+        if _dir in ('<'):
+            dui.display_message("Error: 404 robotic unit not found.")
+            return
+
+        _dt = self.dm.convert_to_dir_tuple(self, _dir)
+        _patient_loc = (self.row + _dt[0], self.col + _dt[1])
+        _lvl = self.dm.dungeon_levels[self.curr_level]
+        _patient = _lvl.dungeon_loc[_patient_loc[0]][_patient_loc[1]].occupant
+
+        if _patient == '':
+            dui.display_message("Error: null patient exception.")
+            return
+        
+        if not isinstance(_patient, BasicBot):
+            dui.display_message("Error: unknown model detected. Repair aborted.")
+        else:
+            _patient.add_hp(randrange(5,16))
+            dui.display_message("Repair complete.")
+
     def look_for_patient(self, level):
         _patients = PriorityQueue()
         _sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col, self.curr_level)
@@ -1444,7 +1467,7 @@ class RepairBot(CleanerBot):
             self.move()
             
     def repair_bot(self, patient):
-        patient.add_hp(randrange(5,16))
+        patient.add_hp(randrange(5, 16))
         _msg = 'The repair bot fixes '
         if patient == self:
             _msg += 'itself.'
