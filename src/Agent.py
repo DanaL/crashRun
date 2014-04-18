@@ -264,9 +264,7 @@ class BaseAgent(BaseTile):
             if self.can_apply_vision_effect(source):
                 self.light_radius += e[1]
         elif e[0] == 'clear-head':
-            _dazed_effects = [d for d in self.conditions if d[0][0] == 'dazed']
-            for d in _dazed_effects:
-                self.remove_effect(d[0], d[1])
+            self.remove_condition_type('dazed')
         elif e[0] == 'chutzpah' and hasattr(self, 'stats'):
             self.stats.change_stat('chutzpah',e[1])
         elif e[0] == 'co-ordination' and hasattr(self,'stats'):
@@ -459,6 +457,11 @@ class BaseAgent(BaseTile):
     # defined in GameLevel)
     def regenerate(self):
         self.add_hp(1)
+
+    def remove_condition_type(self, type):
+        _effects = [d for d in self.conditions if d[0][0] == type]
+        for d in _effects:
+            self.remove_effect(d[0], d[1])
 
     def remove_effect(self, effect, source):
         condition = (effect,source)
@@ -1255,6 +1258,9 @@ class BasicBot(RelentlessPredator, AgentMemory):
         self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))
         self.can_pick_up = False
 
+    def execute_functions(self, dui):
+        dui.display_message("No additional functions are accessable.")
+
     def get_serial_number(self):
         return self.serial_number
         
@@ -1360,6 +1366,36 @@ class DocBot(CleanerBot):
             dmg_rolls=2, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
     
+    def execute_functions(self, dui):
+        dui.display_message("Select recipient of treatment protocol.", True)
+        _dir = dui.get_direction()
+
+        if _dir in ('<', '>'):
+            dui.display_message("Error: null patient exception.")
+            return
+
+        _dt = self.dm.convert_to_dir_tuple(self, _dir)
+        _patient_loc = (self.row + _dt[0], self.col + _dt[1])
+        _lvl = self.dm.dungeon_levels[self.curr_level]
+        _patient = _lvl.dungeon_loc[_patient_loc[0]][_patient_loc[1]].occupant
+
+        if _patient == '':
+            dui.display_message("Error: null patient exception.")
+            return
+        
+        self.heal(_patient)
+        _msg = "Patient %s treated. Initiate billing procedure." % _patient.get_name(1)
+        dui.display_message(_msg)
+        dui.write_sidebar()
+
+    def heal(self, patient):
+        if not isinstance(patient, BasicBot):
+            patient.add_hp(randrange(10, 21))
+            if patient.has_condition('dazed'):
+                patient.remove_condition_type('dazed')
+            if patient.has_condition('stunned'):
+                patient.remove_condition_type('stunned')
+
     def proffer_diagnosis(self):
         _roll = randrange(3)
         if _roll == 0:

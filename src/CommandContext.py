@@ -212,7 +212,7 @@ class CommandContext(object):
         self.dm.player_use_item(ch)
     
     def use_special_ability(self):
-        self.dui.display_message('You have no special abilities.  You are perfectly average.')
+        self.dui.display_message('You have no special abilities. You are perfectly average.')
         
 class MeatspaceCC(CommandContext):       
     def attempt_to_disarm(self, trap, row, col):
@@ -720,6 +720,9 @@ class RemoteRobotCC(MeatspaceCC):
 
     def use_item(self):
         self.dui.display_message("That EMACS extension was not installed.")
+
+    def use_special_ability(self):
+        self.dm.player.execute_functions(self.dui)
 
     def wear_armour(self):
         self.dui.display_message("Your body isn't the right shape to wear armour.")
