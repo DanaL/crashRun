@@ -259,7 +259,7 @@ class DungeonUI(object):
         elif cmd == 'CHAR_INFO':
             self.__draw_char_sheet()
         elif cmd == 'PRACTICE_SKILLS':
-            self.practice_skills(self.cc.dm.player)
+            self.cc.practice_skills()
         elif cmd == 'QUIT':
             self.cc.quit()
         elif cmd == 'RELOAD':
@@ -365,24 +365,6 @@ class DungeonUI(object):
                 raise NonePicked
         
         return _ch
-
-    def __select_category(self, category, player):
-        header =['Select the skills from the ' + category + ' category you wish to improve:']
-        j = 0
-        menu = []
-
-        for skill in player.skills.get_category(category):
-            menu.append((chr(j+97),skill.get_name() + ' - ' + skill.get_rank_name(),skill))
-            j += 1
-            
-        choice = self.ask_menued_question(header,menu)
-
-        if choice == '':
-            return True
-        else:
-            player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
-            player.skill_points -= 1
-            return False
                 
     def examine(self):
         self.display_message('Move cursor to view squares.  ESC to end.')
@@ -419,34 +401,6 @@ class DungeonUI(object):
         self.guts.update_view(self.cc.get_sqr_info(_row, _col))
         self.guts.clear_msg_line()
         
-    def practice_skills(self, player):
-        _sp = player.skill_points
-        if _sp == 0:
-            self.guts.write_message('You have no skill points to spend.', False)
-        else:
-            menu = []
-            j = 1
-            for c in player.skills.get_categories():
-                menu.append( (str(j),c,c) )
-                j += 1
-                
-            _continue = True
-            while _continue:
-                _sp = player.skill_points
-                if _sp == 0: break
-                elif _sp == 1:
-                    header = ['You have 1 skill point']
-                else:
-                    header = ['You have %d skill points' % (_sp)]
-                header.append('Select category')
-            
-                category = self.ask_menued_question(header,menu)
-                if category == '':
-                    self.display_message('Never mind.')
-                    _continue = False
-                else:
-                    self.__select_category(category, player)
-                    
     def query_for_amount(self):
         ch = ''
         _answer = ''

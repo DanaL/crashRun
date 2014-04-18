@@ -151,7 +151,54 @@ class CommandContext(object):
         
     def get_player(self):
         return self.dm.player
-        
+
+    def __select_category(self, category, player):
+        header =['Select the skills from the ' + category + ' category you wish to improve:']
+        j = 0
+        menu = []
+
+        for skill in player.skills.get_category(category):
+            menu.append((chr(j+97),skill.get_name() + ' - ' + skill.get_rank_name(),skill))
+            j += 1
+            
+        choice = self.dui.ask_menued_question(header,menu)
+
+        if choice == '':
+            return True
+        else:
+            player.skills.set_skill(choice.get_name(),choice.get_rank()+1)
+            player.skill_points -= 1
+            return False
+
+    def practice_skills(self):
+        _player = self.dm.player
+        _sp = _player.skill_points
+        if _sp == 0:
+            self.dui.display_message('You have no skill points to spend.', False)
+        else:
+            menu = []
+            j = 1
+            for c in _player.skills.get_categories():
+                menu.append( (str(j),c,c) )
+                j += 1
+                
+            _continue = True
+            while _continue:
+                _sp = _player.skill_points
+                if _sp == 0: break
+                elif _sp == 1:
+                    header = ['You have 1 skill point']
+                else:
+                    header = ['You have %d skill points' % (_sp)]
+                header.append('Select category')
+            
+                category = self.dui.ask_menued_question(header,menu)
+                if category == '':
+                    self.dui.display_message('Never mind.')
+                    _continue = False
+                else:
+                    self.__select_category(category, _player)
+                    
     def quit(self):
         self.dm.player_quit()
         
@@ -658,6 +705,9 @@ class RemoteRobotCC(MeatspaceCC):
                 self.dm.player.vacuum()
             else:
                 super().pick_up()
+
+    def practice_skills(self):
+        self.dui.display_message("No system updates currently available.")
 
     def save_weapon_config(self):
         self.dui.display_message("Function not available.")
