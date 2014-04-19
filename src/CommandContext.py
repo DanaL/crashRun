@@ -84,7 +84,7 @@ class CommandContext(object):
 
     def get_software_list(self, as_menu):
         msg = ['Software packages installed on your wetboard:']
-        for _sw in self.dm.player.software.get_menu():
+        for _sw in self.dm.get_true_player().software.get_menu():
             _m = '   '
             if as_menu:
                 _m += _sw[0] + ' - '
@@ -150,7 +150,7 @@ class CommandContext(object):
         self.dm.player_pick_up()
         
     def get_player(self):
-        return self.dm.player
+        return self.dm.get_true_player()
 
     def __select_category(self, category, player):
         header =['Select the skills from the ' + category + ' category you wish to improve:']
