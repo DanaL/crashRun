@@ -1298,8 +1298,9 @@ class SecurityBot(BasicBot):
         RelentlessPredator.__init__(self, vision_radius=10, ac=20, hp_low=15, hp_high=25, dmg_dice=4, dmg_rolls=2, ab=2,
             dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
             row=row, col=col, xp_value=20, gender='male', level=6)    
-            
-    def perform_action(self):
+        self.can_pick_up = True
+
+    def get_hand_to_hand_dmg_roll(self):
         if randrange(3) == 0:
             self.unarmed_rolls = 1
             self.unarmed_dice = 1
@@ -1308,7 +1309,8 @@ class SecurityBot(BasicBot):
             self.unarmed_rolls = 3
             self.unarmed_dice = 7
             self.melee_type = 'melee'
-        super(SecurityBot, self).perform_action()
+
+        return BaseAgent.get_hand_to_hand_dmg_roll(self)
             
 # UAV that can fire missles at the player
 class PredatorDrone(BasicBot):
