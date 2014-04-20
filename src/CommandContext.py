@@ -660,7 +660,10 @@ class MeatspaceCC(CommandContext):
 
 class RemoteRobotCC(MeatspaceCC):
     def fire_weapon(self):
-        self.dui.display_message("Nope!")
+        if hasattr(self.dm.player, 'fire_weapons'):
+            self.dm.player.fire_weapons()
+        else:
+            self.dui.display_message("This unit has no ranged systems.")
 
     def force_quit_cyberspace(self):
         if self.dui.query_yes_no("Terminate remote session") == 'y':

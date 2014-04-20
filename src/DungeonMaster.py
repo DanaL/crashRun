@@ -1530,7 +1530,7 @@ class DungeonMaster:
     def __player_throws_grenade(self, grenade):
         self.dui.display_message('Select where to toss the grenade (move cursor and hit space)')
         _range = self.__calc_thrown_range(self.player,grenade)
-        _target = self.__pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
+        _target = self.pick_thrown_target(self.player.row, self.player.col, _range, 'darkgreen')
         _item = Items.Explosion('grenade', 10, 4, 2)
         self.item_hits_ground(self.dungeon_levels[self.player.curr_level], _target[0], _target[1], _item)
 
@@ -2078,7 +2078,7 @@ class DungeonMaster:
                 return False
         return True
         
-    def __pick_thrown_target(self, start_r, start_c, _range, colour):
+    def pick_thrown_target(self, start_r, start_c, _range, colour):
         _cursor = BaseTile('*',colour,'black',colour,'cursor')
         _cursor.row = start_r
         _cursor.col = start_c
@@ -2136,7 +2136,7 @@ class DungeonMaster:
     def __player_uses_flare(self, flare):
         self.dui.display_message('Select where to toss the flare (move cursor and hit space)')
         range = self.__calc_thrown_range(self.player,flare)
-        target = self.__pick_thrown_target(self.player.row, self.player.col, range, 'yellow')
+        target = self.pick_thrown_target(self.player.row, self.player.col, range, 'yellow')
         
         _lit_flare = Items.LitFlare(self.turn)
         _lit_flare.row = target[0]

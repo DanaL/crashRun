@@ -1320,13 +1320,25 @@ class PredatorDrone(BasicBot):
         RelentlessPredator.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls,
             ab, dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.missile_count = 6
-        
+        self.range = 5
+
+    def fire_weapons(self):
+        if self.missile_count > 0:
+            self.dm.dui.display_message("Targeting systems engaged.")
+            _t = self.dm.pick_thrown_target(self.row, self.col, self.range, 'red')
+            _explosion = Items.Explosion('missile', 4, 3, 1)
+            _lvl = self.dm.dungeon_levels[self.curr_level]
+            self.dm.item_hits_ground(_lvl, _t[0], _t[1], _explosion)
+            self.missile_count -= 1
+        else:
+            self.dm.dui.display_message("Ammunition stores depleted.")
+
     def perform_action(self):
         _pl = self.dm.get_player_loc()
         
         if self.is_player_visible():
             d = self.distance_from_player(_pl)
-            if d > 1 and d < 5 and self.missile_count > 0:
+            if d > 1 and d < self.range and self.missile_count > 0:
                 self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
                 self.missile_count -= 1
                 self.energy -= STD_ENERGY_COST
