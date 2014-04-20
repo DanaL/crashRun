@@ -1049,7 +1049,7 @@ class DungeonMaster:
         
         self.player.energy -= STD_ENERGY_COST
             
-    def player_fire_weapon(self,weapon):
+    def player_fire_weapon(self, weapon):
         if weapon.current_ammo == 0:
             self.dui.clear_msg_line()
             self.dui.display_message('Click, click.')

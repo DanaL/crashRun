@@ -1281,6 +1281,10 @@ class ED209(Shooter, BasicBot):
         self.weapon = Items.MachineGun('ED-209 Canon', 4, 3, 0, 0, 0)
         self.attitude = 'hostile'
         self.range = 5
+    
+    def fire_weapons(self):
+        self.weapon.current_ammo = 1
+        self.dm.player_fire_weapon(self.weapon)
         
     def perform_action(self):
         if randrange(4) == 0:
