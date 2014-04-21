@@ -1258,8 +1258,31 @@ class BasicBot(RelentlessPredator, AgentMemory):
         self.serial_number = "%s-%s%d" % (_num, choice(ascii_letters), randint(1, 100))
         self.can_pick_up = False
 
+    def damaged(self, dm, damage, attacker, attack_type='melee'):
+        _shutdown = self.attitude == 'shutdown'
+        AgentMemory.damaged(self, dm, damage, attacker, attack_type)
+        AltPredator.damaged(self, dm, damage, attacker, attack_type)
+
+        if (_shutdown):
+            self.attitude = 'shutdown'
+            
+    def shutdown(self):
+        self.attitude = 'shutdown'
+        self.dm.dui.display_message('Initiating shutdown...', True)
+        self.dm.terminate_remote_session(False)
+
     def execute_functions(self, dui):
-        dui.display_message("No additional functions are accessable.")
+        menu = [('a', 'Shutdown', 'shutdown')]
+        header = ['Select function to execute:']
+              
+        while True:  
+            _func = self.dm.dui.ask_menued_question(header, menu)
+            if _func == '':
+                self.dm.dui.display_message('Never mind.')
+                break
+            elif _func == 'shutdown':
+                self.shutdown()
+                break
 
     def get_serial_number(self):
         return self.serial_number
@@ -1287,6 +1310,10 @@ class ED209(Shooter, BasicBot):
         self.dm.player_fire_weapon(self.weapon)
         
     def perform_action(self):
+        if self.attitude == 'shutdown':
+            self.energy -= STD_ENERGY_COST
+            return
+
         if randrange(4) == 0:
             if randrange(2) == 0:
                 self.dm.alert_player(self.row, self.col, "Drop your weapon!")
@@ -1303,6 +1330,13 @@ class SecurityBot(BasicBot):
             dm=dm, ch='i', fg='darkgrey', bg='black', lit='grey', name='security bot',
             row=row, col=col, xp_value=20, gender='male', level=6)    
         self.can_pick_up = True
+
+    def perform_action(self):
+        if self.attitude == 'shutdown':
+            self.energy -= STD_ENERGY_COST
+            return
+
+        super().perform_action()
 
     def get_hand_to_hand_dmg_roll(self):
         if randrange(3) == 0:
@@ -1338,20 +1372,21 @@ class PredatorDrone(BasicBot):
             self.dm.dui.display_message("Ammunition stores depleted.")
 
     def perform_action(self):
-        _pl = self.dm.get_player_loc()
-        
-        if self.is_player_visible():
-            d = self.distance_from_player(_pl)
-            if d > 1 and d < self.range and self.missile_count > 0:
-                self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
-                self.missile_count -= 1
-                self.energy -= STD_ENERGY_COST
-                return
-            elif d <= 1:
-                self.attack(_pl)
-                self.energy -= STD_ENERGY_COST
-                return 
-        self.move_to(_pl)
+        if not self.attitude == 'shutdown':
+            _pl = self.dm.get_player_loc()
+            
+            if self.is_player_visible():
+                d = self.distance_from_player(_pl)
+                if d > 1 and d < self.range and self.missile_count > 0:
+                    self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
+                    self.missile_count -= 1
+                    self.energy -= STD_ENERGY_COST
+                    return
+                elif d <= 1:
+                    self.attack(_pl)
+                    self.energy -= STD_ENERGY_COST
+                    return 
+            self.move_to(_pl)
         
         self.energy -= STD_ENERGY_COST
         
@@ -1425,15 +1460,16 @@ class DocBot(CleanerBot):
         self.dm.alert_player(self.row, self.col, _msg)
         
     def perform_action(self):
-        if self.is_player_visible():
-            _pl = self.dm.get_player_loc()
-            d = self.distance_from_player(_pl)
-            if d <= self.vision_radius and randrange(3) == 0:
-                self.proffer_diagnosis()
-            if d <= 1:
-                self.attack(_pl)
-            else:
-                self.move()
+        if not self.attitude == 'shutdown':
+            if self.is_player_visible():
+                _pl = self.dm.get_player_loc()
+                d = self.distance_from_player(_pl)
+                if d <= self.vision_radius and randrange(3) == 0:
+                    self.proffer_diagnosis()
+                if d <= 1:
+                    self.attack(_pl)
+                else:
+                    self.move()
 
         self.energy -= STD_ENERGY_COST
         
@@ -1497,20 +1533,21 @@ class RepairBot(CleanerBot):
         return (agent != '' and isinstance(agent, BasicBot) and agent.curr_hp < agent.max_hp)
         
     def perform_action(self):
-        _triage = PriorityQueue()
-        _lvl = self.dm.dungeon_levels[self.curr_level]
+        if not self.attitude == 'shutdown':
+            _triage = PriorityQueue()
+            _lvl = self.dm.dungeon_levels[self.curr_level]
 
-        # check surrounding squares for damaged bots
-        for r in range(-1,2):
-            for c in range(-1,2):
-                _occ = _lvl.get_occupant(self.row+r, self.col+c)
-                if self.is_patient(_occ):
-                    _triage.push(_occ, float(_occ.curr_hp) / float(_occ.max_hp))
-        
-        if len(_triage) > 0:
-            self.repair_bot(_triage.pop())
-        else:
-            self.look_for_patient(_lvl)
+            # check surrounding squares for damaged bots
+            for r in range(-1,2):
+                for c in range(-1,2):
+                    _occ = _lvl.get_occupant(self.row+r, self.col+c)
+                    if self.is_patient(_occ):
+                        _triage.push(_occ, float(_occ.curr_hp) / float(_occ.max_hp))
+            
+            if len(_triage) > 0:
+                self.repair_bot(_triage.pop())
+            else:
+                self.look_for_patient(_lvl)
         
         self.energy -= STD_ENERGY_COST
         
@@ -1546,14 +1583,15 @@ class Roomba(CleanerBot):
         return False
                 
     def perform_action(self):
-        if not self.vacuum():
-            self.move()
-        
-        _player = self.dm.get_true_player()
-        _player_loc = (_player.row, _player.col, _player.curr_level)
-        if self.is_agent_adjacent(_player) and not self.robot_psych_check(_player):
-            self.attack(_player_loc)
-            self.try_to_vacuum(_player_loc)
+        if not self.attitude == 'shutdown':
+            if not self.vacuum():
+                self.move()
+            
+            _player = self.dm.get_true_player()
+            _player_loc = (_player.row, _player.col, _player.curr_level)
+            if self.is_agent_adjacent(_player) and not self.robot_psych_check(_player):
+                self.attack(_player_loc)
+                self.try_to_vacuum(_player_loc)
         
         self.energy -= STD_ENERGY_COST
     
@@ -1588,7 +1626,7 @@ class Incinerator(CleanerBot):
     def perform_action(self):
         if self.attitude == 'indifferent':
             self.__go_about_business()
-        else:
+        elif not self.attitude == 'shutdown':
             self.__seek_and_destroy()
         
         self.energy -= STD_ENERGY_COST
@@ -1606,9 +1644,10 @@ class SurveillanceDrone(CleanerBot):
         BasicBot.__init__(self)
         
     def perform_action(self):
-        self.move()
-        _lvl = self.dm.dungeon_levels[self.curr_level]
-        self.check_for_player(6, _lvl.begin_security_lockdown)
+        if not self.attitude == 'shutdown':
+            self.move()
+            _lvl = self.dm.dungeon_levels[self.curr_level]
+            self.check_for_player(6, _lvl.begin_security_lockdown)
         self.energy -= STD_ENERGY_COST
         
 # I don't really expect to have many common features, but it's nice
