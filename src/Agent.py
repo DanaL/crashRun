@@ -1265,7 +1265,7 @@ class BasicBot(RelentlessPredator, AgentMemory):
 
         if (_shutdown):
             self.attitude = 'shutdown'
-            
+
     def shutdown(self):
         self.attitude = 'shutdown'
         self.dm.dui.display_message('Initiating shutdown...', True)
@@ -1418,8 +1418,8 @@ class DocBot(CleanerBot):
         BaseMonster.__init__(self, vision_radius=6, ac=20, hp_low=15, hp_high=25, dmg_dice=6, 
             dmg_rolls=2, ab=2, dm=dm, ch='i', fg='grey', bg='black', lit='white', 
             name='docbot', row=row, col=col, xp_value=15, gender='male', level=7)
-    
-    def execute_functions(self, dui):
+
+    def medical_functions(self, dui):
         dui.display_message("Select recipient of treatment protocol.", True)
         _dir = dui.get_direction()
 
@@ -1437,9 +1437,25 @@ class DocBot(CleanerBot):
             return
         
         self.heal(_patient)
-        _msg = "Patient %s treated. Initiate billing procedure." % _patient.get_name(1)
+        _msg = "Patient %s treated. Initiate billing subroutine." % _patient.get_name(1)
         dui.display_message(_msg)
         dui.write_sidebar()
+
+    def execute_functions(self, dui):
+        menu = [('a', 'Shutdown', 'shutdown'), ('b', 'Medical functions', 'medical')]
+        header = ['Select function to execute:']
+              
+        while True:  
+            _func = self.dm.dui.ask_menued_question(header, menu)
+            if _func == '':
+                self.dm.dui.display_message('Never mind.')
+                break
+            elif _func == 'shutdown':
+                self.shutdown()
+                break
+            elif _func == 'medical':
+                self.medical_functions(dui)
+                break
 
     def heal(self, patient):
         if not isinstance(patient, BasicBot):
@@ -1482,7 +1498,7 @@ class RepairBot(CleanerBot):
             name='repair bot', row=row, col=col, xp_value=10, gender='male', level=5)
         self.attitude = 'indifferent'
     
-    def execute_functions(self, dui):
+    def repair_functions(self, dui):
         dui.display_message("Select damaged unit.", True)
         _dir = dui.get_direction()
 
@@ -1504,6 +1520,22 @@ class RepairBot(CleanerBot):
         else:
             _patient.add_hp(randrange(5,16))
             dui.display_message("Repair complete.")
+
+    def execute_functions(self, dui):
+        menu = [('a', 'Shutdown', 'shutdown'), ('b', 'Repair functions', 'repair')]
+        header = ['Select function to execute:']
+              
+        while True:  
+            _func = self.dm.dui.ask_menued_question(header, menu)
+            if _func == '':
+                self.dm.dui.display_message('Never mind.')
+                break
+            elif _func == 'shutdown':
+                self.shutdown()
+                break
+            elif _func == 'repair':
+                self.repair_functions(dui)
+                break
 
     def look_for_patient(self, level):
         _patients = PriorityQueue()

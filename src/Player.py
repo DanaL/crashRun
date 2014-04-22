@@ -156,8 +156,8 @@ class Player(BaseAgent, AgentMemory):
     def get_articled_name(self):
         return 'you'
 
-    def get_name(self):
-        return BaseTile.get_name(self,1)
+    def get_name(self, article=1):
+        return BaseTile.get_name(self, article)
         
     def get_coordination_bonus(self):
         coord = self.stats.get_coordination()
