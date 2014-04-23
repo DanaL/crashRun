@@ -19,10 +19,10 @@ from random import choice
 from random import random
 from random import randrange
 
-from .Agent import MoreauBot6000
 from . import Items
 from .Items import ItemFactory
 from . import MonsterFactory
+from .Robots import MoreauBot6000
 from .Terrain import Terminal
 
 def place_item(room, level, item):

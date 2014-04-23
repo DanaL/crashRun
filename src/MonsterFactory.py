@@ -22,6 +22,7 @@ from random import randrange
 from . import Items
 from .Agent import *
 from . import Behaviour
+from .Robots import *
 from .Software import get_software_by_name
 
 def _basicNinja(dm, row, col):

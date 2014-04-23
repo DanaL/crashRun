@@ -19,13 +19,13 @@ import string
 from random import randrange
 
 from .Agent import STD_ENERGY_COST
-from .Agent import Roomba
 from .FieldOfView import Shadowcaster
 from . import Items
 from . import Inventory
 from .Inventory import AlreadyWearingSomething
 from .Inventory import CannotWieldSomethingYouAreWearing
 from . import MessageResolver
+from .Robots import Roomba
 from .SubnetNode import SubnetNode
 from . import Terrain
 from .Terrain import DownStairs
@@ -170,21 +170,20 @@ class CommandContext(object):
             player.skill_points -= 1
             return False
 
-    def practice_skills(self):
-        _player = self.dm.player
-        _sp = _player.skill_points
+    def practice_skills(self, player):
+        _sp = player.skill_points
         if _sp == 0:
             self.dui.display_message('You have no skill points to spend.', False)
         else:
             menu = []
             j = 1
-            for c in _player.skills.get_categories():
-                menu.append( (str(j),c,c) )
+            for c in player.skills.get_categories():
+                menu.append((str(j), c, c))
                 j += 1
                 
             _continue = True
             while _continue:
-                _sp = _player.skill_points
+                _sp = player.skill_points
                 if _sp == 0: break
                 elif _sp == 1:
                     header = ['You have 1 skill point']
@@ -192,12 +191,12 @@ class CommandContext(object):
                     header = ['You have %d skill points' % (_sp)]
                 header.append('Select category')
             
-                category = self.dui.ask_menued_question(header,menu)
+                category = self.dui.ask_menued_question(header, menu)
                 if category == '':
                     self.dui.display_message('Never mind.')
                     _continue = False
                 else:
-                    self.__select_category(category, _player)
+                    self.__select_category(category, player)
                     
     def quit(self):
         self.dm.player_quit()
@@ -709,7 +708,7 @@ class RemoteRobotCC(MeatspaceCC):
             else:
                 super().pick_up()
 
-    def practice_skills(self):
+    def practice_skills(self, player):
         self.dui.display_message("No system updates currently available.")
 
     def save_weapon_config(self):

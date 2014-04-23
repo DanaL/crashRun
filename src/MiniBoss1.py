@@ -18,12 +18,12 @@
 from random import choice
 from random import randrange
 
-from .Agent import Roomba3000
 from .ca_cave import CA_CaveFactory
 from .GameLevel import GameLevel
 from .GameLevel import ItemChart
 from . import MonsterFactory
 from .NewComplexFactory import NewComplexFactory
+from .Robots import Roomba3000
 from .Rooms import add_science_complex_rooms
 from .Terrain import SpecialDoor
 from .Terrain import SecurityCamera

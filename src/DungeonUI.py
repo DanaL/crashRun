@@ -259,7 +259,7 @@ class DungeonUI(object):
         elif cmd == 'CHAR_INFO':
             self.__draw_char_sheet()
         elif cmd == 'PRACTICE_SKILLS':
-            self.cc.practice_skills()
+            self.cc.practice_skills(self.cc.get_player())
         elif cmd == 'QUIT':
             self.cc.quit()
         elif cmd == 'RELOAD':

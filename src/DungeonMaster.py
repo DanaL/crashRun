@@ -26,10 +26,10 @@ import string
 
 from .Agent import BaseAgent
 from .Agent import BaseMonster
-from .Agent import BasicBot
-from .Agent import Roomba
 from .Agent import IllegalMonsterMove
 from .Agent import STD_ENERGY_COST
+from .Robots import BasicBot
+from .Robots import Roomba
 from .BaseTile import BaseTile
 from .CharacterGenerator import CharacterGenerator
 from .CombatResolver import ShootingResolver

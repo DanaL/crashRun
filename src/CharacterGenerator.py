@@ -225,7 +225,7 @@ class CharacterGenerator:
     def __select_skills(self):
         self.__player.skill_points = 6
         while self.__player.skill_points > 0:
-            self.dui.practice_skills(self.__player)
+            self.dui.cc.practice_skills(self.__player)
             
     def __show_initial_stats(self):
         msg = ['Your initial stats are:']
