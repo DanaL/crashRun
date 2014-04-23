@@ -709,7 +709,7 @@ class AltPredator(BaseMonster):
         if self.attitude == 'inactive':
             self.energy = 0
             return
-        
+
         if hasattr(self, 'last_attacker') and self.last_attacker != None:
             _target = self.last_attacker
         else:
@@ -1058,12 +1058,17 @@ class RelentlessPredator(BaseMonster):
         self.attitude = 'hostile'
         
     def perform_action(self):
-        player_loc = self.dm.get_player_loc()
-        
-        if self.is_agent_adjacent(self.dm.player):
-            self.attack(player_loc)
+        if hasattr(self, 'last_attacker') and self.last_attacker != None:
+            _target = self.last_attacker
         else:
-            self.move_to(player_loc)
+            _target = self.dm.get_true_player()
+
+        _target_loc = (_target.row, _target.col, _target.curr_level)
+
+        if self.is_agent_adjacent(self.dm.player):
+            self.attack(_target_loc)
+        else:
+            self.move_to(_target_loc)
         
         self.energy -= STD_ENERGY_COST
 
