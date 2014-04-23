@@ -21,6 +21,7 @@ from string import ascii_letters
 
 from .Agent import STD_ENERGY_COST
 from .Agent import AgentMemory
+from .Agent import AltPredator
 from .Agent import BaseMonster
 from .Agent import IllegalMonsterMove
 from .Agent import RelentlessPredator
@@ -47,11 +48,6 @@ class BasicBot(RelentlessPredator, AgentMemory):
         if (_shutdown):
             self.attitude = 'shutdown'
 
-    def shutdown(self):
-        self.attitude = 'shutdown'
-        self.dm.dui.display_message('Initiating shutdown...', True)
-        self.dm.terminate_remote_session(False)
-
     def execute_functions(self, dui):
         menu = [('a', 'Shutdown', 'shutdown')]
         header = ['Select function to execute:']
@@ -67,15 +63,30 @@ class BasicBot(RelentlessPredator, AgentMemory):
 
     def get_serial_number(self):
         return self.serial_number
-        
+
+    def pick_human_target(self):
+        # Robots get a chance to recognize humans when they're controlling a bot
+        # every five turns. They'll go after the bot first if they are successful.    
+        _p = self.dm.player
+        if hasattr(self, 'last_attacker') and self.last_attacker != None:
+            _target = self.last_attacker
+        elif self.dm.turn % 5 == 0 and isinstance(_p, BasicBot):
+            _mod = -4 - self.dm.get_true_player.skills.get_skill('Robot Psychology').get_rank()
+            _success = self.saving_throw(_mod)
+            _target = _p
+        else:
+            _target = self.dm.get_true_player()
+
+        _target_loc = (_target.row, _target.col, _target.curr_level)
+
     def regenerate(self):
         pass # Standard robots don't heal on their own. They need to be repaired.
 
-    def robot_psych_check(self, player):
-        _skill = player.skills.get_skill("Robot Psychology").get_rank() * 5
-
-        return randrange(30) < _skill
-            
+    def shutdown(self):
+        self.attitude = 'shutdown'
+        self.dm.dui.display_message('Initiating shutdown...', True)
+        self.dm.terminate_remote_session(False)
+     
 class ED209(Shooter, BasicBot):
     def __init__(self, dm, row, col):
         BasicBot.__init__(self)
@@ -184,13 +195,14 @@ class CleanerBot(BasicBot):
             pass # Don't really need to do anything
 
     def check_for_player(self, r, action):
-        player_loc = self.dm.get_player_loc()
-        d = self.distance_from_player(player_loc)
+        _true = self.dm.get_true_player()
+        _loc = (_true.row, _true.col)
+        d = self.distance_from_player(_loc)
 
         if d < r:
-            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col, self.curr_level)
+            sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col, self.curr_level)
             mv = sc.calc_visible_list()
-            if player_loc in mv:
+            if _loc in mv:
                 action()
 
 class DocBot(CleanerBot):    
@@ -397,14 +409,18 @@ class Roomba(CleanerBot):
                 
     def perform_action(self):
         if not self.attitude == 'shutdown':
-            if not self.vacuum():
-                self.move()
-            
-            _player = self.dm.get_true_player()
-            _player_loc = (_player.row, _player.col, _player.curr_level)
-            if self.is_agent_adjacent(_player) and not self.robot_psych_check(_player):
-                self.attack(_player_loc)
-                self.try_to_vacuum(_player_loc)
+            if hasattr(self, 'last_attacker') and self.last_attacker != None:
+                self.seek_and_destroy(self.last_attacker)
+            else:
+                if not self.vacuum():
+                    self.move()
+                
+                _player = self.dm.get_true_player()
+                _player_loc = (_player.row, _player.col, _player.curr_level)
+                _rp = self.dm.player.skills.get_skill("Robot Psychology").get_rank()
+                if self.is_agent_adjacent(_player) and self.saving_throw(-_rp):
+                    self.attack(_player_loc)
+                    self.try_to_vacuum(_player_loc)
         
         self.energy -= STD_ENERGY_COST
     
@@ -424,23 +440,17 @@ class Incinerator(CleanerBot):
 
     def __go_about_business(self):
         player_loc = self.dm.get_player_loc()
-        if self.is_agent_adjacent(self.dm.player) and not self.robot_psych_check(self.dm.player):
+        _rp = self.dm.player.skills.get_skill("Robot Psychology").get_rank()
+        if self.is_agent_adjacent(self.dm.player) and self.saving_throw(-_rp):
             self.attack(player_loc)
         else:
             self.move()
-                
-    def __seek_and_destroy(self):
-        player_loc = self.dm.get_player_loc()
-        if self.is_agent_adjacent(self.dm.player):
-            self.attack(player_loc)
-        else:
-            self.move_to(player_loc)
-            
+                         
     def perform_action(self):
         if self.attitude == 'indifferent':
             self.__go_about_business()
         elif not self.attitude == 'shutdown':
-            self.__seek_and_destroy()
+            self.seek_and_destroy(self.dm.player)
         
         self.energy -= STD_ENERGY_COST
         

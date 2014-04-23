@@ -400,9 +400,10 @@ class BaseAgent(BaseTile):
         else:
             _save = 4
 
-        _roll = randint(1, 20) + modifier
+        _roll = randint(1, 20) 
+        _total = _roll + modifier
 
-        return _roll > _save
+        return _total > _save or _roll == 20
 
     def stealth_roll(self):    
         return do_d10_roll(1, 0)
@@ -1056,19 +1057,21 @@ class RelentlessPredator(BaseMonster):
         BaseMonster.__init__(self, vision_radius, ac, hp_low, hp_high, dmg_dice, dmg_rolls, ab, 
             dm, ch, fg, bg, lit, name, row, col, xp_value, gender, level)
         self.attitude = 'hostile'
-        
+    
+    def seek_and_destroy(self, target):
+        _loc = (target.row, target.col, target.curr_level)
+        if self.is_agent_adjacent_to_loc(target.row, target.col, self):
+            self.attack(_loc)
+        else:
+            self.move_to(_loc)
+
     def perform_action(self):
         if hasattr(self, 'last_attacker') and self.last_attacker != None:
             _target = self.last_attacker
         else:
             _target = self.dm.get_true_player()
 
-        _target_loc = (_target.row, _target.col, _target.curr_level)
-
-        if self.is_agent_adjacent(self.dm.player):
-            self.attack(_target_loc)
-        else:
-            self.move_to(_target_loc)
+        self.seek_and_destroy(_target)
         
         self.energy -= STD_ENERGY_COST
 
