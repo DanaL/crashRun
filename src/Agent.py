@@ -222,6 +222,8 @@ class BaseAgent(BaseTile):
         self.curr_level = 0
         self.sight_matrix = {}
         self.last_sight_matrix = {}
+        self.target = None
+        self.last_attacker = None
 
     def add_hp(self, delta):
         self.curr_hp += delta
@@ -367,7 +369,7 @@ class BaseAgent(BaseTile):
         
     def killed(self, dm, killer):
         self.dead = True
-        if hasattr(killer, 'last_attacker') and killer.last_attacker == self:
+        if killer.last_attacker == self:
             killer.last_attacker = None
             
         dm.monster_killed(self.curr_level, self.row, self.col, killer == dm.player)
@@ -713,7 +715,7 @@ class AltPredator(BaseMonster):
             self.energy = 0
             return
 
-        if hasattr(self, 'last_attacker') and self.last_attacker != None:
+        if self.last_attacker != None:
             _target = self.last_attacker
         else:
             _target = self.dm.get_true_player()
@@ -775,9 +777,7 @@ class FeralDog(AltPredator, AgentMemory):
     def perform_action(self):
         # If they see the player and he hasn't hurt them before, they will ignore him
         # if he's wearing fatigues (the just assume he's one of them)
-        _last = None if not hasattr(self, 'last_attacker') else self.last_attacker
-        
-        if not _last is self.dm.get_true_player() and self.is_player_visible():
+        if not self.last_attacker is self.dm.get_true_player() and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
                 self.attitude = 'passive'
@@ -839,9 +839,7 @@ class Junkie(HumanFoe, AgentMemory):
 
         # If they see the player and he hasn't hurt them before, they will ignore him
         # if he's wearing fatigues (they just assume he's one of them)
-        _last = None if not hasattr(self, 'last_attacker') else self.last_attacker
-
-        if not _last is self.dm.get_true_player() and self.is_player_visible():
+        if not self.last_attacker is self.dm.get_true_player() and self.is_player_visible():
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
                 self.attitude = 'passive'
@@ -1067,14 +1065,16 @@ class RelentlessPredator(BaseMonster):
         else:
             self.move_to(_loc)
 
-    def perform_action(self):
-        if hasattr(self, 'last_attacker') and self.last_attacker != None:
-            _target = self.last_attacker
+    def select_target(self):
+        if self.last_attacker != None:
+            self.target = self.last_attacker
         else:
-            _target = self.dm.get_true_player()
+            self.target = self.dm.get_true_player()
 
-        self.seek_and_destroy(_target)
-        
+    def perform_action(self):
+        if self.target == None or (self.last_attacker != None and self.last_attacker != self.target):
+            self.select_target()
+        self.seek_and_destroy(self.target)
         self.energy -= STD_ENERGY_COST
 
 class Shooter(RelentlessPredator):

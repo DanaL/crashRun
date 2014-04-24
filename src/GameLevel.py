@@ -19,6 +19,7 @@ from .CombatResolver import MeleeResolver
 from . import Agent
 from . import Items
 from .Items import ItemFactory
+from .Robots import BasicBot
 from . import Terrain
 from .Terrain import TerrainFactory
 from .Terrain import DOOR
@@ -193,7 +194,7 @@ class GameLevel:
         return self.exit
 
     def get_list_of_robots(self):
-        robots = [r for r in self.monsters if isinstance(r, Agent.BasicBot)]
+        robots = [r for r in self.monsters if isinstance(r, BasicBot)]
 
         return robots
 
