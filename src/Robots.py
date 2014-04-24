@@ -165,21 +165,23 @@ class PredatorDrone(BasicBot):
 
     def perform_action(self):
         if not self.attitude == 'shutdown':
-            _tp = self.dm.get_true_player()
-            _pl = (_tp.row, _tp.col)
-            
-            if self.is_agent_visible(_tp):
-                d = self.distance_from_player(_pl)
+            self.check_to_target_controlled_bot()
+            if self.target == None:
+                self.select_target()
+
+            _loc = (self.target.row, self.target.col)            
+            if self.is_agent_visible(self.target):
+                d = self.distance_from_player(_loc)
                 if d > 1 and d < self.range and self.missile_count > 0:
-                    self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
+                    self.dm.monster_fires_missile(self, _loc[0], _loc[1], 4, 3, 1)
                     self.missile_count -= 1
                     self.energy -= STD_ENERGY_COST
                     return
                 elif d <= 1:
-                    self.attack(_pl)
+                    self.attack(_loc)
                     self.energy -= STD_ENERGY_COST
                     return 
-            self.move_to(_pl)
+            self.move_to(_loc)
         
         self.energy -= STD_ENERGY_COST
         
@@ -271,9 +273,12 @@ class DocBot(CleanerBot):
         
     def perform_action(self):
         if not self.attitude == 'shutdown':
-            _tp = self.dm.get_true_player()
-            _loc = (_tp.row, _tp.col)
-            if self.is_agent_visible(_tp):
+            self.check_to_target_controlled_bot()
+            if self.target == None:
+                self.select_target()
+
+            _loc = (self.target.row, self.target.col)
+            if self.is_agent_visible(self.target):
                 d = self.distance_from_player(_loc)
                 if d <= self.vision_radius and randrange(3) == 0:
                     self.proffer_diagnosis()
@@ -416,7 +421,7 @@ class Roomba(CleanerBot):
             else:
                 if not self.vacuum():
                     self.move()
-                
+
                 _player = self.dm.get_true_player()
                 _player_loc = (_player.row, _player.col, _player.curr_level)
                 _rp = self.dm.player.skills.get_skill("Robot Psychology").get_rank()
@@ -546,5 +551,3 @@ class Roomba3000(Roomba, Unique):
             self.look_for_trash_to_vacuum()
             
         self.energy -= STD_ENERGY_COST
-
-
