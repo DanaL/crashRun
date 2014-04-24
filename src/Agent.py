@@ -659,14 +659,16 @@ class BaseMonster(BaseAgent, AStarMover):
         return self.is_agent_adjacent_to_loc(self.row, self.col, agent)
                 
     def is_player_visible(self):
-        player_loc = self.dm.get_player_loc()
-        coord = (player_loc[0], player_loc[1])
-        d = self.distance_from_player(player_loc)
+        _pl = self.dm.get_true_player()
+        if _pl.curr_level != self.curr_level:
+            return False
 
+        d = calc_distance(self.row, self.col, _pl.row , _pl.col)
+        _loc = (_pl.row, _pl.col)
         if d <= self.vision_radius:
-            sc = Shadowcaster(self.dm,self.vision_radius,self.row,self.col, self.curr_level)
+            sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col, self.curr_level)
             mv = sc.calc_visible_list()
-            return coord in mv
+            return (_pl.row, _pl.col) in mv
 
         return False
                 
