@@ -29,6 +29,7 @@ from .Agent import RelentlessPredator
 from .Agent import Shooter
 from .Agent import Unique
 from .Inventory import Inventory
+from . import Items
 from .FieldOfView import Shadowcaster
 
 class BasicBot(RelentlessPredator, AgentMemory):
@@ -65,11 +66,14 @@ class BasicBot(RelentlessPredator, AgentMemory):
     def get_serial_number(self):
         return self.serial_number
 
-    def recognize_controlled_bot(self):
-        if isinstance(self.dm.player, BasicBot) and self.is_agent_visible(self.dm.player):
-            _mod = self.dm.get_true_player().skills.get_skill('Robot Psychology').get_rank()
-            return self.saving_throw(-_mod - 2)
-        return False
+    def check_to_target_controlled_bot(self):
+        # Every few turns, give the bot a change to recognize the player controlling a bot
+        if self.target != None and self.target != self.dm.player: # and self.dm.turn % 5 == 0:
+            if isinstance(self.dm.player, BasicBot) and self.is_agent_visible(self.dm.player):
+                _mod = self.dm.get_true_player().skills.get_skill('Robot Psychology').get_rank()
+                if self.saving_throw(-_mod - 2):
+                    self.target = self.dm.player
+                    self.dm.alert_player(self.row, self.col, "Suspicious robot activity detected!")
 
     def regenerate(self):
         pass # Standard robots don't heal on their own. They need to be repaired.
@@ -106,6 +110,8 @@ class ED209(Shooter, BasicBot):
                 self.dm.alert_player(self.row, self.col, "You have 20 seconds to comply!")
         
         self.weapon.current_ammo = 1 # The ED-209 never runs out of ammo
+
+        self.check_to_target_controlled_bot()
         Shooter.perform_action(self)
    
 class SecurityBot(BasicBot):
@@ -121,11 +127,7 @@ class SecurityBot(BasicBot):
             self.energy -= STD_ENERGY_COST
             return
 
-        if self.target != None and self.target != self.dm.player:
-            if self.recognize_controlled_bot():
-                self.target = self.dm.player
-                self.dm.alert_player(self.row, self.col, "Suspicious robot activity detected!")
-
+        self.check_to_target_controlled_bot()
         super().perform_action()
 
     def get_hand_to_hand_dmg_roll(self):

@@ -1112,7 +1112,7 @@ class Shooter(RelentlessPredator):
             
         # By preference, pick a square that's not adjacent to the player
         try:
-            _non_adj = [_p for _p in _good_sqs if not self.is_agent_adjacent_to_loc(_p[0], _p[1], self.dm.player)]
+            _non_adj = [_p for _p in _good_sqs if not self.is_agent_adjacent_to_loc(_p[0], _p[1], self.target)]
             if len(_non_adj) > 0:
                 _ch = choice(_non_adj)
             else:
@@ -1122,24 +1122,29 @@ class Shooter(RelentlessPredator):
             return ()
                       
     def perform_action(self):
-        _player_loc = self.dm.get_player_loc()
-        _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
-        _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
+        if self.target == None:
+            self.select_target()
+
+        _loc = (self.target.row, self.target.col)
+        _angle = calc_angle_between(self.row, self.col, _loc[0], _loc[1])
+        _distance = calc_distance(self.row, self.col, _loc[0], _loc[1])
 
         if _angle % 45 == 0 and _distance <= self.range:
-            self.shoot_at_player(_player_loc)
+            self.shoot_at_spot(_loc)
         else:
-            _loc = self.pick_loc_to_move_to(_player_loc)
-            if _loc == ():
-                self.move_to(_player_loc)
-            else:
+            _sqr = self.pick_loc_to_move_to(_loc)
+            if _sqr == ():
                 self.move_to(_loc)
+            else:
+                self.move_to(_sqr)
             
         self.energy -= STD_ENERGY_COST
 
-    def shoot_at_player(self, player_loc):
-        self.dm.alert_player(self.row, self.col, self.get_articled_name() + " fires at you!")
-        _dir = convert_locations_to_dir(player_loc[0], player_loc[1], self.row, self.col)
+    def shoot_at_spot(self, loc):
+        _lvl = self.dm.dungeon_levels[self.curr_level]
+        _occ = _lvl.dungeon_loc[loc[0]][loc[1]].occupant
+        self.dm.alert_player(self.row, self.col, self.get_articled_name() + " fires!")
+        _dir = convert_locations_to_dir(loc[0], loc[1], self.row, self.col)
         self.dm.fire_weapon(self, self.row, self.col, _dir, self.weapon) 
         self.weapon.fire()
         
@@ -1184,7 +1189,7 @@ class GunTurret(Shooter):
 
         if _angle % 45 == 0 and _distance <= self.range and self.is_agent_visible(self.dm.player):
             self.weapon.current_ammo = 1 # Gun turret never runs out of ammo
-            self.shoot_at_player(_player_loc)
+            self.shoot_at_spot(_player_loc)
         
         self.energy -= STD_ENERGY_COST
         
