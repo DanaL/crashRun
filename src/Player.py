@@ -343,7 +343,7 @@ class Player(BaseAgent, AgentMemory):
         
     def __advance_level(self):
         self.level += 1
-        self.__base_hp.append(randrange(1,self.__hp_roll+1))
+        self.__base_hp.append(randrange(1, self.__hp_roll+1))
         
         if self.level % 2 != 0:
             self.skill_points += 1
@@ -437,8 +437,8 @@ class Player(BaseAgent, AgentMemory):
         return self.__calc_str_to_dmg_bonus()
 
     def calc_hp(self):
-        hp_bonus = self.stats.get_toughness_hp_modifier()
-        self.max_hp = reduce((lambda j,k:j+k),self.__base_hp,hp_bonus) + 5
+        _hp_bonus = self.stats.get_toughness_hp_modifier()
+        self.max_hp = sum([_hp + _hp_bonus for _hp in self.__base_hp]) + 5
         self.curr_hp = self.max_hp
 
     def __calc_initial_hp(self):
