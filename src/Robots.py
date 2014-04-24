@@ -65,26 +65,11 @@ class BasicBot(RelentlessPredator, AgentMemory):
     def get_serial_number(self):
         return self.serial_number
 
-    def select_target(self):
-        # Robots get a chance to recognize humans when they're controlling a bot
-        # every five turns. They'll go after the bot first if they are successful.    
-        _p = self.dm.player
-
-        # I didn't want to write this as:
-        #   attack_robot_player_if_recognized()
-        #   otherwise super().select_target()
-        #
-        # Because I think the bot will still prioritize fighting its last attacked
-        # over the remote-controlled robot
-        if hasattr(self, 'last_attacker') and self.last_attacker != None:
-            self.target = self.last_attacker
-        elif self.dm.turn % 5 == 0 and isinstance(_p, BasicBot):
+    def recognize_controlled_bot(self):
+        if isinstance(self.dm.player, BasicBot) and self.is_agent_visible(self.dm.player):
             _mod = self.dm.get_true_player().skills.get_skill('Robot Psychology').get_rank()
-            _success = self.saving_throw(_mod)
-            self.target = _p
-            self.dm.alert_player(self.row, self.col, "Suspicious robot activity detected!")
-        else:
-            self.target = self.dm.get_true_player()
+            return self.saving_throw(-_mod - 2)
+        return False
 
     def regenerate(self):
         pass # Standard robots don't heal on their own. They need to be repaired.
@@ -135,6 +120,11 @@ class SecurityBot(BasicBot):
         if self.attitude == 'shutdown':
             self.energy -= STD_ENERGY_COST
             return
+
+        if self.target != None and self.target != self.dm.player:
+            if self.recognize_controlled_bot():
+                self.target = self.dm.player
+                self.dm.alert_player(self.row, self.col, "Suspicious robot activity detected!")
 
         super().perform_action()
 

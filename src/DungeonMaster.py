@@ -1760,13 +1760,21 @@ class DungeonMaster:
     def monster_killed(self, level_num, r, c, by_player):
         _level = self.dungeon_levels[level_num]
         victim = _level.dungeon_loc[r][c].occupant
-        
+                
         # drop the monster's stuff, if it has any
         if len(victim.inventory) != 0:
             items = victim.inventory.get_dump()
             
             for i in items:
                 self.item_hits_ground(_level, r, c, i)
+
+        # Alert anyone whose last_attacker or target was the victim
+        for _lvl in self.dungeon_levels.values():
+            for _m in _lvl.monsters:
+                if _m.last_attacker is victim:
+                    _m.last_attacker = None
+                if _m.target is victim:
+                    _m.target = None
 
         # This can happen if the player is remote-controlling a robot
         if victim == self.player:

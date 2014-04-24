@@ -368,10 +368,7 @@ class BaseAgent(BaseTile):
         return False
         
     def killed(self, dm, killer):
-        self.dead = True
-        if killer.last_attacker == self:
-            killer.last_attacker = None
-            
+        self.dead = True            
         dm.monster_killed(self.curr_level, self.row, self.col, killer == dm.player)
         
     def make_random_move(self):
@@ -1063,7 +1060,7 @@ class DaemonicProcess(CyberspaceMonster):
         self.energy -= STD_ENERGY_COST
 
 # This is a monster who tracks the player down to attack him and will not flee,
-# regardless of his level of damage.  Good for zombies and particularly dumb robots.
+# regardless of its level of damage.  Good for zombies and particularly dumb robots.
 class RelentlessPredator(BaseMonster):
     def __init__(self, vision_radius, ac, hp_low, hp_high ,dmg_dice, dmg_rolls, ab, dm, ch,
             fg, bg, lit, name, row, col, xp_value, gender, level):
