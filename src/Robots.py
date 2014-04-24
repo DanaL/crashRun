@@ -46,7 +46,7 @@ class BasicBot(RelentlessPredator, AgentMemory):
         AgentMemory.damaged(self, dm, damage, attacker, attack_type)
         AltPredator.damaged(self, dm, damage, attacker, attack_type)
 
-        if (_shutdown):
+        if _shutdown:
             self.attitude = 'shutdown'
 
     def execute_functions(self, dui):
@@ -173,9 +173,10 @@ class PredatorDrone(BasicBot):
 
     def perform_action(self):
         if not self.attitude == 'shutdown':
-            _pl = self.dm.get_player_loc()
+            _tp = self.dm.get_true_player()
+            _pl = (_tp.row, _tp.col)
             
-            if self.is_player_visible():
+            if self.is_agent_visible(_tp):
                 d = self.distance_from_player(_pl)
                 if d > 1 and d < self.range and self.missile_count > 0:
                     self.dm.monster_fires_missile(self, _pl[0], _pl[1], 4, 3, 1)
@@ -278,13 +279,14 @@ class DocBot(CleanerBot):
         
     def perform_action(self):
         if not self.attitude == 'shutdown':
-            if self.is_player_visible():
-                _pl = self.dm.get_player_loc()
-                d = self.distance_from_player(_pl)
+            _tp = self.dm.get_true_player()
+            _loc = (_tp.row, _tp.col)
+            if self.is_agent_visible(_tp):
+                d = self.distance_from_player(_loc)
                 if d <= self.vision_radius and randrange(3) == 0:
                     self.proffer_diagnosis()
                 if d <= 1:
-                    self.attack(_pl)
+                    self.attack(_loc)
                 else:
                     self.move()
 
@@ -515,14 +517,14 @@ class MoreauBot6000(CleanerBot, Unique):
         super(CleanerBot, self).killed(dm, killer)
           
     def perform_action(self):
-        _pl = self.dm.get_player_loc()
+        _tp = self.dm.get_true_player()
         _created = False
-        if self.is_player_visible():
-            d = self.distance_from_player(_pl)
+        if self.is_agent_visible(_tp):
+            d = self.distance_from_player((_tp.row, _tp.col))
             if d <= self.vision_radius and randrange(4) == 0:
                 _created = self.create_beastman()
             elif d <= 1 and not _created:
-                self.attack(_pl)
+                self.attack((_tp.row, _tp.col))
             else:
                 self.move()
         self.energy -= STD_ENERGY_COST
@@ -540,13 +542,14 @@ class Roomba3000(Roomba, Unique):
         super(Roomba, self).killed(dm, killer)
         
     def perform_action(self):
-        _pl = self.dm.get_player_loc()
-        if self.is_player_visible():
-            if self.is_agent_adjacent(self.dm.player):
-                self.attack((_pl[0],_pl[1]))
-                self.try_to_vacuum((_pl[0],_pl[1]), 3)
+        _tp = self.dm.get_true_player()
+        _loc = (_tp.row, _tp.col)
+        if self.is_agent_visible(_tp):
+            if self.is_agent_adjacent(_tp):
+                self.attack(_loc)
+                self.try_to_vacuum(_loc, 3)
             else:
-                self.move_to((_pl[0],_pl[1]))
+                self.move_to(_loc)
         else:
             self.look_for_trash_to_vacuum()
             

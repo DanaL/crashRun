@@ -659,7 +659,19 @@ class BaseMonster(BaseAgent, AStarMover):
     
     def is_agent_adjacent(self, agent):
         return self.is_agent_adjacent_to_loc(self.row, self.col, agent)
-                
+
+    def is_agent_visible(self, agent):
+        if agent.curr_level != self.curr_level:
+            return False
+
+        d = calc_distance(self.row, self.col, agent.row , agent.col)
+        if d <= self.vision_radius:
+            sc = Shadowcaster(self.dm, self.vision_radius, self.row, self.col, self.curr_level)
+            mv = sc.calc_visible_list()
+            return (agent.row, agent.col) in mv
+
+        return False
+
     def is_player_visible(self):
         _pl = self.dm.get_true_player()
         if _pl.curr_level != self.curr_level:
@@ -746,7 +758,7 @@ class AltPredator(BaseMonster):
                 fled = self.move_to_unbound(self.flee_to)
                 
             if not fled and self.is_agent_adjacent(_target):
-                self.attack(_player_loc)
+                self.attack(_target_loc)
             
         self.energy -= STD_ENERGY_COST
         
@@ -777,7 +789,8 @@ class FeralDog(AltPredator, AgentMemory):
     def perform_action(self):
         # If they see the player and he hasn't hurt them before, they will ignore him
         # if he's wearing fatigues (the just assume he's one of them)
-        if not self.last_attacker is self.dm.get_true_player() and self.is_player_visible():
+        _tp = self.dm.get_true_player()
+        if not self.last_attacker is _tp and self.is_agent_visible(_tp):
             suit = self.dm.player.inventory.get_armour_in_location('suit');
             if isinstance(suit, Items.Armour) and suit.get_name(1) == 'old fatigues':
                 self.attitude = 'passive'
@@ -885,7 +898,7 @@ class Troll(CyberspaceMonster):
         self.dm.alert_player(self.row, self.col, _msg)
         
     def perform_action(self):
-        if random() < 0.15 and self.is_player_visible():
+        if random() < 0.15 and self.is_agent_visible(self.dm.get_true_player()):
             self.insult()
 
         super(Troll, self).perform_action()
@@ -896,7 +909,7 @@ class NaiveGarbageCollector(CyberspaceMonster):
             'black', 'white', 'naive garbage collector', row, col, 2, 'male', 10)
     
     def perform_action(self):
-        if random() < 0.20 and self.is_player_visible():
+        if random() < 0.20 and self.is_agent_visible(self.dm.player):
             self.dm.alert_player(self.row, self.col, "The garbage collector calls you a weak reference.")
 
         super(CyberspaceMonster, self).perform_action()
@@ -1172,7 +1185,7 @@ class GunTurret(Shooter):
         _angle = calc_angle_between(self.row, self.col, _player_loc[0], _player_loc[1])
         _distance = calc_distance(self.row, self.col, _player_loc[0], _player_loc[1])
 
-        if _angle % 45 == 0 and _distance <= self.range and self.is_player_visible():
+        if _angle % 45 == 0 and _distance <= self.range and self.is_agent_visible(self.dm.player):
             self.weapon.current_ammo = 1 # Gun turret never runs out of ammo
             self.shoot_at_player(_player_loc)
         
