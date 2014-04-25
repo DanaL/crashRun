@@ -30,7 +30,7 @@ class CharacterGenerator:
         self.dui = dl
         self.dm = dm
 
-    def new_character(self,player_name):
+    def new_character(self, player_name):
         self.__gen_new_character(player_name)
         self.__show_initial_stats()
 
@@ -204,6 +204,8 @@ class CharacterGenerator:
         _background, _skills = self.__generate_background()
 
         self.__player = Player(PlayerStats(), _background, name, 0, 0, self.dm)
+
+
         self.__player.skills = _skills
         self.__set_starting_software()
         
@@ -228,12 +230,19 @@ class CharacterGenerator:
             self.dui.cc.practice_skills(self.__player)
             
     def __show_initial_stats(self):
-        msg = ['Your initial stats are:']
-        msg.append('   Strength:  ' + str(self.__player.stats.get_strength()))
-        msg.append('   Co-ordination:  ' + str(self.__player.stats.get_coordination()))
-        msg.append('   Toughness:  ' + str(self.__player.stats.get_toughness()))
-        msg.append('   Intuition:  ' + str(self.__player.stats.get_intuition()))
-        msg.append('   Chutzpah:  ' + str(self.__player.stats.get_chutzpah()))
+        while True:
+            msg = ['Your initial stats are:']
+            msg.append('   Strength:  ' + str(self.__player.stats.get_strength()))
+            msg.append('   Co-ordination:  ' + str(self.__player.stats.get_coordination()))
+            msg.append('   Toughness:  ' + str(self.__player.stats.get_toughness()))
+            msg.append('   Intuition:  ' + str(self.__player.stats.get_intuition()))
+            msg.append('   Chutzpah:  ' + str(self.__player.stats.get_chutzpah()))
+            msg.append(' ')
+            msg.append('(r)eroll or any other key to continue.')
 
-        self.dui.write_screen(msg, True)
-
+            self.dui.write_screen(msg, False)
+            ch = self.dui.wait_for_input()
+            if ch == 'r':
+                self.__player.stats.roll_stats()
+            else:
+                break

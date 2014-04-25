@@ -35,13 +35,13 @@ from functools import reduce
 
 class PlayerStats:
     def __init__(self):
-        self.__gen_initial_stats()
+        self.roll_stats()
 
-    def __gen_initial_stats(self):
+    def roll_stats(self):
         self.__stats = [self.__roll_stat() for j in range(5)]
 
     def __roll_stat(self):
-        return sum(sorted(do_dN(1,6) for j in range(4))[1:])
+        return sum(sorted(do_dN(1, 6) for j in range(4))[1:])
 
     def change_stat(self,stat,amount):
         if stat == 'strength':
