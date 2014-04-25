@@ -344,7 +344,7 @@ class DisplayGuts(object):
     def write_cursor(self, row, col, tile):
         r = row - self.map_r
         c = col - self.map_c
-        self.write_sqr(tile, 'yellow', 'black', r, c, True)
+        self.write_sqr(tile, 'yellow', 'black', r, c, True, True)
 
     def display_on_msg_line(self, message):
         pr = SDL_Rect( self.__msg_cursor * self.fwidth, 0, 0, 0)
@@ -414,12 +414,15 @@ class DisplayGuts(object):
 
     # If we are writing many squares in a row, we shouldn't have to blit/update for each square, should
     # be able to do it in a batch.
-    def write_sqr(self, tile, fg, bg, r, c, update=True):
+    def write_sqr(self, tile, fg, bg, r, c, update, underlined=False):
         # Clear the square
         SDL_FillRect(self.screen, SDL_Rect(c * self.fwidth, self.fheight * r, self.fwidth, self.fheight), 0)
         clr = self.fetch_colour(fg)
         color = SDL_Color(clr[0], clr[1], clr[2])
-        txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(tile), color)
+
+        _font = self.font if not underlined else self.u_font
+        txt = sdlttf.TTF_RenderText_Solid(_font, str.encode(tile), color)
+        
         position_rect = SDL_Rect(c * self.fwidth, r * self.fheight, 0, 0);
         SDL_BlitSurface(txt, None, self.screen, position_rect)
         SDL_FreeSurface(txt)

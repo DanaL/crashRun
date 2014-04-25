@@ -1597,7 +1597,7 @@ class DungeonMaster:
         else:
             return _level.map[r][c]
             
-    def get_tile_info(self,row, col, l_num):
+    def get_tile_help_info(self,row, col, l_num):
         _level = self.dungeon_levels[l_num]
         if not _level.in_bounds(row, col):
             return DungeonSqrInfo(row,col,False,False,False,None)
@@ -1606,7 +1606,7 @@ class DungeonMaster:
         _loc = _level.dungeon_loc[row][col]
         if _loc.visited:
             _visible = _level.dungeon_loc[row][col].visible
-            _terrain = self.get_terrain_tile(agent, _loc, row, col, _visible, True)
+            _terrain = self.get_terrain_tile(self.player, _loc, row, col, _visible, True)
             _si = DungeonSqrInfo(row, col, _visible, True, _loc.lit, _terrain)
             if row == self.player.row and col == self.player.col:
                 _si.name = 'you!'
@@ -1621,7 +1621,7 @@ class DungeonMaster:
                 _si.name = _si.name.strip()
         else:
             _si = DungeonSqrInfo(row,col,False,False,False,_sqr)
-        
+
         return _si
         
     # omniscient means if the player can see the square from outside his normal vision set.

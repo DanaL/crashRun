@@ -128,7 +128,7 @@ class CommandContext(object):
         return section
 
     def get_sqr_info(self, row, col):
-        return self.dm.get_sqr_info(row, col)
+        return self.dm.get_sqr_info_for_agent(row, col, self.dm.player, False)
         
     def get_status_bar_info(self):
         _p = self.dm.player
@@ -136,7 +136,7 @@ class CommandContext(object):
         return StatusBarInfo(_p.get_name(), _p.curr_hp, _p.max_hp, _p.get_curr_ac(), _p.curr_level, _lvl.category)
 
     def get_tile_info(self, row, col):
-        return self.dm.get_tile_info(row, col)
+        return self.dm.get_tile_help_info(row, col, self.dm.player.curr_level)
         
     def pick_software(self, agent, menu, msg):
         _menu = [_m for _m in menu if _m[1] != 'Empty slot']
