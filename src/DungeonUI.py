@@ -374,6 +374,7 @@ class DungeonUI(object):
         _max_r = self.guts.display_rows - 1
         _max_c = self.guts.display_cols - 1
         
+        self.guts.write_cursor(_row, _col, self.cc.get_tile_info(_row, _col).get_ch())
         while True:
             _dir = self.get_direction(False)
             if _dir in ('>', '<'):
@@ -384,7 +385,7 @@ class DungeonUI(object):
             
             _sr = _row - self.guts.map_r
             _sc = _col - self.guts.map_c
-            if _sr + _dt[0] >= 0 and _sr + _dt[0] < _max_r and _sc + _dt[1] >= 0 and _sc + _dt[1] <= _max_c:
+            if _sr + _dt[0] >= 1 and _sr + _dt[0] < _max_r and _sc + _dt[1] >= 0 and _sc + _dt[1] <= _max_c:
                 self.guts.update_view(self.cc.get_sqr_info(_row, _col))
             
                 _row += _dt[0]
