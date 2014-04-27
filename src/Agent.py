@@ -743,12 +743,12 @@ class AltPredator(BaseMonster):
                 self.dm.alert_player(self.row,self.col,'The ' + self.get_name() +' turns to flee!')
                 self.state = 'scared'
             
+            _lvl = self.dm.dungeon_levels[self.curr_level]
             if not hasattr(self, "flee_to") or self.distance(_target_loc) < 3:
-                _lvl = self.dm.dungeon_levels[self.curr_level]
                 self.flee_to = furthest_sqr(_lvl, _target_loc, 25, self)
             
             if self.flee_to == None:
-                va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "")
+                va = VisualAlert(self.row, self.col, self.get_name(1) + " panics.", "", _lvl)
                 va.show_alert(self.dm, False)
                 fled = False
             else:
