@@ -66,6 +66,7 @@ class Inventory:
         self.__readied_armour = { 'suit':'', 'helmet':'', 'gloves':'', 'cloak':'',
                 'boots':'','glasses':'', 'watch':''}
         self.__armour_value = 0 # the total protection value of all readied armour
+        self.__primary_firearm = None
 
     def __len__(self):
         return len(self.__inv)
@@ -280,6 +281,8 @@ class Inventory:
             self.__primary_weapon = ''
         elif self.__inv[slot] == self.__secondary_weapon:
             self.__secondary_weapon = ''
+        elif self.__inv[slot] == self.__primary_firearm:
+            self.__primary_firearm = None
         elif self.__inv[slot][1] == 'Armour' and self.__readied_armour[ self.__inv[slot][0].get_area() ] == self.__inv[slot]:
             self.__armour_value -= self.__inv[slot][0].get_ac_modifier()
             self.__readied_armour[self.__inv[slot][0].get_area()] = ''
@@ -293,9 +296,12 @@ class Inventory:
                 raise CannotWieldSomethingYouAreWearing
             
             self.unready_item(slot)
-            self.__primary_weapon = _item
-            if self.__primary_weapon[0].hands_required == 2:
-                self.__secondary_weapon = ''
+            if _item[1] == 'Firearm':
+                self.__primary_firearm = _item
+            else:
+                self.__primary_weapon = _item
+                if self.__primary_weapon[0].hands_required == 2:
+                    self.__secondary_weapon = ''
         else:
             self.__primary_weapon = ''
 
@@ -342,6 +348,12 @@ class Inventory:
         except KeyError:
             return ''
     
+    def get_primary_firearm(self):
+        if self.__primary_firearm:
+            return self.__primary_firearm[0]
+        else:
+            return None
+
     def get_primary_weapon(self):
         if self.__primary_weapon != '':
             return self.__primary_weapon[0]
@@ -393,6 +405,8 @@ class Inventory:
                     _name += ' (primary weapon)'
                 elif self.__inv[letter] == self.__secondary_weapon:
                     _name += ' (secondary weapon)'
+                elif self.__inv[letter] == self.__primary_firearm:
+                    _name += ' (readied)'
                 elif self.__inv[letter][0].get_category() == 'Armour':
                     if self.__inv[letter] == self.__readied_armour[self.__inv[letter][0].get_area()]:
                         _name += ' (being worn)'

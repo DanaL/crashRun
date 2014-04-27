@@ -377,24 +377,12 @@ class MeatspaceCC(CommandContext):
     def fire_weapon(self):
         try:
             _player = self.get_player()
-            _primary = _player.inventory.get_primary_weapon()
-            _secondary = _player.inventory.get_secondary_weapon()
-            _p_is_f = isinstance(_primary, Items.Firearm)
-            _s_is_f = isinstance(_secondary, Items.Firearm)
+            _gun = _player.inventory.get_primary_firearm()
             
-            if not _p_is_f and not _s_is_f:
+            if not isinstance(_gun, Items.Firearm):
                 self.dui.display_message("You aren't wielding a firearm...")
-            elif _p_is_f and _s_is_f:
-                ch = self.dui.pick_inventory_item('Shoot what?')
-                _weapon = _player.inventory.get_item(ch)
-        
-                if _weapon != _primary and _weapon != _secondary:
-                    self.dui.display_message("You need to pick a gun that you're holding.")
-                else:
-                    self.dm.player_fire_weapon(_weapon)
             else:
-                _weapon = _primary if _p_is_f else _secondary
-                self.dm.player_fire_weapon(_weapon)
+                self.dm.player_fire_weapon(_gun)
         except NonePicked:
             self.dui.clear_msg_line()
         except EmptyInventory:
@@ -602,9 +590,11 @@ class MeatspaceCC(CommandContext):
             self.dui.display_message('VrRRrRrroOOoOom!!')
         elif item.hands_required == 2:
             self.dui.display_message('You hold the %s in both hands' % (item.get_name(1)))
+        elif isinstance(item, Items.Firearm):
+            self.dui.display_message('%s (readied)' % (item.get_name(1)))
         else:
             self.dui.display_message('%s (primary weapon)' % (item.get_name(1)))
-            
+
     def use_weapon_config(self, slot):
         _player = self.dm.player
         _inv = _player.inventory
