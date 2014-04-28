@@ -198,7 +198,7 @@ def get_medical_lab_box():
         if _roll < 0.25:
             _box.add_item(_if.get_stack('medkit', 4, True))
         elif _roll < 0.50:
-            _box.add_item(_if.get_stack('ritalin', 7, True))
+            _box.add_item(_if.get_stack('stimpak', 2, True))
         elif _roll < 0.75:
             _box.add_item(_if.get_stack('amphetamine', 5, True))
         else:

@@ -609,9 +609,6 @@ class ItemFactory:
         self.__item_db['amphetamine'] = ('pharmaceutical', 'Amphetamine Hit',
             'yellow-orange', 'yellow', [('hit', 0, 500), ('chutzpah', 1, 100), ('speed', 4, 16)],
             'Ahhhh...nice.')
-        self.__item_db['ritalin'] = ('pharmaceutical','Ritalin',
-            'yellow-orange', 'yellow', [('hit', 0, 350)],
-            'This stuff is kinda weak')
         self.__item_db['instant coffee'] = ('pharmaceutical', 'Instant Coffee', 'brown', 'lightbrown',
             [('hit', 0, 250), ('co-ordination', 1, 100), ('clear-head', 1, 0)], 'Refreshing!')
         self.__item_db['medkit'] = ('pharmaceutical', 'Medkit', 'red', 'red',

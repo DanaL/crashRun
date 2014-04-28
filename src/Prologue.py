@@ -153,8 +153,8 @@ class Prologue(GameLevel):
                 self.add_item_to_sqr(_row, _col, _box)
                 _box_placed = True
 
-        for x in range(randrange(7)):
-            _box.add_item(_if.gen_item('ritalin', 1))
+        for x in range(randrange(4)):
+            _box.add_item(_if.gen_item('amphetamine', 1))
         for x in range(randrange(19)):
             _box.add_item(_if.gen_item('shotgun shell', 1))
         for x in range(randrange(4)):

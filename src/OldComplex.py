@@ -43,10 +43,9 @@ class OldComplexLevel(GameLevel):
         _chart.common_items[1] = ('medkit', 0)
         _chart.common_items[2] = ('old fatigues', 0)
         _chart.common_items[3] = ('flare', 0)
-        _chart.common_items[4] = ('ritalin', 5)
-        _chart.common_items[5] = ('baseball bat', 0)
-        _chart.common_items[6] = ('shotgun shell', 7)
-        _chart.common_items[7] = ('medkit', 0)
+        _chart.common_items[4] = ('baseball bat', 0)
+        _chart.common_items[5] = ('shotgun shell', 7)
+        _chart.common_items[6] = ('medkit', 0)
         
         _chart.uncommon_items[0] = ('army helmet', 0)
         _chart.uncommon_items[1] = ('amphetamine', 5)
