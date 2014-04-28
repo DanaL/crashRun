@@ -228,7 +228,6 @@ class DungeonMaster:
         _hp_delta_cyberspace = self.player.max_hp - self.player.curr_hp
 
         self.player = self.suspended_player.pop()
-        self.player.time_since_last_hit += 100 # being in cyberspace is a strain on the player's brain
 
         _wired_level = self.dungeon_levels[CYBERSPACE_LEVEL]
         _security = _wired_level.security_active        
@@ -446,7 +445,6 @@ class DungeonMaster:
             self.dui.set_r_c(self.player.row, self.player.col, self.player.curr_level)
             self.dui.clear_screen(True)
             self.player.apply_effects_from_equipment()
-            self.player.check_for_withdrawal_effects()
             self.events = PriorityQueue()
             BasicBot.bot_number = randrange(100) + 10
 
@@ -2235,7 +2233,6 @@ class DungeonMaster:
                     self.dui.write_sidebar()
 
                 if not self.dungeon_levels[self.player.curr_level].is_cyberspace():
-                    self.player.check_for_withdrawal_effects()
                     self.player.check_for_expired_conditions()
                             
                     _drained = self.player.inventory.drain_batteries()

@@ -101,7 +101,6 @@ class Player(BaseAgent, AgentMemory):
         self.__xp = 0
         self.level = 1
         self.skill_points = 0
-        self.time_since_last_hit = 1000
         self.stats = stats
 
         self.light_radius = 5
@@ -229,14 +228,15 @@ class Player(BaseAgent, AgentMemory):
             self.dm.alert_player(self.row, self.col, "You shake off your daze. ")
         self.dm.dui.update_status_bar()
         
-    def check_for_expired_conditions(self):        
+    def check_for_expired_conditions(self):
         for _e in BaseAgent.check_for_expired_conditions(self):
             if _e[1] == 'high':
                 self.dm.alert_player(self.row, self.col, 'You are coming down a bit.')
             elif _e[1] == 'blind':
                 self.dm.alert_player(self.row, self.col, 'You can see again.')
                 self.dm.refresh_player_view()
-                
+        
+    # Currently never called; needs to be reworked.        
     def check_for_withdrawal_effects(self):
         for _condition in self.conditions:
             if _condition[0][0] == 'hit':
@@ -263,8 +263,6 @@ class Player(BaseAgent, AgentMemory):
                 
             if randrange(3) == 0:
                 self.dm.alert_player(self.row, self.col, 'Your head is killing you.')
-
-        self.time_since_last_hit += 1
         
     def get_curr_xp(self):
         return self.__xp

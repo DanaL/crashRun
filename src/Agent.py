@@ -280,7 +280,6 @@ class BaseAgent(BaseTile):
                 _potency = source.calculate_potency(self, e[1])
             self.add_hp(_potency)
         elif e[0] == 'hit':
-            self.time_since_last_hit = 0 
             _withdrawal_effects = [_c for _c in self.conditions if _c[1] == 'withdrawal']
             for _condition in _withdrawal_effects:
                 self.remove_effect(_condition[0],'withdrawal')

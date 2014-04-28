@@ -142,12 +142,7 @@ class CharacterGenerator:
         self.__player.inventory.add_item(_if.gen_item('C4 Charge', 1), 0)
         self.__player.inventory.add_item(_if.gen_item('C4 Charge', 1), 0)
         self.__player.inventory.add_item(_if.gen_item('C4 Charge', 1), 0)
-
         self.__player.inventory.add_item(_if.gen_item('truncheon', 1), 1)
-
-        for j in range(randrange(12, 25)):
-            self.__player.inventory.add_item(_if.gen_item('amphetamine', 1), 0)
-
         self.__player.inventory.add_item(_if.gen_item('lockpick', 1), 0)
         
     def __display_player_skills(self):

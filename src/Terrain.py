@@ -154,10 +154,10 @@ class Terminal(Equipment):
         _p = dm.player
         _dui = dm.dui
                     
-        if _p.time_since_last_hit > 700:
-            _msg = 'Your head is pounding too much to jack in...'
-            _dui.display_message(_msg)
-            return
+        #if _p.time_since_last_hit > 700:
+        #    _msg = 'Your head is pounding too much to jack in...'
+        #    _dui.display_message(_msg)
+        #    return
         
         if not self.functional:
             _dui.display_message("This terminal is not functional.")
