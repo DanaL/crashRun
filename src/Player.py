@@ -452,7 +452,17 @@ class Player(BaseAgent, AgentMemory):
         
         self.__base_hp.append(hp)
         self.calc_hp()
-        
+    
+    def update_drug_usage(self):
+        count = 0
+        for c in self.conditions:
+            if c[0][0] == 'user':
+                count = c[0][1]
+                break
+        self.remove_condition_type('user')
+        uh = (('user', count + 1, 0), 'drug usage')
+        self.conditions.append(uh)
+
     def takes_drugs(self, hit):
         for _effect in hit.effects:
             _instant = _effect[2] == 0
@@ -469,7 +479,8 @@ class Player(BaseAgent, AgentMemory):
                     continue
             else:
                 _drug_effect = ((_effect[0], _effect[1], _effect[2] + self.dm.turn), 'high')
-            
+                self.update_drug_usage()
+
             self.apply_effect(_drug_effect, _instant)
         self.dm.alert_player(self.row, self.col, hit.message)
 
