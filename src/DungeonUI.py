@@ -302,6 +302,8 @@ class DungeonUI(object):
             _loc = self.cc.get_player_loc()
             self.guts.set_r_c(_loc[0], _loc[1], _loc[2])
             self.guts.redraw_screen()
+        elif cmd == 'SHOW_MAP':
+            self.show_mini_map()
 
     def pick_from_list(self, msg, items):
         _letters = [i[0] for i in items]
@@ -542,6 +544,53 @@ class DungeonUI(object):
         
     def set_r_c(self, r, c, level):
         self.guts.set_r_c(r, c, level)
+
+    def calc_score(ch):
+        if ch == '.':
+            return 1
+        elif ch == '#':
+            return 2
+        elif ch == '+':
+            return 3
+        elif ch == '>' or ch == '<':
+            return 4
+
+    def mini_map_vote(self, lvl, upper_row, upper_col):
+        ch = ''
+        score = 0
+
+        s = calc_score(lvl.map[upper_row][upper_col].get_ch())
+        if s > score:
+            score = s
+            ch = lvl.map[upper_row][upper_col].get_ch()
+
+        if upper_col + 1 < dg.width:
+            c = lvl.map[upper_row][upper_col + 1].get_ch()
+            s = calc_score(c)
+            if s > score:
+                score = s
+                ch = c
+
+        if upper_row + 1 < dg.height:
+            c = lvl.map[upper_row + 1][upper_col].get_ch()
+            s = calc_score(c)
+            if s > score:
+                score = s
+                ch = c
+
+        if upper_col + 1 < dg.width and upper_row + 1 < dg.height:
+            c = lvl.map[upper_row + 1][upper_col + 1].get_ch()
+            s = calc_score(c)
+            if s > score:
+                score = s
+                ch = c
+
+        return ch
+
+    def show_mini_map(self):
+        dm = self.cc.dm
+        lvl = dm.dungeon_levels[dm.player.curr_level]
+        print(lvl.lvl_length, lvl.lvl_width)
 
     def show_vision(self, vision):
         self.guts.show_vision(vision)
