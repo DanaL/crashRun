@@ -590,8 +590,21 @@ class DungeonUI(object):
     def show_mini_map(self):
         dm = self.cc.dm
         lvl = dm.dungeon_levels[dm.player.curr_level]
-        print(lvl.lvl_length, lvl.lvl_width)
+        sqrs = []
+        if lvl.lvl_length < self.guts.display_rows - 2 and lvl.lvl_width < self.guts.display_cols:
+            # We don't need to shrink the map
+            for r in range(lvl.lvl_length):
+                for c in range(lvl.lvl_width):
+                    s = dm.get_sqr_info_for_map(r, c, lvl)
+                    s.lit = False
+                    s.visible = False
+                    sqrs.append(s)
 
+        self.show_vision(sqrs)
+        self.guts.write_message("Press any key to return to game...", False)
+        self.wait_for_input()
+        self.guts.redraw_screen()
+        
     def show_vision(self, vision):
         self.guts.show_vision(vision)
 

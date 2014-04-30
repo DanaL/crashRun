@@ -677,7 +677,7 @@ class RemoteRobotCC(MeatspaceCC):
                     self.dm.dungeon_levels[meat.curr_level].dungeon_loc[r][c].lit = True
                     #sqr.lit = True
                     #sqr.visible = True
-                sqr = self.dm.get_sqr_info_for_agent(r, c, meat)
+                sqr = self.dm.get_sqr_info_for_agent(r, c, meat, False)
                 blocks.append(sqr)
         
         return ((meat.row, meat.col), blocks)

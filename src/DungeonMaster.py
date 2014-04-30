@@ -1583,7 +1583,7 @@ class DungeonMaster:
 
         return True
     
-    def get_terrain_tile(self, agent, loc, r, c, visible, omniscient):
+    def get_display_tile(self, agent, loc, r, c, visible, omniscient):
         _level = self.dungeon_levels[agent.curr_level]
         if visible and loc.temp_tile != '':
             return loc.temp_tile
@@ -1604,7 +1604,7 @@ class DungeonMaster:
         _loc = _level.dungeon_loc[row][col]
         if _loc.visited:
             _visible = _level.dungeon_loc[row][col].visible
-            _terrain = self.get_terrain_tile(self.player, _loc, row, col, _visible, True)
+            _terrain = self.get_display_tile(self.player, _loc, row, col, _visible, True)
             _si = DungeonSqrInfo(row, col, _visible, True, _loc.lit, _terrain)
             if row == self.player.row and col == self.player.col:
                 _si.name = 'you!'
@@ -1621,11 +1621,11 @@ class DungeonMaster:
             _si = DungeonSqrInfo(row,col,False,False,False,_sqr)
 
         return _si
-        
+    
     # omniscient means if the player can see the square from outside his normal vision set.
     # Ie., when getting sqr info for a square through a camera feed or some such.  In those
-    # cases, if omniscient isn't true, the monsters won't be visible.
-    def get_sqr_info_for_agent(self, r, c, agent, omniscient=False):
+    # cases, if omniscient isn't true, the monsters won't be visible.    
+    def get_sqr_info_for_agent(self, r, c, agent, omniscient,):
         _level = self.dungeon_levels[agent.curr_level]
         if not _level.in_bounds(r, c):
             return DungeonSqrInfo(r,c,False,False,False, T.BlankSquare())
@@ -1634,9 +1634,21 @@ class DungeonMaster:
         visible = omniscient or _loc.visible
         remembered = visible or _loc.visited
 
-        terrain = self.get_terrain_tile(agent, _loc, r, c, visible, omniscient)
+        terrain = self.get_display_tile(agent, _loc, r, c, visible, omniscient)
         
         return DungeonSqrInfo(r,c,visible,remembered,_loc.lit,terrain)
+
+    def get_sqr_info_for_map(self, r, c, lvl):
+        if not lvl.in_bounds(r, c):
+            return DungeonSqrInfo(r, c, False, False, False, T.BlankSquare())
+
+        loc = lvl.dungeon_loc[r][c]
+        if loc.visible and loc.temp_tile != '':
+            tile = loc.temp_tile
+        else:
+            tile = lvl.map[r][c]
+
+        return DungeonSqrInfo(r, c, loc.visible, loc.visited, loc.lit, tile)
 
     # This only really deals with visual information, should add audio, also
     def alert_player(self, r, c, message, pause_for_more=False):
@@ -1673,7 +1685,7 @@ class DungeonMaster:
             
     def update_sqr(self, level, r , c):
         if self.can_player_see_location(r, c, level.level_num):
-            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player))
+            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player, False))
 
     def passive_search(self, loc):
         if self.player.has_condition('dazed'): 
@@ -1728,20 +1740,20 @@ class DungeonMaster:
             _level.dungeon_loc[_s[0]][_s[1]].visited = True
             _level.dungeon_loc[_s[0]][_s[1]].lit = True
             
-            _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player)
+            _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player, False)
             if _perception_roll > 14:
                 self.passive_search(_loc)
-                _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player)
+                _loc = self.get_sqr_info_for_agent(_s[0],_s[1], self.player, False)
                 
             _sqrs_to_draw.append(_loc)
 
         # now we need to 'extinguish' squares that are not longer lit
         for s in [s for s in self.player.last_sight_matrix if s not in self.player.sight_matrix]:
             self.__loc_out_of_sight(s, _level)
-            _sqrs_to_draw.append(self.get_sqr_info_for_agent(s[0],s[1], self.player))
+            _sqrs_to_draw.append(self.get_sqr_info_for_agent(s[0],s[1], self.player, False))
 
         self.dui.update_block(_sqrs_to_draw)
-        self.dui.update_view(self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player))
+        self.dui.update_view(self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player, False))
         
     # Called when a square moves out of sight range
     def __loc_out_of_sight(self, loc, level):
@@ -1782,7 +1794,7 @@ class DungeonMaster:
         _level.remove_monster(victim, r, c)
         
         if self.can_player_see_location(r, c, level_num):
-            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player))
+            self.dui.update_view(self.get_sqr_info_for_agent(r, c, self.player, False))
 
         if by_player:
             self.player.add_xp(victim.get_xp_value())
@@ -2176,7 +2188,7 @@ class DungeonMaster:
 
     def refresh_player(self):
         self.refresh_player_view()
-        sqr = self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player)
+        sqr = self.get_sqr_info_for_agent(self.player.row, self.player.col, self.player, False)
         self.dui.update_view(sqr)
 
     def search(self):
