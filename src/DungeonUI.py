@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with crashRun.  If not, see <http://www.gnu.org/licenses/>.
 
-from .BaseTile import BaseTile
+from collections import defaultdict
 from random import randrange
 import math
 from string import digits
 from string import ascii_letters
 
+from .BaseTile import BaseTile
 from .DisplayGuts import DisplayGuts
 from .GamePersistence import get_preferences
 from .GamePersistence import read_scores
 from .GamePersistence import save_preferences
+from . import Terrain as T
 from .Util import EmptyInventory
 from .Util import get_direction_tuple
 from .Util import NonePicked
@@ -545,52 +547,73 @@ class DungeonUI(object):
     def set_r_c(self, r, c, level):
         self.guts.set_r_c(r, c, level)
 
-    def calc_score(ch):
-        if ch == '.':
+    def tile_score(self, sqr):
+        _type = sqr.tile.get_type()
+        if _type in (T.FLOOR, T.GRASS, T.TREE, T.ROAD, T.SAND, T.PUDDLE, T.CYBERSPACE_FLOOR):
             return 1
-        elif ch == '#':
+        elif _type in (T.WALL, T.PERM_WALL, T.PILLAR, T.OCEAN, T.MOUNTAIN, T.POOL, T.WATER,
+            T.CYBERSPACE_WALL, T.FIREWALL):
             return 2
-        elif ch == '+':
+        elif _type in (T.DOOR, T.STEEL_DOOR, T.SPECIAL_DOOR, T.SPECIAL_FLOOR):
             return 3
-        elif ch == '>' or ch == '<':
+        elif _type in (T.TERMINAL, T.SECURITY_CAMERA, T.EXIT_NODE, T.SUBNET_NODE):
             return 4
+        elif _type in (T.TRAP, T.ACID_POOL, T.TOXIC_WASTE):
+            return 5
+        elif _type in (T.UP_STAIRS, T.DOWN_STAIRS):
+            return 6
+        elif _type in (T.SPECIAL_TERMINAL):
+            return 7
 
-    def mini_map_vote(self, lvl, upper_row, upper_col):
-        ch = ''
+        return 0
+
+    # We are scaling down the map, looking at (usually) four squares at a time
+    # so to determine which of them makes it into the mini-map, we rank the scares in
+    # priority. If a section has only walls and floors, use the one that appears the most
+    # (trumping priority) and if they are tied, use floors, to hopefully give a better
+    # idea of where the hallways are.
+    def mini_map_vote(self, sqrs):
+        sqr = None
         score = 0
+        counts = defaultdict(int)
 
-        s = calc_score(lvl.map[upper_row][upper_col].get_ch())
-        if s > score:
-            score = s
-            ch = lvl.map[upper_row][upper_col].get_ch()
+        for s in sqrs:
+            counts[s.tile.get_type()] += 1
 
-        if upper_col + 1 < dg.width:
-            c = lvl.map[upper_row][upper_col + 1].get_ch()
-            s = calc_score(c)
-            if s > score:
-                score = s
-                ch = c
+            sc = self.tile_score(s)
+            if sc > score:
+                score = sc
+                sqr = s
 
-        if upper_row + 1 < dg.height:
-            c = lvl.map[upper_row + 1][upper_col].get_ch()
-            s = calc_score(c)
-            if s > score:
-                score = s
-                ch = c
+        # if the four square block contains only walls or floors, use the one
+        # that appears the most often.
+        _only_walls_floors = True
+        for k in counts.keys():
+            if not k in (T.FLOOR, T.WALL, T.PERM_WALL, T.CYBERSPACE_WALL, T.CYBERSPACE_FLOOR):
+                _only_walls_floors = False
+                break
 
-        if upper_col + 1 < dg.width and upper_row + 1 < dg.height:
-            c = lvl.map[upper_row + 1][upper_col + 1].get_ch()
-            s = calc_score(c)
-            if s > score:
-                score = s
-                ch = c
+        if _only_walls_floors:
+            _most = 0
+            _type = None
 
-        return ch
+            if T.FLOOR in counts and T.WALL in counts and counts[T.FLOOR] == counts[T.WALL]:
+                _type = T.FLOOR
+            else:
+                for k in counts.keys():
+                    if counts[k] > _most:
+                        _type = k
+                        _most = counts[k]
+
+            for s in sqrs:
+                if s.tile.get_type() == _type:
+                    return s
+        return sqr
 
     def show_mini_map(self):
         dm = self.cc.dm
         lvl = dm.dungeon_levels[dm.player.curr_level]
-        sqrs = []
+        grid = []
         if lvl.lvl_length < self.guts.display_rows - 2 and lvl.lvl_width < self.guts.display_cols:
             # We don't need to shrink the map
             for r in range(lvl.lvl_length):
@@ -598,13 +621,35 @@ class DungeonUI(object):
                     s = dm.get_sqr_info_for_map(r, c, lvl)
                     s.lit = False
                     s.visible = False
-                    sqrs.append(s)
+                    grid.append(s)
+        else:
+            row = 0
+            while row < lvl.lvl_length:
+                col = 0
+                while col < lvl.lvl_width:
+                    sqrs = [dm.get_sqr_info_for_map(row, col, lvl)]
+                    if col + 1 < lvl.lvl_width:
+                        sqrs.append(dm.get_sqr_info_for_map(row, col + 1, lvl))
+                    if row + 1 < lvl.lvl_length:
+                        sqrs.append(dm.get_sqr_info_for_map(row + 1, col, lvl))
+                    if row + 1 < lvl.lvl_length and col + 1 < lvl.lvl_width:
+                        sqrs.append(dm.get_sqr_info_for_map(row + 1, col + 1, lvl))
 
-        self.show_vision(sqrs)
+                    s = self.mini_map_vote(sqrs)
+                    s.r = row // 2
+                    s.c = col // 2
+                    if dm.player.row in (row, row + 1) and dm.player.col in (col, col + 1):
+                        s.tile = dm.player
+                
+                    grid.append(s)
+                    col += 2
+                row += 2
+
+        self.show_vision(grid)
         self.guts.write_message("Press any key to return to game...", False)
         self.wait_for_input()
         self.guts.redraw_screen()
-        
+
     def show_vision(self, vision):
         self.guts.show_vision(vision)
 
