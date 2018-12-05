@@ -30,10 +30,10 @@ from .DungeonMaster import GameOver
 from .GamePersistence import get_preferences
 
 # RGB values for colours used in system
-colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102), 
-    'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87), 
-    'brown':(153,0,0), 'lightbrown':(153,51,0), 'blue':(0,0,221), 'darkblue':(0,0,153), 
-    'yellow':(255,255,0), 'yellow-orange':(255,200,0), 'orange':(255,165,0), 'orchid':(218,112,214), 
+colour_table = {'black':(0,0,0), 'white':(255,255,255), 'grey':(136,136,136), 'slategrey':(0,51,102),
+    'darkgrey':(85,85,85), 'red':(187,0,0), 'green':(0,255,127),'darkgreen':(46,139,87),
+    'brown':(153,0,0), 'lightbrown':(153,51,0), 'blue':(0,0,221), 'darkblue':(0,0,153),
+    'yellow':(255,255,0), 'yellow-orange':(255,200,0), 'orange':(255,165,0), 'orchid':(218,112,214),
     'plum':(221,160,221), 'bright pink':(255,105,180), 'pink':(255,20,147)}
 
 SIDEBAR_WIDTH = 10
@@ -45,7 +45,7 @@ class DisplayGuts(object):
         self.max_cols = dc
         self.font_size = fs
         self.__msg_cursor = 0
-        self.dui = dui                
+        self.dui = dui
         self.map_r = ''
         self.map_c = ''
         self.display_mode = 'standard'
@@ -66,16 +66,16 @@ class DisplayGuts(object):
         SDL_Init(SDL_INIT_VIDEO)
         self.window = SDL_CreateWindow(str.encode(window_title), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               self.fwidth * self.display_cols, self.fheight * self.display_rows, SDL_WINDOW_SHOWN)
-        
+
         self.screen = SDL_GetWindowSurface(self.window)
-        
+
     def check_screen_pos(self):
         # where is the player in relation to the map?
         _pl = self.cc.get_player_loc()
         r = _pl[0] - self.map_r
         c = _pl[1] - self.map_c
         redraw = False
-        
+
         # we only need to be concerned about re-drawing the screen if there is a chance
         # the player could move out of the visible area.  So, if the number of rows or
         # cols for the dungeon level <= the available display area, don't event check
@@ -105,7 +105,7 @@ class DisplayGuts(object):
                 redraw = True
 
         if redraw: self.redraw_screen()
-    
+
     def clear_msg_line(self):
         SDL_FillRect(self.screen, SDL_Rect(0, 0, self.max_cols * self.fwidth, self.fheight), 0)
         SDL_UpdateWindowSurface(self.window)
@@ -128,12 +128,12 @@ class DisplayGuts(object):
 
     def fetch_colour(self,colour):
         return colour_table[colour]
-                    
+
     def pause_for_more(self):
         self.display_on_msg_line('-- more --')
 
         if get_preferences()["enter to clear pause"]:
-            while self.wait_for_key_input() != 'return': 
+            while self.wait_for_key_input() != 'return':
                 pass
         else:
             self.wait_for_key_input()
@@ -149,7 +149,7 @@ class DisplayGuts(object):
                     if _col.remembered:
                         actual_r = _col.r - self.map_r
                         actual_c = _col.c - self.map_c
-                        
+
                         # only update square if it's actually visible on screen
                         # (ie, avoid printing torch light when near edges of screen
                         if actual_r >= 1 and actual_r < self.display_rows and actual_c >= 0 and actual_c < self.display_cols:
@@ -159,10 +159,10 @@ class DisplayGuts(object):
             SDL_UpdateWindowSurface(self.window)
             self.update_status_bar()
             self.__msg_cursor = 0
-        
+
         if self.display_mode == 'remote':
             self.write_sidebar()
-            
+
     def set_r_c(self, r, c, level_num):
         if self.cc.get_lvl_width(level_num) < self.display_cols:
             self.map_c = 0
@@ -174,7 +174,7 @@ class DisplayGuts(object):
         else:
             self.map_r = r - self.display_rows // 2 + 1
 
-    # Show a player a vision of something (ie., security camera feed).  This is different from displaying a screen of 
+    # Show a player a vision of something (ie., security camera feed).  This is different from displaying a screen of
     # of text becasue the vision will likely consist of tiles and such, not just text.  Need to draw each tile.
     # Vision is a list of DungeonSqrInfo objects
 
@@ -223,8 +223,8 @@ class DisplayGuts(object):
         for block in blocks[1]:
             fg, bg = block.get_fg_bg()
             r = block.r - offset_r
-            c = block.c - offset_c + self.display_cols 
-            
+            c = block.c - offset_c + self.display_cols
+
             self.write_sqr(block.get_ch(), fg, bg, r, c, False)
 
         _player = self.cc.get_meatspace_player()
@@ -247,13 +247,13 @@ class DisplayGuts(object):
         SDL_FreeSurface(txt)
 
         SDL_UpdateWindowSurface(self.window)
-        
+
     def update_block(self, block):
         _low_actual_r = self.display_rows
         _high_actual_r = 0
         _low_actual_c = self.display_cols
         _high_actual_c = 0
-            
+
         for sqr in block:
             actual_r = sqr.r - self.map_r
             actual_c = sqr.c - self.map_c
@@ -262,11 +262,11 @@ class DisplayGuts(object):
             if actual_r > _high_actual_r: _high_actual_r = actual_r
             if actual_c < _low_actual_c: _low_actual_c = actual_c
             if actual_c > _high_actual_c: _high_actual_c = actual_c
-            
+
             if actual_r >= 1 and actual_r < self.display_rows - 1 and actual_c >= 0 and actual_c < self.display_cols:
                 colours = sqr.get_fg_bg()
                 self.write_sqr(sqr.get_ch(), colours[0], colours[1], actual_r, actual_c, False)
-        
+
         SDL_UpdateWindowSurface(self.window)
 
     def update_status_bar(self):
@@ -281,7 +281,7 @@ class DisplayGuts(object):
 
         for j in range(l, self.display_cols - len(levelSection)-1):
             line += ' '
-        
+
         if info.lvl_type == 'prologue':
             line += 'Outside'
         elif info.lvl_type == 'cyberspace':
@@ -312,7 +312,7 @@ class DisplayGuts(object):
     # From what I can tell so far, SDL gives you the raw key pressed and any modifier keys, so for letters you get
     # 'A', 'B' etc so I cast them to lowercase if a shift key isn't being pressed. But I also need to check for characters
     # like '@', '*', '?' etc. This is keyboard-specific and I presume there would be a way to detect which keyboard you have
-    # but for the moment I'm going to only worry about American-style keyboards. 
+    # but for the moment I'm going to only worry about American-style keyboards.
     def handle_special_keys(self, mod, ch):
         if ch == '2': return '@'
         elif ch == ',': return '<'
@@ -320,7 +320,7 @@ class DisplayGuts(object):
         elif ch == '/': return '?'
         elif ch == '8': return '*'
         elif ch == '3': return '#'
-        
+
         return ch
 
     # Geez, this is ugly!
@@ -335,12 +335,14 @@ class DisplayGuts(object):
                     c = SDL_GetKeyName(event.key.keysym.sym).decode("UTF-8")
                     if event.key.keysym.sym == SDLK_SPACE:
                         return ' '
-                    elif event.key.keysym.mod in (1, 2):
+                    # Not sure why SDLK_LSHIFT and _RSHIFT are different values
+                    # than the keysym.mod values...
+                    elif event.key.keysym.mod in ([4097, 4098]):
                         return self.handle_special_keys(event.key.keysym.mod, c)
                     else:
                         return c.lower()
             SDL_Delay(25)
-             
+
     def write_cursor(self, row, col, tile):
         r = row - self.map_r
         c = col - self.map_c
@@ -368,9 +370,9 @@ class DisplayGuts(object):
             self.pause_for_more()
 
         if len(message) > self.max_cols - 12:
-            self.split_message(message, pause)    
+            self.split_message(message, pause)
             return
-        
+
         self.display_on_msg_line(message)
         self.__msg_cursor += len(message)
 
@@ -385,12 +387,12 @@ class DisplayGuts(object):
         _lines = []
         for _line in raw_lines:
             _lines += _line.split("\n")
-            
+
         j = 0
         while j < len(_lines):
             self.clear_screen(1)
             curr_row = 0
-        
+
             for k in range(j, j + self.display_rows - 1):
                 if k >= len(_lines):
                     break
@@ -399,10 +401,10 @@ class DisplayGuts(object):
                     colour = SDL_Color(255, 255, 255)
                     txt = sdlttf.TTF_RenderText_Solid(self.font, str.encode(_lines[k]), colour)
                     SDL_BlitSurface(txt, None, self.screen, pr)
-                    SDL_FreeSurface(txt)                                  
+                    SDL_FreeSurface(txt)
                     curr_row += self.fheight
-            
-            SDL_UpdateWindowSurface(self.window) 
+
+            SDL_UpdateWindowSurface(self.window)
             if pause_at_end:
                 ch = self.wait_for_key_input()
                 if ch == 'escape' and allow_esc:
@@ -422,7 +424,7 @@ class DisplayGuts(object):
 
         _font = self.font if not underlined else self.u_font
         txt = sdlttf.TTF_RenderText_Solid(_font, str.encode(tile), color)
-        
+
         position_rect = SDL_Rect(c * self.fwidth, r * self.fheight, 0, 0);
         SDL_BlitSurface(txt, None, self.screen, position_rect)
         SDL_FreeSurface(txt)
